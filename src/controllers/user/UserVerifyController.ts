@@ -3,8 +3,9 @@ import { IUserVerifyService } from "../../services/user/interfaces/IUserVerifySe
 import { CustomError } from "../../errors/CustomError";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { errorResponse, successResponse } from "../../helper/responseHanlder";
+import { IUserVerifyController } from "./interface/IUserVerifyController";
 
-export class UserVerifyController {
+export class UserVerifyController implements IUserVerifyController {
     constructor(
         private userVerifySerice:IUserVerifyService
     ){}
@@ -15,8 +16,6 @@ export class UserVerifyController {
             const { token } = req.query
 
             await this.userVerifySerice.verifyUser(token as string)
-
-
             return successResponse(res,"User verified",STATUS_CODES.OK,"Success")
 
         } catch (error) {

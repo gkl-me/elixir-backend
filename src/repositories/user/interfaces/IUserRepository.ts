@@ -1,11 +1,9 @@
 
-import { CreatUserDTO, UpdateUserDTO, UserResponseDTO } from "../../../interfaces/dtos/UserDTO";
+import { ICreateUserDTO, IUpdateUserDTO, IUserResponseDTO } from "../../../interfaces/dtos/user/UserDTO";
 import { IUser } from "../../../models/User"; 
+import { IBaseRepository } from "../../base/IBaseRepository";
 
-export interface IUserRepository{
-    findByEmail(email:string):Promise<IUser>
-    findById(id:string):Promise<IUser>
-    create(user:CreatUserDTO):Promise<UserResponseDTO>
-    update(user:UpdateUserDTO):Promise<UserResponseDTO>
+export interface IUserRepository extends IBaseRepository<IUser>{
+    findByEmail(email:string):Promise<IUser |null>
 }
 

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes'
 import connectDB from './config/db';
@@ -21,6 +21,10 @@ app.use(morganMiddleware)
 
 app.use('/api/v1/users',userRoutes) 
 app.use('/api/v1/admin',adminRoutes)
+
+app.get('/ping',(req:Request,res:Response) => {
+    res.json({success:true,message:"Server running successfully"})
+})
 
 app.use(errorHandler)
 app.use(notFound)

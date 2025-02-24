@@ -1,8 +1,6 @@
 import { ISubscriptionPlan } from "../../../models/SubscriptionPlan";
+import { IBaseRepository } from "../../base/IBaseRepository";
 
-export interface ISubscriptionRepository{
-    create(data:ISubscriptionPlan):Promise<ISubscriptionPlan>
-    update(id:string,data:Partial<ISubscriptionPlan>):Promise<ISubscriptionPlan>
-    delete(id:string):Promise<boolean>
-    getAll():Promise<ISubscriptionPlan[]>
+export interface ISubscriptionRepository extends IBaseRepository<ISubscriptionPlan> {
+    findByTypeAndCycle(type:string,cycle:string):Promise<ISubscriptionPlan|null>;
 }

@@ -5,7 +5,7 @@ export const UserRegisterSchema = z.object({
     email: z.string().email({
         message: "Invalid email address"
     }),
-    password: z.string().min(8,"Password should be min 8 characters long").max(100)
+    password: z.string().trim().min(8,"Password should be min 8 characters long").max(100)
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/\d/, "Password must contain at least one number")
@@ -17,5 +17,5 @@ export const UserLoginSchema = z.object({
     email: z.string().email({
         message: "Invalid email address"
     }),
-    password: z.string().min(8,"Password should be min 8 characters long").max(100)
+    password: z.string().trim().min(8,"Password should be min 8 characters long").max(100)
 })

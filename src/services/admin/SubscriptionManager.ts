@@ -14,6 +14,9 @@ export class SubscriptionManager implements ISubscriptionManager{
     async createSubscription(data:ISubscriptionPlan): Promise<ISubscriptionPlan> {
         try {
 
+
+            const {type,cycle} = data;
+
             //validation comes here using zod 
             const validate = createSubscriptionSchema.safeParse(data)
 
@@ -23,11 +26,18 @@ export class SubscriptionManager implements ISubscriptionManager{
                 }
             }
 
-            const sub = await this.subscriptionRepository.create(data)
-            if(!sub){
-                throw new CustomError('Unable to create subscription',STATUS_CODES.INTERNAL_SERVER_ERROR)
+            //sub the type and cycle already exists
+            const subscriptionExists = await this.subscriptionRepository.findByTypeAndCycle(type,cycle)
+
+            if(subscriptionExists){
+                throw new CustomError('Subscription already exists', STATUS_CODES.CONFLICT)
             }
-            return sub
+
+            const createdSubscription = await this.subscriptionRepository.create(data)
+
+            return createdSubscription;
+            
+
         } catch (error) {
             if(error instanceof CustomError) {
                 throw new CustomError(error.message, error.statusCode)
@@ -36,9 +46,12 @@ export class SubscriptionManager implements ISubscriptionManager{
         }
     }
 
-    async updateSubscription(id: string, data: Partial<ISubscriptionPlan>): Promise<ISubscriptionPlan> {
+    async updateSubscription(id: string, data: Partial<ISubscriptionPlan>): Promise<ISubscriptionPlan|null> {
         try {
             
+
+            const {type,cycle} = data;
+
             // validation using zod to verfiy 
             const validate = updateSubscriptionSchema.safeParse(data)
             if(!validate.success){
@@ -47,12 +60,23 @@ export class SubscriptionManager implements ISubscriptionManager{
                 }
             }
 
-            const updatedSub = await this.subscriptionRepository.update(id, data)
-            if(!updatedSub){
-                throw new CustomError('Subscription not found', STATUS_CODES.NOT_FOUND)
+            //sub the type and cycle already exists with different id
+            const subscriptionExists = await this.subscriptionRepository.findOne({
+                isDeleted:false,
+                _id: {
+                    $ne: id
+                },
+                type,
+                cycle,
+
+            })
+
+            if(subscriptionExists){
+                throw new CustomError('Subscription already exists', STATUS_CODES.CONFLICT)
             }
 
-            
+            const updatedSub = await this.subscriptionRepository.update(id, data)
+
             return updatedSub;
 
         } catch (error) {
@@ -63,15 +87,12 @@ export class SubscriptionManager implements ISubscriptionManager{
         }
     }
 
-    async deleteSubscription(id: string): Promise<boolean> {
+    async deleteSubscription(id: string): Promise<ISubscriptionPlan|null> {
         try {
 
-            const deleteSub = await this.subscriptionRepository.delete(id)
+            const deleteSub = await this.subscriptionRepository.delete(id,{isDeleted: true})
 
-            if(!deleteSub){
-                throw new CustomError('Subscription not found', STATUS_CODES.NOT_FOUND)
-            }
-            return true;
+            return deleteSub
 
         } catch (error) {
             if(error instanceof CustomError){
@@ -82,13 +103,11 @@ export class SubscriptionManager implements ISubscriptionManager{
         }
     }
 
-    async getAllSubscriptions(): Promise<ISubscriptionPlan[]> {
+    async getAllSubscriptions(): Promise<ISubscriptionPlan[]|null> {
         try {
 
-            const allSubs = await this.subscriptionRepository.getAll()
-            if(!allSubs){
-                throw new CustomError('No subscriptions found', STATUS_CODES.NOT_FOUND)
-            }
+            const allSubs = await this.subscriptionRepository.findAll({})
+
             return allSubs;
             
         } catch (error) {

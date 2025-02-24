@@ -1,7 +1,7 @@
-import { CreatUserDTO, LoginDTO, RegisterDTO, UserLoginResponseDTO, UserRegisterResponseDTO, UserResponseDTO } from "../../../interfaces/dtos/UserDTO";
-import { IUser } from "../../../models/User";
+import { IUserAuthResponseDTO, IUserLoginDTO, IUserRegisterDTO } from "../../../interfaces/dtos/user/AuthDTO";
+import { IUserResponseDTO } from "../../../interfaces/dtos/user/UserDTO";
 
 export interface IUserAuthService {
-    registerUser(user:RegisterDTO): Promise<UserRegisterResponseDTO>
-    loginUser(user:LoginDTO): Promise<UserLoginResponseDTO>
+    registerUser(user:IUserRegisterDTO): Promise<IUserResponseDTO>
+    loginUser(user:IUserLoginDTO): Promise<IUserAuthResponseDTO>
 }

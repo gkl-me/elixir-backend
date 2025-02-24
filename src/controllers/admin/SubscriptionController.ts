@@ -4,8 +4,9 @@ import { errorResponse, successResponse } from "../../helper/responseHanlder";
 import { ISubscriptionManager } from "../../services/admin/interfaces/ISubscriptionManager";
 import { CustomError } from "../../errors/CustomError";
 import { ERROR_MESSAGES } from "../../constants/errorMessages";
+import { ISubscriptionController } from "./interface/ISubscriptionController";
 
-export class SubscriptionController{
+export class SubscriptionController implements ISubscriptionController{
     constructor(
         private subscriptionManager: ISubscriptionManager
     ){}

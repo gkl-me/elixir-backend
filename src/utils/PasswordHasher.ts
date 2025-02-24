@@ -1,5 +1,5 @@
 import { IPasswordHasher } from "./interfaces/IPasswordHasher";
-import { hash,compare,genSalt} from "bcryptjs";
+import { compare,genSalt, hash} from "bcryptjs";
 
 export class PasswordHasher implements IPasswordHasher{
     async hashPassword(password: string): Promise<string> {
@@ -8,7 +8,7 @@ export class PasswordHasher implements IPasswordHasher{
         return hashed
     }
 
-    async comparePasswords(hashedPassword: string, providedPassword: string): Promise<boolean> {
+    async comparePasswords(providedPassword: string, hashedPassword: string): Promise<boolean> {
         const isMatch = await compare(providedPassword, hashedPassword)
         return isMatch;
     }

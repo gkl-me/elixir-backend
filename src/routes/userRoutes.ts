@@ -25,5 +25,8 @@ router.post('/register',userAuthController.registerUser.bind(userAuthController)
 router.get('/verify', userVerifyController.verifyUser.bind(userVerifyController))
 
 
+router.post('/login',userAuthController.loginUser.bind(userAuthController))
+
+
 
 export default router;

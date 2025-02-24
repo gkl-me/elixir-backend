@@ -4,8 +4,9 @@ import { ERROR_MESSAGES } from "../../constants/errorMessages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { IAdminAuthService } from "../../services/admin/interfaces/IAdminAuthService";
 import { errorResponse, successResponse } from "../../helper/responseHanlder";
+import { IAdminAuthController } from "./interface/IAdminAuthController";
 
-export class AdminAuthController {
+export class AdminAuthController implements IAdminAuthController {
 
     constructor(
         public adminAuthService:IAdminAuthService

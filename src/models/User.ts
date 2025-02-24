@@ -5,6 +5,7 @@ export interface IUser extends Document{
     email:string,
     password:string,
     isVerified:boolean
+    isBlocked:boolean
     isDeleted:boolean
     createdAt?:Date
     updatedAt?:Date
@@ -14,6 +15,7 @@ const UserSchema = new Schema({
     name:{type:String,required:true},
     email:{type:String,required:true,unique:true},
     isVerified:{type:Boolean,default:false},
+    isBlocked:{type:Boolean,default:false},
     isDeleted:{type:Boolean,default:false},
     password:{type:String,required:true},
 },{
