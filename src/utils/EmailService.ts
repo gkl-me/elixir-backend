@@ -4,7 +4,7 @@ import { CustomError } from "../errors/CustomError";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
 import { STATUS_CODES } from "../constants/statusCodes";
 
-const resend = new Resend("re_cRgx4M2m_DTxY2KXVh1H74u3qvcXcCx6j")
+const resend = new Resend(process.env.RESEND_API!)
 
 
 
