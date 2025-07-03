@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv'
 dotenv.config();
 
-
+import 'reflect-metadata'
+import './di/container'
 import userRoutes from './routes/userRoutes'
 import connectDB from './config/db';
 import { errorHandler } from './middlewares/errorHandler';
@@ -12,6 +13,7 @@ import adminRoutes from './routes/adminRoutes'
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
+import { seedAdmin } from './seed/seedAdmin';
 
 
 const app = express();
@@ -41,6 +43,9 @@ app.use(notFound)
 
 app.listen(5000, async ()=>{
     await connectDB()
+
+    //seed admin to db
+    await seedAdmin()
     console.log("Server is running on port 5000")
 })
 
