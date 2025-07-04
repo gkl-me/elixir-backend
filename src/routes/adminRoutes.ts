@@ -17,7 +17,29 @@ import { IAdminAuthController } from "../controllers/admin/interface/IAdminAuthC
 
 const router = Router();
 
-
+/**
+ * @openapi
+ * /admin/login:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Admin Login
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *               $ref: '#components/schemas/AdminLogin'
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema: 
+ *                $ref: '#components/schemas/Response'
+ *       400:
+ *         description: Invalid Credentials
+ */
 router.post('/login',(req,res,next) =>{
     const adminAuthController = container.resolve<IAdminAuthController>(Token.AdminAuthController)
     adminAuthController.login(req,res,next)

@@ -14,7 +14,9 @@ import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
 import { seedAdmin } from './seed/seedAdmin';
-
+import swaggerUi from 'swagger-ui-express'
+import { swaggerSpec } from './docs/swagger';
+ 
 
 const app = express();
 
@@ -33,6 +35,9 @@ app.use(morganMiddleware)
 
 app.use('/api/v1/user',userRoutes) 
 app.use('/api/v1/admin',adminRoutes)
+
+//swagger api docs
+app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
 
 app.get('/ping',(req:Request,res:Response) => {
     res.json({success:true,message:"Server running successfully"})
