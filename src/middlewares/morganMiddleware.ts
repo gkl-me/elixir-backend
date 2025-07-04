@@ -3,7 +3,7 @@ import logger from "./logger";
 
 // Define the timestamp token
 morgan.token("timestamp", () => {
-  return new Date().toISOString(); // ISO format timestamp
+  return new Date().toISOString() // ISO format timestamp
 });
 
 // Updated format including the timestamp token
@@ -15,6 +15,18 @@ const colorizeStatus = (status: number): string => {
   return `\x1b[32m${status}\x1b[0m`;
 };
 
+const formatTimestamp = (isoString: string): string => {
+  const date = new Date(isoString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hh}:${mm}:${ss}`;
+};
+
 const morganMiddleware = morgan(morganFormat, {
   stream: {
     write: (message: string) => {
@@ -23,13 +35,14 @@ const morganMiddleware = morgan(morganFormat, {
       const match = message.match(/(\S+)\s+(\S+)\s+(\S+)\s+(\d{3})\s+-\s+([\d.]+)\s+ms/);
       if (match) {
         const [_, timestamp, method, url, status, responseTime] = match;
-        const colorizedStatus = colorizeStatus(parseInt(status));
-        const colorizedMessage = message.replace(status, colorizedStatus);
 
-        // Optionally filter parts and log the message
-        const msg = colorizedMessage.split(" ");
-        msg.shift()
-        console.log(msg.join(" ").trim())
+        const formattedTime = formatTimestamp(timestamp);
+        const colorizedStatus = colorizeStatus(parseInt(status));
+        const colorizedMessage = message
+          .replace(status, colorizedStatus)
+          .replace(timestamp, formattedTime);
+
+        console.log(colorizedMessage.trim());
       }
     },
   },
