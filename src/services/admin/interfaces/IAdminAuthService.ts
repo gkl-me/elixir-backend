@@ -1,3 +1,5 @@
+import { AdminAuthDto, AdminAuthResponseDto } from "../../../interfaces/dtos/admin/AdminAuthDto";
+
 export interface IAdminAuthService {
-    login(email:string, password:string):Promise<{token:string}>
+    login(adminAuthData:AdminAuthDto):Promise<AdminAuthResponseDto>
 }

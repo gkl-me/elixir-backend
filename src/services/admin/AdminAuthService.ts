@@ -1,28 +1,42 @@
+import { inject, injectable } from "tsyringe";
 import { ERROR_MESSAGES } from "../../constants/errorMessages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { CustomError } from "../../errors/CustomError";
 import { ITokenManager } from "../../utils/interfaces/ITokenManager";
 import { IAdminAuthService } from "./interfaces/IAdminAuthService";
+import { Token } from "../../di/token";
+import { IPasswordHasher } from "../../utils/interfaces/IPasswordHasher";
+import { AdminAuthDto, AdminAuthResponseDto } from "../../interfaces/dtos/admin/AdminAuthDto";
+import { Admin } from "../../models/Admin";
 
+@injectable()
 export class AdminAuthService implements IAdminAuthService{
 
     constructor(
-        public tokenManager: ITokenManager
+        @inject(Token.TokenManager) private tokenManager: ITokenManager,
+        @inject(Token.PasswordHasher) private passwordHashed:IPasswordHasher
     ){}
 
-    async login(email:string, password:string){
+    async login(adminAuthData:AdminAuthDto){
         try {
-            
-            if(!email.trim() ||!password.trim()){
-                throw new CustomError(ERROR_MESSAGES.INVALID_INPUT, STATUS_CODES.INVALID_INPUT)
-            }
-            
-            if(email.trim() !== process.env.ADMIN_EMAIL || password.trim() !== process.env.ADMIN_PASS){
-                
-                throw new CustomError("Invalid credentials", STATUS_CODES.UNAUTHORIZED)
-            } 
 
-            const token = this.tokenManager.generateAccessToken(process.env.ADMIN_EMAIL,'admin')
+            const {email,password } = adminAuthData
+
+            if(!email.trim() ||!password.trim()){
+                throw new CustomError(ERROR_MESSAGES.INVALID_INPUT, STATUS_CODES.BAD_REQUEST)
+            }
+
+            const isAdmin = await Admin.findOne({email})
+            if(!isAdmin){
+                throw new CustomError("Invalid email or password ",STATUS_CODES.BAD_REQUEST)
+            }
+
+            const passwordMatch = this.passwordHashed.comparePasswords(isAdmin.password,password)
+            if(!passwordMatch){
+                throw new CustomError("Invalid email or password",STATUS_CODES.BAD_REQUEST)
+            }
+
+            const token = this.tokenManager.generateAccessToken(isAdmin.email,'admin')
 
             return {token}
 
