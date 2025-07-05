@@ -1,6 +1,8 @@
 import Stripe from 'stripe'
 import { Plan } from '../models/Plan'
 import logger from '../middlewares/logger'
+import { container } from 'tsyringe'
+import { IStripeService } from '../utils/interfaces/IStripeService'
 
 const stripe = new Stripe(process.env.STRIPE_KEY||"")
 
@@ -55,6 +57,7 @@ export async function seedPlan(){
                         stripePriceId:stripePriceId,
                         stripeProductId:stripeProductId,
                         isActive:true,
+                        price:plan.price
                     }
                 },{
                     upsert:true
@@ -74,39 +77,23 @@ async function stripeListing(planName:string,planPrice:number){
         let stripeProductId=null;
         let stripePriceId=null;
 
-        const products = await stripe.products.list({
-            limit:100
-        })
+        const stripeServie = container.resolve<IStripeService>('IStripeService')
 
-        const existingProduct = products.data.find(p => p.metadata.planName == planName)
-        if(existingProduct){
-            stripeProductId=existingProduct.id
-            const prices = await stripe.prices.list({
-                product:stripeProductId,
-                limit:1
-            })
+        const existingProductId = await stripeServie.findProduct(planName)
+        if(existingProductId){
+            stripeProductId=existingProductId
 
-            stripePriceId=prices.data[0]?.id || null
+            const latestPriceId = await stripeServie.findLatestPrice(stripeProductId)
+
+            stripePriceId=latestPriceId|| null
         }else{
 
-            const newProduct = await stripe.products.create({
-                name:planName,
-                metadata:{
-                    planName
-                }
-            })
+            const newProductId = await stripeServie.createProduct(planName)
 
-            const newPrice = await stripe.prices.create({
-                product:newProduct.id,
-                unit_amount:planPrice,
-                currency:'usd',
-                recurring:{
-                    interval:'month'
-                }
-            })
+            const newPriceId = await stripeServie.createPrice(newProductId,planPrice)
 
-            stripeProductId = newProduct.id
-            stripePriceId = newPrice.id
+            stripeProductId = newProductId
+            stripePriceId = newPriceId
         }
 
         return {
