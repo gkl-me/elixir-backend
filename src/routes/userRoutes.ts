@@ -27,6 +27,13 @@ router.get('/verify', userVerifyController.verifyUser.bind(userVerifyController)
 
 router.post('/login',userAuthController.loginUser.bind(userAuthController))
 
+router.get('/user',(req,res) => {
+
+    const number= Math.random()
+
+    res.status(200).json({message: 'User info',data:{number}})
+})
+
 
 
 export default router;

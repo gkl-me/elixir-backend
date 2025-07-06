@@ -12,6 +12,7 @@ import { AdminUserController } from "../controllers/admin/AdminUserController";
 import { container } from "tsyringe";
 import { Token } from "../di/token";
 import { IAdminAuthController } from "../controllers/admin/interface/IAdminAuthController";
+import { IPlanController } from "../controllers/admin/interface/IPlanController";
 
 
 
@@ -43,6 +44,16 @@ const router = Router();
 router.post('/login',(req,res,next) =>{
     const adminAuthController = container.resolve<IAdminAuthController>(Token.AdminAuthController)
     adminAuthController.login(req,res,next)
+})
+
+//plans
+router.patch('/plans/:id',(req,res,next) => {
+    const planController = container.resolve<IPlanController>(Token.PlanController)
+    planController.updatePlan(req,res,next)
+})
+router.get('/plans',(req,res,next) => {
+    const planController = container.resolve<IPlanController>(Token.PlanController)
+    planController.findAllPlans(req,res,next)
 })
 
 //user management

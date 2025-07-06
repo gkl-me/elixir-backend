@@ -10,12 +10,15 @@ import { errorHandler } from './middlewares/errorHandler';
 import { notFound } from './middlewares/notFound';
 import morganMiddleware from './middlewares/morganMiddleware';
 import adminRoutes from './routes/adminRoutes'
-import mongoose from 'mongoose';
+
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
 import { seedAdmin } from './seed/seedAdmin';
 import swaggerUi from 'swagger-ui-express'
 import { swaggerSpec } from './docs/swagger';
+import mongoose from 'mongoose';
+import { STATUS_CODES } from './constants/statusCodes';
+import { seedPlan } from './seed/seedPlan';
  
 
 const app = express();
@@ -39,8 +42,21 @@ app.use('/api/v1/admin',adminRoutes)
 //swagger api docs
 app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
 
+//health check route
 app.get('/ping',(req:Request,res:Response) => {
-    res.json({success:true,message:"Server running successfully"})
+    const state = mongoose.connection.readyState
+    if(state === 1){
+        res.status(STATUS_CODES.OK).json({
+            success:true,
+            message:"Server running successfully",
+            db:"Connected"
+        })
+    }else{
+        res.status(STATUS_CODES.BAD_REQUEST).json({
+            success:false,
+            message:"Server is not healthy",
+        })
+    }
 })
 
 app.use(errorHandler)
@@ -51,6 +67,7 @@ app.listen(5000, async ()=>{
 
     //seed admin to db
     await seedAdmin()
+    await seedPlan()
     console.log("Server is running on port 5000")
 })
 

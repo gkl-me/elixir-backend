@@ -12,7 +12,7 @@ export interface IPlan extends Document{
     limits:{
         maxProjects:number,
         maxTeams:number
-        maxUsersPerTeam?:number
+        maxUsersPerTeam:number
     },
     stripePriceId?:string,
     stripeProductId?:string,
