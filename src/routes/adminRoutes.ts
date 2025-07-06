@@ -13,6 +13,7 @@ import { container } from "tsyringe";
 import { Token } from "../di/token";
 import { IAdminAuthController } from "../controllers/admin/interface/IAdminAuthController";
 import { IPlanController } from "../controllers/admin/interface/IPlanController";
+import { adminAuth } from "../middlewares/adminAuthMiddleware";
 
 
 
@@ -45,18 +46,23 @@ router.post('/login',(req,res,next) =>{
     const adminAuthController = container.resolve<IAdminAuthController>(Token.AdminAuthController)
     adminAuthController.login(req,res,next)
 })
+router.get('/me',adminAuth,(req,res,next) => {
+    const adminAuthController = container.resolve<IAdminAuthController>(Token.AdminAuthController)
+    adminAuthController.me(req,res,next)
+})
 
 //plans
-router.patch('/plans/:id',(req,res,next) => {
+router.patch('/plans/:id',adminAuth,(req,res,next) => {
     const planController = container.resolve<IPlanController>(Token.PlanController)
     planController.updatePlan(req,res,next)
 })
-router.get('/plans',(req,res,next) => {
+router.get('/plans',adminAuth,(req,res,next) => {
     const planController = container.resolve<IPlanController>(Token.PlanController)
     planController.findAllPlans(req,res,next)
 })
 
-//user management
+
+//user managemen
 
 // router.get('/users',auth,adminUserController.getAllUsers.bind(adminUserController))
 // router.patch('/users/:userId/block',auth,adminUserController.blockUser.bind(adminUserController))

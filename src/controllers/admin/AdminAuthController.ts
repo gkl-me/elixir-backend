@@ -35,4 +35,16 @@ export class AdminAuthController implements IAdminAuthController {
             next(error)
         }
     }
+
+    async me(req: Request, res: Response, next: NextFunction){
+        try {
+            
+            const {id} = req.admin!
+            await this.adminAuthService.me(id)
+            successResponse(res,"Admin details fetched",STATUS_CODES.OK,{})
+
+        } catch (error) {
+            next(error)
+        }
+    }
 }
