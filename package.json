@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/app.ts",
+    "dev": "nodemon --files --watch src src/app.ts",
     "build": "tsc -b",
     "start": "node dist/app.js"
   },
@@ -21,8 +21,14 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.0",
     "morgan": "^1.10.0",
+    "reflect-metadata": "^0.2.2",
     "resend": "^4.1.2",
+    "stripe": "^18.3.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "tsyringe": "^4.10.0",
     "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -33,6 +39,8 @@
     "@types/jsonwebtoken": "^9.0.8",
     "@types/mongoose": "^5.11.96",
     "@types/morgan": "^1.9.9",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2"
   }
