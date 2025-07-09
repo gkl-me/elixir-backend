@@ -37,7 +37,12 @@ export class AdminAuthService implements IAdminAuthService{
 
             const token = this.tokenManager.generateAccessToken(isAdmin._id as string,'admin')
 
-            return {token}
+            return {
+                token,
+                id:isAdmin._id as string,
+                name:isAdmin.name,
+                email:isAdmin.email
+            }
 
         } catch (error) {
             if(error instanceof CustomError){
@@ -59,7 +64,11 @@ export class AdminAuthService implements IAdminAuthService{
             if(!isAdmin){
                 throw new CustomError("Unathorized access login again",STATUS_CODES.UNAUTHORIZED)
             }
-
+            return {
+                id:isAdmin._id as string,
+                name:isAdmin.name,
+                email:isAdmin.email
+            }
         } catch (error) {
             if(error instanceof CustomError){
                 throw error

@@ -19,6 +19,7 @@ export class PlanService implements IPlanService{
     async updatePlan(updateData:updatePlanDto){
         try {
             const {id,data} = updateData
+
             
             const existingPlan = await this.planRepository.findById(id)
             if(!existingPlan){
@@ -32,9 +33,9 @@ export class PlanService implements IPlanService{
             }
             
             //update the value of price to cents
-            data.price = Number(data.price) * 100
+            if(data.price) data.price = Number(data.price) * 100
 
-            if(existingPlan.price !== data.price && existingPlan.name!=='Free'){
+            if(data.price &&  existingPlan.price !== data.price && existingPlan.name!=='Free'){
                 const priceId = await this.stripeService.createPrice(existingPlan.stripeProductId!,data.price)
                 data.stripePriceId = priceId
             }
@@ -50,6 +51,7 @@ export class PlanService implements IPlanService{
             return adminDtoMapper.toPlanResponseDto(updatedPlan)
 
         } catch (error) {
+            console.log(error)
             if(error instanceof CustomError){
                 throw new CustomError(error.message,error.statusCode)
             }

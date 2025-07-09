@@ -1,3 +1,5 @@
+import { Request, Response } from "express";
+
 export interface IUserVerifyController {
-    verifyUser(req: any, res: any): Promise<void>
+    verifyUser(req: Request, res: Response): Promise<void>
 }

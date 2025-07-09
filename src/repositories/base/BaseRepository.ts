@@ -57,7 +57,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T>{
     async update(id: string, data: UpdateQuery<T>): Promise<T | null> {
         try {
             
-            const updatedData = await this.model.findByIdAndUpdate(id, data, { new: true });
+            const updatedData = await this.model.findByIdAndUpdate(id,data, { new: true });
             return updatedData
 
         } catch (error) {

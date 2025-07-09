@@ -20,7 +20,7 @@ export class AdminAuthController implements IAdminAuthController {
 
             const {email , password} = req.body;
 
-            const {token} = await this.adminAuthService.login({email,password})   
+            const {token,...admin} = await this.adminAuthService.login({email,password})   
 
             res.cookie('token',token,{
                 httpOnly: true,
@@ -29,7 +29,7 @@ export class AdminAuthController implements IAdminAuthController {
                 sameSite: 'lax',
             })
 
-            successResponse(res,"Admin Login Succesful",STATUS_CODES.OK,{})
+            successResponse(res,"Admin Login Succesful",STATUS_CODES.OK,{...admin})
             
         } catch (error) {
             next(error)
@@ -40,11 +40,20 @@ export class AdminAuthController implements IAdminAuthController {
         try {
             
             const {id} = req.admin!
-            await this.adminAuthService.me(id)
-            successResponse(res,"Admin details fetched",STATUS_CODES.OK,{})
+            const admin = await this.adminAuthService.me(id)
+            successResponse(res,"Admin details fetched",STATUS_CODES.OK,admin)
 
         } catch (error) {
             next(error)
+        }
+    }
+
+    async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            res.clearCookie('token')
+            successResponse(res,"Admin Logout success",STATUS_CODES.OK,{})
+        } catch (error) {
+            next(new CustomError('Failed to logout admin',STATUS_CODES.INTERNAL_SERVER_ERROR))
         }
     }
 }

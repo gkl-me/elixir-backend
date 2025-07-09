@@ -4,6 +4,13 @@ export interface AdminAuthDto{
     password:string
 }
 
-export interface AdminAuthResponseDto{
-    token:string
+export interface AdminAuthResponseDto extends AdminResponseDto{
+    token:string,
+}
+
+
+export interface AdminResponseDto{
+    id:string,
+    name:string
+    email:string
 }
