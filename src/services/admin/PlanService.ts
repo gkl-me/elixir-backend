@@ -33,16 +33,14 @@ export class PlanService implements IPlanService{
             }
             
             //update the value of price to cents
-            if(data.price) data.price = Number(data.price) * 100
-
-            if(data.price &&  existingPlan.price !== data.price && existingPlan.name!=='Free'){
+            if(existingPlan.name!=='Free' && data.price &&  existingPlan.price !== data.price){
+                data.price = Number(data.price) * 100
                 const priceId = await this.stripeService.createPrice(existingPlan.stripeProductId!,data.price)
                 data.stripePriceId = priceId
             }
 
 
             //update the db 
-
             const updatedPlan = await this.planRepository.update(id,data)
             if(!updatedPlan){
                 throw new CustomError('Failed to update plan data',STATUS_CODES.BAD_REQUEST)
