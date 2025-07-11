@@ -50,7 +50,7 @@ router.get('/me',adminAuth,(req,res,next) => {
     const adminAuthController = container.resolve<IAdminAuthController>(Token.AdminAuthController)
     adminAuthController.me(req,res,next)
 })
-router.post('/logout',adminAuth,(req,res,next) => {
+router.post('/logout',(req,res,next) => {
     const adminAuthController = container.resolve<IAdminAuthController>(Token.AdminAuthController)
     adminAuthController.logout(req,res,next)
 })
