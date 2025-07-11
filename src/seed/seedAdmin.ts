@@ -11,13 +11,22 @@ export async function seedAdmin(){
             password:process.env.ADMIN_PASSWORD || "",
         }
 
+        const passwordHasher = container.resolve<IPasswordHasher>('IPasswordHasher')
         const adminExists = await Admin.findOne({email:adminData.email})
+
         if(adminExists){
             console.log("admin already exits")
-            return
+            
+            const passwordMatch = await passwordHasher.comparePasswords(adminData.password,adminExists.password)
+            if(!passwordMatch){
+                const hashedPassword = await passwordHasher.hashPassword(adminData.password)
+                await Admin.findByIdAndUpdate(adminExists.id,{password:hashedPassword})
+                console.log("admin password updated")
+
+                return 
+            }
         }
 
-        const passwordHasher = container.resolve<IPasswordHasher>('IPasswordHasher')
         const hashedPassword = await passwordHasher.hashPassword(adminData.password)
         adminData.password = hashedPassword
 

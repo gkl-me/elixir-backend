@@ -1,10 +1,8 @@
-import Stripe from 'stripe'
 import { Plan } from '../models/Plan'
 import logger from '../middlewares/logger'
 import { container } from 'tsyringe'
 import { IStripeService } from '../utils/interfaces/IStripeService'
 
-const stripe = new Stripe(process.env.STRIPE_KEY||"")
 
 const plans= [
     {
