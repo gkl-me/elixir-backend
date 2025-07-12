@@ -49,7 +49,6 @@ export class PlanService implements IPlanService{
             return adminDtoMapper.toPlanResponseDto(updatedPlan)
 
         } catch (error) {
-            console.log(error)
             if(error instanceof CustomError){
                 throw new CustomError(error.message,error.statusCode)
             }

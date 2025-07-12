@@ -32,15 +32,6 @@ const logger =  createLogger({
     ]
 })
 
-if(process.env.NODE!='production'){
-    logger.add(new transports.Console({
-        level:"error",
-        format: format.combine(
-            format.colorize(),
-            logFormat
-        )
-    }))
-}
 
 
 export default logger;

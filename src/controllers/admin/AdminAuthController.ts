@@ -20,13 +20,20 @@ export class AdminAuthController implements IAdminAuthController {
 
             const {email , password} = req.body;
 
-            const {token,...admin} = await this.adminAuthService.login({email,password})   
+            const {token,adminRefresh,...admin} = await this.adminAuthService.login({email,password})   
 
             res.cookie('token',token,{
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 15 * 60 * 1000,
                 sameSite: 'lax',
+            })
+
+            res.cookie('adminRefresh',adminRefresh,{
+                httpOnly:true,
+                secure:process.env.NODE_ENV === 'production',
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+                sameSite:'lax'
             })
 
             successResponse(res,"Admin Login Succesful",STATUS_CODES.OK,{...admin})
@@ -51,9 +58,31 @@ export class AdminAuthController implements IAdminAuthController {
     async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             res.clearCookie('token')
+            res.clearCookie('adminRefresh')
             successResponse(res,"Admin Logout success",STATUS_CODES.OK,{})
         } catch (error) {
             next(new CustomError('Failed to logout admin',STATUS_CODES.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async refresh(req:Request,res:Response,next:NextFunction): Promise<void> {
+        try {
+
+            const {adminRefresh} = req.cookies
+
+            const {token} = await this.adminAuthService.refreshToken({adminRefresh})
+
+            res.cookie('token',token,{
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 15 * 60 * 1000,
+                sameSite: 'lax',
+            })
+
+            successResponse(res,'Admin Token Refresh Success',STATUS_CODES.OK,{})
+
+        } catch (error) {
+            next(error)
         }
     }
 }

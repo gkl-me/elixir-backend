@@ -6,7 +6,7 @@ import { ITokenManager } from "../../utils/interfaces/ITokenManager";
 import { IAdminAuthService } from "./interfaces/IAdminAuthService";
 import { Token } from "../../di/token";
 import { IPasswordHasher } from "../../utils/interfaces/IPasswordHasher";
-import { AdminAuthDto } from "../../interfaces/dtos/admin/AdminAuthDto";
+import { AdminAuthDto, AdminAuthResponseDto, AdminRefreshTokenDto, AdminRefreshTokenResponseDto } from "../../interfaces/dtos/admin/AdminAuthDto";
 import { Admin } from "../../models/Admin";
 
 @injectable()
@@ -17,10 +17,10 @@ export class AdminAuthService implements IAdminAuthService{
         @inject(Token.PasswordHasher) private passwordHashed:IPasswordHasher
     ){}
 
-    async login(adminAuthData:AdminAuthDto){
+    async login(data:AdminAuthDto):Promise<AdminAuthResponseDto>{
         try {
 
-            const {email,password } = adminAuthData
+            const {email,password } = data
 
             if(( email && !email.trim() ) || (password && !password.trim())){
                 throw new CustomError(ERROR_MESSAGES.INVALID_INPUT, STATUS_CODES.BAD_REQUEST)
@@ -36,9 +36,11 @@ export class AdminAuthService implements IAdminAuthService{
             }
 
             const token = this.tokenManager.generateAccessToken(isAdmin._id as string,'admin')
+            const adminRefresh = this.tokenManager.generateRefreshToken(isAdmin._id as string,'admin')
 
             return {
                 token,
+                adminRefresh,
                 id:isAdmin._id as string,
                 name:isAdmin.name,
                 email:isAdmin.email
@@ -74,6 +76,30 @@ export class AdminAuthService implements IAdminAuthService{
                 throw error
             }
             throw new CustomError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async refreshToken(data:AdminRefreshTokenDto):Promise<AdminRefreshTokenResponseDto>{
+        try {
+
+            const {adminRefresh} = data
+
+            const decoded = this.tokenManager.verifyToken(adminRefresh,"refresh")
+            if(!decoded){
+                throw new CustomError("Unauthorised access login again",STATUS_CODES.UNAUTHORIZED)
+            }
+
+            const token = this.tokenManager.generateAccessToken(decoded.id,decoded.role)
+
+            return {
+                token
+            }
+        } catch (error) {
+            if(error instanceof CustomError){
+                throw error
+            }
+
+            throw new CustomError("Unauthorised access login again",STATUS_CODES.UNAUTHORIZED)
         }
     }
 }
