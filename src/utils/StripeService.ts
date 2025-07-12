@@ -3,6 +3,7 @@ import { injectable } from "tsyringe";
 import { CustomError } from "../errors/CustomError";
 import { STATUS_CODES } from "../constants/statusCodes";
 import { IStripeService } from "./interfaces/IStripeService";
+import logger from "../middlewares/logger";
 
 @injectable()
 export class StripeService implements IStripeService{
@@ -28,6 +29,7 @@ export class StripeService implements IStripeService{
 
             return product.id
         } catch (error) {
+            logger.error(error)
             throw new CustomError('Failed to create stripe product',STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
@@ -44,6 +46,7 @@ export class StripeService implements IStripeService{
             })
             return stripePrice.id
         } catch (error) {
+            logger.error(error)
             throw new CustomError('Failed to create stripe price',STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
@@ -60,6 +63,7 @@ export class StripeService implements IStripeService{
             return productId
 
         } catch (error) {
+            logger.error(error)
             throw new CustomError("Error while find the product",STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
@@ -75,6 +79,7 @@ export class StripeService implements IStripeService{
 
             return latestPrice?.id || null
         } catch (error) {
+            logger.error(error)
             throw new CustomError("Error while find the price",STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }

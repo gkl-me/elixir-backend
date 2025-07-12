@@ -3,6 +3,7 @@ import { IEmailService } from "./interfaces/IEmailService";
 import { CustomError } from "../errors/CustomError";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
 import { STATUS_CODES } from "../constants/statusCodes";
+import logger from "../middlewares/logger";
 
 const resend = new Resend(process.env.RESEND_API!)
 
@@ -24,7 +25,7 @@ export class EmailService implements IEmailService{
             }
 
         } catch (error) {
-            console.log(error,'email service')
+            logger.error(error)
             throw new CustomError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
