@@ -84,6 +84,10 @@ export class AdminAuthService implements IAdminAuthService{
 
             const {adminRefresh} = data
 
+            if(!adminRefresh){
+                throw new CustomError("Unauthorised access login again",STATUS_CODES.UNAUTHORIZED)
+            }
+
             const decoded = this.tokenManager.verifyToken(adminRefresh,"refresh")
             if(!decoded){
                 throw new CustomError("Unauthorised access login again",STATUS_CODES.UNAUTHORIZED)

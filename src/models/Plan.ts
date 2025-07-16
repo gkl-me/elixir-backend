@@ -3,7 +3,7 @@ import { Document, model, Schema } from "mongoose";
 export enum PlanType  {
     'Free'="Free",
     'Pro'='Pro',
-    'Enterprice'='Enterprise'
+    'Enterprice'='Enterpricee'
 }
 
 export interface IPlan extends Document{

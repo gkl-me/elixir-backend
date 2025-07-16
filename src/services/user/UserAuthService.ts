@@ -10,14 +10,17 @@ import { IUserAuthResponseDTO, IUserLoginDTO, IUserRegisterDTO } from "../../int
 import { IUserResponseDTO } from "../../interfaces/dtos/user/UserDTO";
 import { userDtoMapper } from "../../interfaces/mapper/userDtoMapper";
 import { ERROR_MESSAGES } from "../../constants/errorMessages";
+import { inject, injectable } from "tsyringe";
+import { Token } from "../../di/token";
 
+@injectable()
 export class UserAuthService implements IUserAuthService {
 
     constructor(
-        private userRepository:IUserRepository,
-        private passwordHasher:IPasswordHasher,
-        private tokenManager:ITokenManager,
-        private userVerifyService:IUserVerifyService,
+        @inject(Token.UserRepository) private userRepository:IUserRepository,
+        @inject(Token.PasswordHasher) private passwordHasher:IPasswordHasher,
+        @inject(Token.TokenManager) private tokenManager:ITokenManager,
+        @inject(Token.UserVerifyService) private userVerifyService:IUserVerifyService,
     ){}
 
     async registerUser(user:IUserRegisterDTO):Promise<IUserResponseDTO>{
@@ -28,10 +31,8 @@ export class UserAuthService implements IUserAuthService {
             //validate user data using zod
             const validate = UserRegisterSchema.safeParse(user)
             if(!validate.success){
-                if(validate.error){
-                    const errorMessages = validate.error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
-                    throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
-                }
+                const errorMessages = validate.error.errors[0].message
+                throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
             }
 
 
@@ -49,22 +50,22 @@ export class UserAuthService implements IUserAuthService {
 
         } catch (error) {
             if(error instanceof CustomError){
-                throw new CustomError(error.message,error.statusCode)
+                throw error
             }
             throw new CustomError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 
     async loginUser(user:IUserLoginDTO): Promise<IUserAuthResponseDTO>{
+        try {
+
         const {email,password} = user
 
         //validate user data using zod
         const validate = UserLoginSchema.safeParse(user)
         if(!validate.success){
-            if(validate.error){
-                const errorMessages = validate.error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
-                throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
-            }
+            const errorMessages = validate.error.errors[0].message
+            throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
         }
 
         const userFound = await this.userRepository.findByEmail(email)
@@ -95,6 +96,13 @@ export class UserAuthService implements IUserAuthService {
             accessToken,
             refreshToken,
             user:userDtoMapper(userFound)
+        }
+                    
+        } catch (error) {
+            if(error instanceof CustomError){
+                throw error
+            }
+            throw new CustomError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 }

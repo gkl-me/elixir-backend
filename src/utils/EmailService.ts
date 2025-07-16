@@ -4,11 +4,12 @@ import { CustomError } from "../errors/CustomError";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
 import { STATUS_CODES } from "../constants/statusCodes";
 import logger from "../middlewares/logger";
+import { injectable } from "tsyringe";
 
 const resend = new Resend(process.env.RESEND_API!)
 
 
-
+@injectable()
 export class EmailService implements IEmailService{
     async sendEmail(to: string, subject: string, body: string): Promise<void> {
         try {

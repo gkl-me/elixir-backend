@@ -1,3 +1,4 @@
+import { injectable } from "tsyringe";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { CustomError } from "../../errors/CustomError";
 import { IUser, User } from "../../models/User";
@@ -5,6 +6,7 @@ import { BaseRepository } from "../base/BaseRepository";
 import { IUserRepository } from "./interfaces/IUserRepository";
 
 
+@injectable()
 export class UserRepository extends BaseRepository<IUser> implements IUserRepository{
     constructor(){
         super(User)

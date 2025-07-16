@@ -7,6 +7,7 @@ import { errorResponse, successResponse } from "../../helper/responseHanlder";
 import { IAdminAuthController } from "./interface/IAdminAuthController";
 import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
+import { clearCookie, setCookie } from "../../helper/cookiesHelper";
 
 @injectable()
 export class AdminAuthController implements IAdminAuthController {
@@ -22,19 +23,8 @@ export class AdminAuthController implements IAdminAuthController {
 
             const {token,adminRefresh,...admin} = await this.adminAuthService.login({email,password})   
 
-            res.cookie('token',token,{
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 15 * 60 * 1000,
-                sameSite: 'lax',
-            })
-
-            res.cookie('adminRefresh',adminRefresh,{
-                httpOnly:true,
-                secure:process.env.NODE_ENV === 'production',
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-                sameSite:'lax'
-            })
+            setCookie(res,'access',"token",token)
+            setCookie(res,'refresh','adminRefresh',adminRefresh)
 
             successResponse(res,"Admin Login Succesful",STATUS_CODES.OK,{...admin})
             
@@ -57,8 +47,8 @@ export class AdminAuthController implements IAdminAuthController {
 
     async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            res.clearCookie('token')
-            res.clearCookie('adminRefresh')
+            clearCookie(res,'token')
+            clearCookie(res,'adminToken')
             successResponse(res,"Admin Logout success",STATUS_CODES.OK,{})
         } catch (error) {
             next(new CustomError('Failed to logout admin',STATUS_CODES.INTERNAL_SERVER_ERROR))

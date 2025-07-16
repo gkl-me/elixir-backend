@@ -1,17 +1,21 @@
-import { Request, response, Response } from "express";
+import { NextFunction, Request, response, Response } from "express";
 import { IUserAuthService } from "../../services/user/interfaces/IUserAuthService";
 import { IUserAuthController } from "./interface/IUserAuthController";
 import { CustomError } from "../../errors/CustomError";
 import { errorResponse, successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { IUserLoginDTO, IUserRegisterDTO } from "../../interfaces/dtos/user/AuthDTO";
+import { inject, injectable } from "tsyringe";
+import { Token } from "../../di/token";
+import { setCookie } from "../../helper/cookiesHelper";
 
+@injectable()
 export class UserAuthController implements IUserAuthController {
     constructor(
-        private userAuthService: IUserAuthService
+        @inject(Token.UserAuthService) private userAuthService: IUserAuthService
     ){}
 
-    async registerUser(req:Request, res:Response){
+    async registerUser(req:Request, res:Response,next:NextFunction){
         try {
             const { email, password, name }:IUserRegisterDTO = req.body
             
@@ -20,12 +24,11 @@ export class UserAuthController implements IUserAuthController {
             return successResponse(res,"User successfully registered",STATUS_CODES.CREATED,user)
 
         } catch (error) {
-            if(error instanceof CustomError)
-            return errorResponse(res,error.message,error.statusCode)
+           next(error)
         }
     }
 
-    async loginUser(req: Request, res: Response): Promise<void> {
+    async loginUser(req: Request, res: Response,next:NextFunction): Promise<void> {
         try {
             
             const {email,password}:IUserLoginDTO = req.body
@@ -34,19 +37,13 @@ export class UserAuthController implements IUserAuthController {
 
             const {refreshToken,accessToken,user} = authUser
 
-            res.cookie('refreshToken',refreshToken,{
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite:'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            })
+            setCookie(res,'access','accessToken',accessToken)
+            setCookie(res,'refresh','refreshToken',refreshToken)
 
-           return successResponse(res,"User successfully logged in.",STATUS_CODES.OK,{user,accessToken})
+           return successResponse(res,"User successfully logged in.",STATUS_CODES.OK,{user})
 
         } catch (error) {
-            if(error instanceof CustomError){
-                return errorResponse(res,error.message,error.statusCode)
-            }
+            next(error)
         }
     }
 }
