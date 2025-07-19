@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { CustomError } from "../errors/CustomError";
 import { STATUS_CODES } from "../constants/statusCodes";
 import logger from "../middlewares/logger";
+import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../constants/messages";
 
 @injectable()
 export class TokenManager implements ITokenManager{
@@ -15,10 +16,12 @@ export class TokenManager implements ITokenManager{
         const access = process.env.ACCESS_TOKEN_SECRET
         const refresh = process.env.REFRESH_TOKEN_SECRET
         if(!access){
-            throw new CustomError('Token Secrets is missing',STATUS_CODES.INTERNAL_SERVER_ERROR)
+            logger.error('Access token secret env is empty')
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
         if(!refresh){
-            throw new CustomError('Token Secrets is missing',STATUS_CODES.INTERNAL_SERVER_ERROR)
+             logger.error('Refresh token secret env is empty')
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
 
         this.accessSecret = access
@@ -42,7 +45,7 @@ export class TokenManager implements ITokenManager{
             return decoded
         }catch(error){
             logger.error(error)
-            throw new CustomError("Invalid token",STATUS_CODES.UNAUTHORIZED)
+            throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
         }
     }
 }

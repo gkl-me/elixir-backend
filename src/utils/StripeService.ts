@@ -4,23 +4,25 @@ import { CustomError } from "../errors/CustomError";
 import { STATUS_CODES } from "../constants/statusCodes";
 import { IStripeService } from "./interfaces/IStripeService";
 import logger from "../middlewares/logger";
+import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../constants/messages";
 
 @injectable()
 export class StripeService implements IStripeService{
-    private stripe:Stripe
+    private _stripe:Stripe
 
     constructor(){
         const key = process.env.STRIPE_KEY
         if(!key){
-            throw new CustomError('Stripe key is missing',STATUS_CODES.INTERNAL_SERVER_ERROR)
+            logger.error('Stripe key env is empty')
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
 
-        this.stripe = new Stripe(key)
+        this._stripe = new Stripe(key)
     }
 
     async createProduct(planName: string){
         try {
-            const product = await this.stripe.products.create({
+            const product = await this._stripe.products.create({
                 name:planName,
                 metadata:{
                     planName
@@ -30,13 +32,13 @@ export class StripeService implements IStripeService{
             return product.id
         } catch (error) {
             logger.error(error)
-            throw new CustomError('Failed to create stripe product',STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw new CustomError(PLAN_MESSAGES.STRIPE_PRODUCT_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 
     async createPrice(productId: string, price: number): Promise<string> {
         try {
-            const stripePrice = await this.stripe.prices.create({
+            const stripePrice = await this._stripe.prices.create({
                 product:productId,
                 unit_amount:price,
                 currency:'usd',
@@ -47,14 +49,14 @@ export class StripeService implements IStripeService{
             return stripePrice.id
         } catch (error) {
             logger.error(error)
-            throw new CustomError('Failed to create stripe price',STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw new CustomError(PLAN_MESSAGES.STRIPE_PRICE_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 
     async findProduct(planName: string): Promise<string | null> {
         try {
 
-            const products = await this.stripe.products.list({
+            const products = await this._stripe.products.list({
                 limit:100
             })
 
@@ -64,13 +66,13 @@ export class StripeService implements IStripeService{
 
         } catch (error) {
             logger.error(error)
-            throw new CustomError("Error while find the product",STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw new CustomError(PLAN_MESSAGES.STRIPE_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 
     async findLatestPrice(productId: string): Promise<string | null> {
         try {
-            const prices = await this.stripe.prices.list({
+            const prices = await this._stripe.prices.list({
                 product:productId,
                 limit:100,
             })
@@ -80,7 +82,7 @@ export class StripeService implements IStripeService{
             return latestPrice?.id || null
         } catch (error) {
             logger.error(error)
-            throw new CustomError("Error while find the price",STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw new CustomError(PLAN_MESSAGES.STRIPE_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 }
