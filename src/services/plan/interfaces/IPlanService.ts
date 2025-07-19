@@ -1,4 +1,4 @@
-import { PlanResponseDto, updatePlanDto } from "../../../interfaces/dtos/admin/PlanDto";
+import { PlanResponseDto, updatePlanDto } from "../../../interfaces/dtos/PlanDto";
 
 
 export interface IPlanService{

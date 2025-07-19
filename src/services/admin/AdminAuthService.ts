@@ -1,20 +1,20 @@
 import { inject, injectable } from "tsyringe";
-import { ERROR_MESSAGES } from "../../constants/errorMessages";
+import { CONSTANT_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { CustomError } from "../../errors/CustomError";
 import { ITokenManager } from "../../utils/interfaces/ITokenManager";
 import { IAdminAuthService } from "./interfaces/IAdminAuthService";
 import { Token } from "../../di/token";
 import { IPasswordHasher } from "../../utils/interfaces/IPasswordHasher";
-import { AdminAuthDto, AdminAuthResponseDto, AdminRefreshTokenDto, AdminRefreshTokenResponseDto } from "../../interfaces/dtos/admin/AdminAuthDto";
+import { AdminAuthDto, AdminAuthResponseDto, AdminRefreshTokenDto, AdminRefreshTokenResponseDto } from "../../interfaces/dtos/AdminDto";
 import { Admin } from "../../models/Admin";
 
 @injectable()
 export class AdminAuthService implements IAdminAuthService{
 
     constructor(
-        @inject(Token.TokenManager) private tokenManager: ITokenManager,
-        @inject(Token.PasswordHasher) private passwordHashed:IPasswordHasher
+        @inject(Token.TokenManager) private _tokenManager: ITokenManager,
+        @inject(Token.PasswordHasher) private _passwordHashed:IPasswordHasher
     ){}
 
     async login(data:AdminAuthDto):Promise<AdminAuthResponseDto>{
@@ -23,20 +23,20 @@ export class AdminAuthService implements IAdminAuthService{
             const {email,password } = data
 
             if(( email && !email.trim() ) || (password && !password.trim())){
-                throw new CustomError(ERROR_MESSAGES.INVALID_INPUT, STATUS_CODES.BAD_REQUEST)
+                throw new CustomError(CONSTANT_MESSAGES.INVALID_INPUT, STATUS_CODES.BAD_REQUEST)
             }
 
             const isAdmin = await Admin.findOne({email})
             if(!isAdmin){
-                throw new CustomError("Invalid email or password ",STATUS_CODES.BAD_REQUEST)
+                throw new CustomError(CONSTANT_MESSAGES.INVALID_CREDENTIALS,STATUS_CODES.BAD_REQUEST)
             }
-            const passwordMatch = await this.passwordHashed.comparePasswords(password,isAdmin.password)
+            const passwordMatch = await this._passwordHashed.comparePasswords(password,isAdmin.password)
             if(!passwordMatch){
-                throw new CustomError("Invalid email or password",STATUS_CODES.BAD_REQUEST)
+                throw new CustomError(CONSTANT_MESSAGES.INVALID_CREDENTIALS,STATUS_CODES.BAD_REQUEST)
             }
 
-            const token = this.tokenManager.generateAccessToken(isAdmin._id as string,'admin')
-            const adminRefresh = this.tokenManager.generateRefreshToken(isAdmin._id as string,'admin')
+            const token = this._tokenManager.generateAccessToken(isAdmin._id as string,'admin')
+            const adminRefresh = this._tokenManager.generateRefreshToken(isAdmin._id as string,'admin')
 
             return {
                 token,
@@ -50,7 +50,7 @@ export class AdminAuthService implements IAdminAuthService{
             if(error instanceof CustomError){
                 throw error
             }
-            throw new CustomError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
         
     }
@@ -59,12 +59,12 @@ export class AdminAuthService implements IAdminAuthService{
         try {
             
             if(!id){
-                throw new CustomError("Unathorized access login again",STATUS_CODES.UNAUTHORIZED)
+                throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
             }
 
             const isAdmin = await Admin.findById(id)
             if(!isAdmin){
-                throw new CustomError("Unathorized access login again",STATUS_CODES.UNAUTHORIZED)
+                throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
             }
             return {
                 id:isAdmin._id as string,
@@ -75,7 +75,7 @@ export class AdminAuthService implements IAdminAuthService{
             if(error instanceof CustomError){
                 throw error
             }
-            throw new CustomError(ERROR_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 
@@ -85,15 +85,15 @@ export class AdminAuthService implements IAdminAuthService{
             const {adminRefresh} = data
 
             if(!adminRefresh){
-                throw new CustomError("Unauthorised access login again",STATUS_CODES.UNAUTHORIZED)
+                throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
             }
 
-            const decoded = this.tokenManager.verifyToken(adminRefresh,"refresh")
+            const decoded = this._tokenManager.verifyToken(adminRefresh,"refresh")
             if(!decoded){
-                throw new CustomError("Unauthorised access login again",STATUS_CODES.UNAUTHORIZED)
+                throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
             }
 
-            const token = this.tokenManager.generateAccessToken(decoded.id,decoded.role)
+            const token = this._tokenManager.generateAccessToken(decoded.id,decoded.role)
 
             return {
                 token
@@ -103,7 +103,7 @@ export class AdminAuthService implements IAdminAuthService{
                 throw error
             }
 
-            throw new CustomError("Unauthorised access login again",STATUS_CODES.UNAUTHORIZED)
+            throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
         }
     }
 }
