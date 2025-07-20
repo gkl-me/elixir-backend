@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 
-export interface IUserAuthController {
+export interface IAuthController {
     registerUser(req:Request,res:Response,next:NextFunction):Promise<void>,
     loginUser(req:Request,res:Response,next:NextFunction):Promise<void>
+    verifyUser(req: Request, res: Response,next:NextFunction): Promise<void>
+
 }

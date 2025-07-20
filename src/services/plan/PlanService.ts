@@ -5,7 +5,7 @@ import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanReposit
 import { updatePlanDto } from "../../interfaces/dtos/PlanDto";
 import { CustomError } from "../../errors/CustomError";
 import { STATUS_CODES } from "../../constants/statusCodes";
-import { UpdatePlanSchema } from "../../validator/admin/PlanSchema";
+import { UpdatePlanSchema } from "../../validator/PlanSchema";
 import { IStripeService } from "../../utils/interfaces/IStripeService";
 import { adminDtoMapper } from "../../interfaces/mapper/adminDtoMapper";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../../constants/messages";

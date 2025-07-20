@@ -1,4 +1,4 @@
-import { IPlan } from "../../../models/Plan";
+import { IPlan } from "../../models/Plan";
 
 export interface updatePlanDto{
     id:string,

@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 import 'reflect-metadata'
-import './di/container'
+import './di'
 import userRoutes from './routes/userRoutes'
 import connectDB from './config/db';
 import { errorHandler } from './middlewares/errorHandler';

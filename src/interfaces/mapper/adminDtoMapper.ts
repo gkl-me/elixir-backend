@@ -1,5 +1,5 @@
 import { IPlan } from "../../models/Plan";
-import { PlanResponseDto } from "../dtos/admin/PlanDto";
+import { PlanResponseDto } from "../dtos/PlanDto";
 
 
 export class adminDtoMapper{

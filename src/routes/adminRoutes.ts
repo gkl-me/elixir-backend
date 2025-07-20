@@ -1,14 +1,4 @@
 import { Router } from "express";
-import { TokenManager } from "../utils/TokenManager";
-import { AdminAuthService } from "../services/admin/AdminAuthService";
-import { AdminAuthController } from "../controllers/admin/AdminAuthController";
-import { SubscriptionRepository } from "../repositories/admin/SubscriptionRepository";
-import { SubscriptionManager } from "../services/admin/SubscriptionManager";
-import { SubscriptionController } from "../controllers/admin/SubscriptionController";
-import { auth } from "../middlewares/authMiddleware";
-import { UserRepository } from "../repositories/user/UserRepository";
-import { AdminUserManagementService } from "../services/admin/AdminUserManagementService";
-import { AdminUserController } from "../controllers/admin/AdminUserController";
 import { container } from "tsyringe";
 import { Token } from "../di/token";
 import { IAdminAuthController } from "../controllers/admin/interface/IAdminAuthController";

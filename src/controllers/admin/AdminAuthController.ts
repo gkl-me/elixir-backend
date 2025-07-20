@@ -1,6 +1,6 @@
 import { NextFunction, Request, response, Response } from "express";
 import { CustomError } from "../../errors/CustomError";
-import { ERROR_MESSAGES } from "../../constants/errorMessages";
+import { ADMIN_MESSAGES, CONSTANT_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { IAdminAuthService } from "../../services/admin/interfaces/IAdminAuthService";
 import { errorResponse, successResponse } from "../../helper/responseHanlder";
@@ -13,7 +13,7 @@ import { clearCookie, setCookie } from "../../helper/cookiesHelper";
 export class AdminAuthController implements IAdminAuthController {
 
     constructor(
-        @inject(Token.AdminAuthService) private adminAuthService:IAdminAuthService
+        @inject(Token.AdminAuthService) private _adminAuthService:IAdminAuthService
     ){}
 
     async login(req:Request,res:Response,next:NextFunction) {
@@ -21,12 +21,12 @@ export class AdminAuthController implements IAdminAuthController {
 
             const {email , password} = req.body;
 
-            const {token,adminRefresh,...admin} = await this.adminAuthService.login({email,password})   
+            const {token,adminRefresh,...admin} = await this._adminAuthService.login({email,password})   
 
             setCookie(res,'access',"token",token)
             setCookie(res,'refresh','adminRefresh',adminRefresh)
 
-            successResponse(res,"Admin Login Succesful",STATUS_CODES.OK,{...admin})
+            successResponse(res,ADMIN_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{...admin})
             
         } catch (error) {
             next(error)
@@ -37,8 +37,8 @@ export class AdminAuthController implements IAdminAuthController {
         try {
             
             const {id} = req.admin!
-            const admin = await this.adminAuthService.me(id)
-            successResponse(res,"Admin details fetched",STATUS_CODES.OK,admin)
+            const admin = await this._adminAuthService.me(id)
+            successResponse(res,ADMIN_MESSAGES.FETCH_SUCCESS,STATUS_CODES.OK,admin)
 
         } catch (error) {
             next(error)
@@ -48,10 +48,10 @@ export class AdminAuthController implements IAdminAuthController {
     async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             clearCookie(res,'token')
-            clearCookie(res,'adminToken')
-            successResponse(res,"Admin Logout success",STATUS_CODES.OK,{})
+            clearCookie(res,'adminRefresh')
+            successResponse(res,ADMIN_MESSAGES.LOGOUT_SUCCESS,STATUS_CODES.OK,{})
         } catch (error) {
-            next(new CustomError('Failed to logout admin',STATUS_CODES.INTERNAL_SERVER_ERROR))
+            next(new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR))
         }
     }
 
@@ -60,18 +60,15 @@ export class AdminAuthController implements IAdminAuthController {
 
             const {adminRefresh} = req.cookies
 
-            const {token} = await this.adminAuthService.refreshToken({adminRefresh})
+            const {token} = await this._adminAuthService.refreshToken({adminRefresh})
 
-            res.cookie('token',token,{
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 15 * 60 * 1000,
-                sameSite: 'lax',
-            })
+            setCookie(res,'access','token',token)
 
-            successResponse(res,'Admin Token Refresh Success',STATUS_CODES.OK,{})
+            successResponse(res,ADMIN_MESSAGES.REFRESH_SUCCESS,STATUS_CODES.OK,{})
 
         } catch (error) {
+            clearCookie(res,"token")
+            clearCookie(res,"adminRefresh",)
             next(error)
         }
     }

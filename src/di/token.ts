@@ -6,15 +6,15 @@ export enum Token  {
     EmailService='IEmailService',
     StripeService="IStripeService",
     
-    AdminAuthService="IAdminAuthService",
-    AdminAuthController="IAdminAuthController",
     PlanRepository='IPlanRepository',
-    PlanService='IPlanService',
-    PlanController='IPlanController',
-
     UserRepository='IUserRepository',
-    UserVerifyService='IUserVerifyService',
-    UserAuthService='IUserAuthService',
-    UserAuthController='IUserAuthController',
-    UserVerifyController='IUserVerifyController'
+    
+    AdminAuthService="IAdminAuthService",
+    PlanService='IPlanService',
+    AuthService='IAuthService',
+
+    AdminAuthController="IAdminAuthController",
+    PlanController='IPlanController',
+    AuthController='IAuthController',
+    
 }

@@ -4,7 +4,7 @@ import { IUserRepository } from "../../repositories/user/interfaces/IUserReposit
 import { IPasswordHasher } from "../../utils/interfaces/IPasswordHasher";
 import { ITokenManager } from "../../utils/interfaces/ITokenManager";
 import { IAuthService} from "./interfaces/IAuthService";
-import { UserLoginSchema,UserRegisterSchema}  from '../../validator/user/UserAuthSchema'
+import { LoginSchema, RegisterSchema}  from '../../validator/AuthSchema'
 import { IAuthResponseDTO, ILoginDTO, IRegisterDTO, IVerifyDTO, IVerifyEmailDTO, } from "../../interfaces/dtos/AuthDTO";
 import { authDtoMapper } from "../../interfaces/mapper/authDtoMapper";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES, } from "../../constants/messages";
@@ -15,7 +15,7 @@ import { ENV } from "../../constants/env";
 import { VERIFY_EMAIL_TEMPLATE } from "../../constants/template";
 
 @injectable()
-export class UserAuthService implements IAuthService {
+export class AuthService implements IAuthService {
 
     constructor(
         @inject(Token.UserRepository) private _userRepository:IUserRepository,
@@ -30,7 +30,7 @@ export class UserAuthService implements IAuthService {
         try {
 
             //validate user data using zod
-            const validate = UserRegisterSchema.safeParse(user)
+            const validate = RegisterSchema.safeParse(user)
             if(!validate.success){
                 const errorMessages = validate.error.errors[0].message
                 throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
@@ -66,7 +66,7 @@ export class UserAuthService implements IAuthService {
         const {email,password} = user
 
         //validate user data using zod
-        const validate = UserLoginSchema.safeParse(user)
+        const validate = LoginSchema.safeParse(user)
         if(!validate.success){
             const errorMessages = validate.error.errors[0].message
             throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
