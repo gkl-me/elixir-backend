@@ -17,16 +17,19 @@ export enum CONSTANT_MESSAGES {
 export enum AUTH_MESSAGES {
     ALREADY_EXITS="Email already exists please login",
     BLOCKED="Blocked by admin",
-    VERIFY_ERROR="Please verify your email",
+    VERIFY_ERROR="User not verified, Verifcation email sent",
     NOT_FOUND='User not found Signup',
     TOKEN_ERROR="Token not found",
+    GOOGLE_AUTH='Please Login with google'
 }
 
 export enum USER_MESSAGES {
     LOGIN_SUCCESS='User successfully logged in',
     LOGOUT_SUCCESS='User logout success',
     VERIFY_USER='User successfully verified',
-    REGISTER_USER='Verification mail has been sent'
+    REGISTER_USER='Verification mail has been sent',
+    FETCH_SUCCESS='User details fetched successfully',
+    TOGGLE_SUCCESS='User status changed successfully'
 }
 
 
@@ -43,5 +46,8 @@ export enum PLAN_MESSAGES {
     STRIPE_PRICE_ERROR="Failed to create stripe price",
     STRIPE_ERROR="Failed to get details from stripe",
     FETCH_SUCCESS="Plans details fetched",
-    UPDATE_SUCCESS="Plan successfully updated"
+    UPDATE_SUCCESS="Plan successfully updated",
+    ERROR="Failed to subscripe to the plan",
+    STRIPE_SUBSCRIPTION_ERROR='failed to create stripe subscription',
+    
 }

@@ -12,7 +12,8 @@ import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
 import { IEmailService } from "../../utils/interfaces/IEmailService";
 import { ENV } from "../../constants/env";
-import { VERIFY_EMAIL_TEMPLATE } from "../../constants/template";
+import { VERIFY_EMAIL_TEMPLATE } from "../../constants/templates/template";
+import { IGoogleAuthDto } from "../../interfaces/dtos/AdminDto";
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -41,14 +42,24 @@ export class AuthService implements IAuthService {
 
             //check if user already exists
             const existingUser = await this._userRepository.findByEmail(email)
-            if(existingUser) throw new CustomError(AUTH_MESSAGES.ALREADY_EXITS, STATUS_CODES.CONFLICT)
+            if(existingUser?.isVerified) throw new CustomError(AUTH_MESSAGES.ALREADY_EXITS, STATUS_CODES.CONFLICT)
+            
+            let userToVerify;
 
-            const newUser = await this._userRepository.create({name,email,password:hashedPassword})
+            if(existingUser && !existingUser.isVerified){
+                existingUser.name = name,
+                existingUser.email = email,
+                existingUser.password = hashedPassword
+                userToVerify = await existingUser.save()
+            }else{
+                userToVerify= await this._userRepository.create({name,email,password:hashedPassword})
+            }
+
 
             await this.sendVerificationEmail(
                 {
-                    email:newUser.email, 
-                    userId:newUser.id
+                    email:userToVerify.email, 
+                    userId:String(userToVerify._id)
                 })
 
 
@@ -79,7 +90,9 @@ export class AuthService implements IAuthService {
 
         //check if the user is verified
         if(!userFound?.isVerified){
-            throw new CustomError(AUTH_MESSAGES.VERIFY_ERROR, STATUS_CODES.UNAUTHORIZED)
+            await this.sendVerificationEmail({email:userFound?.email,userId:userFound?._id as string})
+            throw new CustomError(AUTH_MESSAGES.VERIFY_ERROR,  STATUS_CODES.FORBIDDEN)
+
         }
 
 
@@ -88,22 +101,18 @@ export class AuthService implements IAuthService {
             throw new CustomError(AUTH_MESSAGES.BLOCKED, STATUS_CODES.FORBIDDEN)
         }
 
+        if(userFound?.googleId || !userFound.password){
+            throw new CustomError(AUTH_MESSAGES.GOOGLE_AUTH,STATUS_CODES.BAD_REQUEST)
+        }
+
         //check if the password is correct
         const isMatch = await this._passwordHasher.comparePasswords(password, userFound.password)
         
-        if(!isMatch) throw new CustomError(CONSTANT_MESSAGES.INVALID_CREDENTIALS,STATUS_CODES.UNAUTHORIZED)
-
-        //role of user
-        const role = userFound.userType
-        
-        const accessToken = this._tokenManager.generateAccessToken(userFound._id as string,role)
-        const refreshToken = this._tokenManager.generateRefreshToken(userFound._id as string,role)
+        if(!isMatch) throw new CustomError(CONSTANT_MESSAGES.INVALID_CREDENTIALS,STATUS_CODES.BAD_REQUEST)
 
         const resDto = authDtoMapper.toAuthResponse(userFound)
 
         return {
-            accessToken,
-            refreshToken,
             ...resDto
         }
                     
@@ -121,7 +130,7 @@ export class AuthService implements IAuthService {
             const {email,userId} = data
 
             const verificationToken = this._tokenManager.generateAccessToken(userId,'user')
-            const verificationUrl = `${ENV.CLIENT_URL}/verify?token=${verificationToken}`
+            const verificationUrl = `${ENV.CLIENT_URL}/verify/${verificationToken}`
             
             await this._emailService.sendEmail(email,"Verify your email",VERIFY_EMAIL_TEMPLATE(verificationUrl))  
 
@@ -140,10 +149,10 @@ export class AuthService implements IAuthService {
             const {token} = data
 
             if(!token){
-                throw new CustomError(AUTH_MESSAGES.TOKEN_ERROR,STATUS_CODES.UNAUTHORIZED)
+                throw new CustomError(AUTH_MESSAGES.TOKEN_ERROR,STATUS_CODES.BAD_REQUEST)
             }
 
-            const {id} = await this._tokenManager.verifyToken(token,'access')
+            const {id} = this._tokenManager.decodeToken(token)
 
             const user = await this._userRepository.findById(id)
             if(!user){
@@ -161,6 +170,34 @@ export class AuthService implements IAuthService {
         }
 
 
+    }
+
+    async googleAuth(data: IGoogleAuthDto): Promise<IAuthResponseDTO> {
+        try {
+            
+            const {name,email,googleId,image} = data
+
+            const userFound = await this._userRepository.findByEmail(email)
+            let user;
+            if(!userFound){
+                user = await this._userRepository.create({
+                    name,
+                    email,
+                    googleId,
+                    image,
+                    isVerified:true
+                })
+            }
+
+            if(userFound) return authDtoMapper.toAuthResponse(userFound)
+            if(user) return authDtoMapper.toAuthResponse(user)
+
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR, STATUS_CODES.INTERNAL_SERVER_ERROR);
+
+        } catch (error) {
+            if(error instanceof CustomError) throw error
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
     }
 
 }

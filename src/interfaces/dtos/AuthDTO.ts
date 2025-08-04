@@ -14,11 +14,10 @@ export interface ILoginDTO{
 
 
 export interface IAuthResponseDTO{
-    accessToken:string,
-    refreshToken:string,
     id:string,
     email:string,
     name:string,
+    role:string
 }
 
 
