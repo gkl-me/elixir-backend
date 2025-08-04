@@ -1,5 +1,7 @@
 import { IPlan } from "../../models/Plan";
+import { IUser, User } from "../../models/User";
 import { PlanResponseDto } from "../dtos/PlanDto";
+import { UserListDto } from "../dtos/UserDTo";
 
 
 export class adminDtoMapper{
@@ -16,6 +18,15 @@ export class adminDtoMapper{
             },
             isActive:plan.isActive,
 
+        }
+    }
+
+    static toUserListDto(user:IUser):UserListDto{
+        return {
+            id:user._id as string,
+            name:user.name,
+            email:user.email,
+            isBlocked:user.isBlocked
         }
     }
 
