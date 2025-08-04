@@ -1,8 +1,10 @@
 import { container } from "tsyringe"
 import { Token } from "../token"
 import { AdminAuthController } from "../../controllers/admin/AdminAuthController"
-import { PlanController } from "../../controllers/admin/PlanController"
+import { PlanController } from "../../controllers/plan/PlanController"
 import { AuthController } from "../../controllers/auth/AuthController"
+import { SubscriptionController } from "../../controllers/subscription/SubscriptionController"
+import { UserController } from "../../controllers/user/UserController"
 
 //admin controller
 container.register(Token.AdminAuthController,{
@@ -15,4 +17,10 @@ container.register(Token.PlanController,{
 //user controller
 container.register(Token.AuthController,{
     useClass:AuthController
+})
+container.register(Token.SubscriptionController,{
+    useClass:SubscriptionController
+})
+container.register(Token.UserController,{
+    useClass:UserController  
 })

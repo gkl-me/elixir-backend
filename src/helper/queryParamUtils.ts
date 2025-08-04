@@ -1,4 +1,3 @@
-
 import {ParsedQs} from 'qs'
 
 export function extractStringQueryParams<T extends string>(

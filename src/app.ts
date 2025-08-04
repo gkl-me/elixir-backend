@@ -19,12 +19,13 @@ import { swaggerSpec } from './docs/swagger';
 import mongoose from 'mongoose';
 import { STATUS_CODES } from './constants/statusCodes';
 import { seedPlan } from './seed/seedPlan';
+import { ENV } from './constants/env';
  
 
 const app = express();
 
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: ENV.CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
 }))

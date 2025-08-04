@@ -12,9 +12,13 @@ export enum Token  {
     AdminAuthService="IAdminAuthService",
     PlanService='IPlanService',
     AuthService='IAuthService',
+    SubscriptionService='ISubscriptionService',
+    UserService='IUserService',
 
     AdminAuthController="IAdminAuthController",
     PlanController='IPlanController',
     AuthController='IAuthController',
+    SubscriptionController='ISubscriptionController',
+    UserController='IUserController'
     
 }

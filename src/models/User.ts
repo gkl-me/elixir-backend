@@ -1,24 +1,26 @@
 import { Document, model, Schema } from "mongoose";
 import { PlanType } from "./Plan";
+import { string } from "zod";
 
 export enum UserType{
-    INDIVIDUAL='individual',
+    USER='user',
     COMPANY='company'
 }
 
 export interface IUser extends Document{
     name:string,
     email:string,
-    password:string,
+    password?:string,
     isVerified:boolean
     isBlocked:boolean
     createdAt?:Date
-    updatedAt?:Date
-    plan:PlanType,
-    userType:UserType
+    updatedAt?:Date,
+    role:UserType
     workSpaceId:string
     companyId:string
-    
+    stripeCustomerId:string
+    googleId?:string
+    image?:string
 }
 
 const UserSchema = new Schema({
@@ -41,20 +43,25 @@ const UserSchema = new Schema({
     },
     password:{
         type:String,
-        required:true
     },
-    plan:{
+    role:{
         type:String,
-        enum:['Free','Pro','Enterprice']
-    },
-    userType:{
-        type:String,
-        enum:['individual','company']
+        default:'user',
+        enum:['user','company']
     },
     workSpaceId:{
         type:String
     },
     companyId:{
+        type:String
+    },
+    stripeCustomerId:{
+        type:String,
+    },
+    googleId:{
+        type:String,
+    },
+    image:{
         type:String
     }
 },{
