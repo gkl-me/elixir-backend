@@ -2,8 +2,9 @@ import { Router } from "express";
 import { container } from "tsyringe";
 import { Token } from "../di/token";
 import { IAdminAuthController } from "../controllers/admin/interface/IAdminAuthController";
-import { IPlanController } from "../controllers/admin/interface/IPlanController";
+import { IPlanController } from "../controllers/plan/interface/IPlanController";
 import { adminAuth } from "../middlewares/adminAuthMiddleware";
+import { IUserController } from "../controllers/user/interface/IUserController";
 
 
 
@@ -60,16 +61,15 @@ router.get('/plans',adminAuth,(req,res,next) => {
 })
 
 
-//user managemen
-
-// router.get('/users',auth,adminUserController.getAllUsers.bind(adminUserController))
-// router.patch('/users/:userId/block',auth,adminUserController.blockUser.bind(adminUserController))
-
-// // subscriptions
-// router.post('/subscription',auth,subscriptionController.createSubscription.bind(subscriptionController))
-// router.get('/subscription',auth,subscriptionController.getAllSubscriptions.bind(subscriptionController))
-// router.put('/subscription/:id',auth,subscriptionController.updateSubscription.bind(subscriptionController))
-// router.delete('/subscription/:id',auth,subscriptionController.deleteSubscription.bind(subscriptionController))
+//user management
+router.get('/users',adminAuth,(req,res,next) => {
+    const userController = container.resolve<IUserController>(Token.UserController)
+    userController.getAllUsers(req,res,next)
+})
+router.patch('/users/:id/toggle-block',adminAuth,(req,res,next) => {
+    const userController = container.resolve<IUserController>(Token.UserController)
+    userController.toggleBlockStatus(req,res,next)
+})
 
 
 export default router;

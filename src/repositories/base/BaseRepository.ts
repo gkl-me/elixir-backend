@@ -36,6 +36,8 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T>{
 
             if(options?.sort){
                 allData = allData.sort(options.sort)
+            }else{
+                allData = allData.sort({"createdAt":-1})
             }
 
             if(options?.limit){
