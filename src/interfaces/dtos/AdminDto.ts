@@ -26,3 +26,11 @@ export interface AdminRefreshTokenDto{
 export interface AdminRefreshTokenResponseDto{
     token:string
 }
+
+
+export interface IGoogleAuthDto{
+    name:string,
+    email:string,
+    googleId:string,
+    image:string
+}

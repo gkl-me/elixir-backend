@@ -30,7 +30,7 @@ export class EmailService implements IEmailService{
                 from:process.env.RESEND_FROM!,
                 to,
                 subject,
-                text: body,
+                html: body,
             })
 
             if(error){
