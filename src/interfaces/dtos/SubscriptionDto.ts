@@ -2,7 +2,9 @@ import { SUBSCRIBTION_STATUS } from "../../models/Subscription"
 
 export interface ICreateCheckoutDto{
     stripeCustomerId:string,
-    stripePriceId:string
+    stripePriceId:string,
+    userId:string,
+    planId:string
 }
 
 
@@ -41,5 +43,26 @@ export interface IfindUserSubscriptionDto{
 
 export interface IfindUserSubscriptionResponseDto{
     subscriptionId:string,
-    subscriptionStatus:SUBSCRIBTION_STATUS
+    subscriptionStatus:SUBSCRIBTION_STATUS,
+    invoiceUrl?:string
+}
+
+
+export interface ICheckoutCompleteDto{
+    metadata?:StripeCheckOutMetadata|null
+    stripeSubscriptionId?:string
+}
+
+export interface StripeCheckOutMetadata{
+    userId?:string,
+    planId?:string
+}
+
+export interface IHandlePaymentSuccessDto{
+    subId:string|null
+}
+
+export interface IHandlePaymentFailureDto{
+    subId:string|null
+    invoiceUrl:string|null
 }

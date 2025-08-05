@@ -102,40 +102,7 @@ export class StripeService implements IStripeService{
         }
     }
 
-    async createSubscription(customerId: string, priceId: string): Promise<{ subscriptionId: string; clientSecret: string; } | null> {
-        try {
-
-            const subscription = await this._stripe.subscriptions.create({
-                customer:customerId,
-                items:[{
-                    price:priceId,
-                }],
-                payment_behavior:'default_incomplete',
-                expand:['latest_invoice.confirmation_secret']
-            })
-
-            interface InvoiceType extends Stripe.Invoice{
-                confirmation_secret:{
-                    client_secret:string
-                    type:string
-                }
-            }
-
-            const invoice = subscription.latest_invoice as InvoiceType
-            
-
-            return  {
-                subscriptionId:subscription.id,
-                clientSecret:invoice.confirmation_secret.client_secret
-            }
-
-        } catch (error) {
-            logger.error(error)
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
-        }
-    }
-
-    async createCheckoutSession(customerId: string, priceId: string): Promise<{ sessionId: string; checkoutUrl: string; }> {
+    async createCheckoutSession(customerId: string, priceId: string,userId:string,planId:string): Promise<{ sessionId: string; checkoutUrl: string; }> {
         try {
             
             const session = await this._stripe.checkout.sessions.create({
@@ -147,7 +114,11 @@ export class StripeService implements IStripeService{
                     quantity:1
                 }],
                 success_url:`${ENV.CLIENT_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url:`${ENV.CLIENT_URL}/subscription/cancel`
+                cancel_url:`${ENV.CLIENT_URL}/subscription/cancel`,
+                metadata:{
+                    userId,
+                    planId
+                }
             })
 
             //maybe add metadata for future user

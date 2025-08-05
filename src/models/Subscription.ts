@@ -4,7 +4,8 @@ export enum SUBSCRIBTION_STATUS{
     INCOMPLETE='incomplete',
     ACTIVE='active',
     OVERDUE='overdue',
-    CANCELED='canceled'
+    CANCELED='canceled',
+    PENDING='pending'
 }
 
 export interface ISubscription extends Document{
@@ -15,6 +16,7 @@ export interface ISubscription extends Document{
     status:SUBSCRIBTION_STATUS,
     current_period_start?:Date,
     current_period_end?:Date,
+    invoiceUrl?:string,
     createdAt:Date,
     updatedAt:Date
 }
@@ -37,7 +39,7 @@ const SubscriptionSchema  = new Schema({
     },
     status:{
         type:String,
-        enum:['incomplete','active','canceled','overdue'],
+        enum:['incomplete','active','canceled','overdue','pending'],
         default:'incomplete'
     },
     current_period_start:{
@@ -45,6 +47,9 @@ const SubscriptionSchema  = new Schema({
     },
     current_period_end:{
         type:Date
+    },
+    invoiceUrl:{
+        type:String
     }
 },{
     timestamps:true

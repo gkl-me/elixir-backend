@@ -31,6 +31,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
 }))
 
+//webhooks
+app.use('/webhook',webhookRoutes)
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
@@ -41,8 +43,7 @@ app.use(morganMiddleware)
 app.use('/api/v1/user',userRoutes) 
 app.use('/api/v1/admin',adminRoutes)
 
-//webhooks
-app.use('/webhook',webhookRoutes)
+
 
 //swagger api docs
 app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))

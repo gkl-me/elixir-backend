@@ -5,6 +5,7 @@ import { PlanService } from "../../services/plan/PlanService"
 import { AuthService } from "../../services/auth/AuthService"
 import { SubscriptionService } from "../../services/subscription/SubscriptionService"
 import { UserService } from "../../services/user/UserService"
+import { StripeWebhookService } from "../../services/webhook/StripeWebhookService"
 
 //services
 container.register(Token.AdminAuthService,{
@@ -21,4 +22,7 @@ container.register(Token.SubscriptionService,{
 })
 container.register(Token.UserService,{
     useClass:UserService
+})
+container.register(Token.StripeWebhookService,{
+    useClass:StripeWebhookService
 })

@@ -15,11 +15,12 @@ export enum Token  {
     AuthService='IAuthService',
     SubscriptionService='ISubscriptionService',
     UserService='IUserService',
+    StripeWebhookService='IStripeWebhookService',
 
     AdminAuthController="IAdminAuthController",
     PlanController='IPlanController',
     AuthController='IAuthController',
     SubscriptionController='ISubscriptionController',
-    UserController='IUserController'
-    
+    UserController='IUserController',
+    StripeWebhookController='IStripeWebhookController'
 }

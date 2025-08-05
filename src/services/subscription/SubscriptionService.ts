@@ -5,7 +5,7 @@ import { IUserRepository } from "../../repositories/user/interfaces/IUserReposit
 import { CustomError } from "../../errors/CustomError";
 import { CONSTANT_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
-import { ICreateCheckoutDto, ICreateCheckoutResponseDto, ICreateStripCustomerDto, ICreateStripeCustomerResponseDto, ICreateSubscriptionDto, ICreateSubscriptionResponseDto, IfindUserSubscriptionDto, IfindUserSubscriptionResponseDto } from "../../interfaces/dtos/SubscriptionDto";
+import { ICheckoutCompleteDto, ICreateCheckoutDto, ICreateCheckoutResponseDto, ICreateStripCustomerDto, ICreateStripeCustomerResponseDto, ICreateSubscriptionDto, ICreateSubscriptionResponseDto, IfindUserSubscriptionDto, IfindUserSubscriptionResponseDto, IHandlePaymentFailureDto, IHandlePaymentSuccessDto } from "../../interfaces/dtos/SubscriptionDto";
 import { ISubscriptionService } from "./interface/ISubscriptionService";
 import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
 import logger from "../../middlewares/logger";
@@ -28,9 +28,9 @@ export class SubscriptionService implements ISubscriptionService{
     async createCheckout(data:ICreateCheckoutDto):Promise<ICreateCheckoutResponseDto> {
         try {
             
-            const {stripePriceId,stripeCustomerId} = data
+            const {stripePriceId,stripeCustomerId,userId,planId} = data
 
-            const checkoutSession = await this._stripeService.createCheckoutSession(stripeCustomerId,stripePriceId)
+            const checkoutSession = await this._stripeService.createCheckoutSession(stripeCustomerId,stripePriceId,userId,planId)
 
             return {
                 ...checkoutSession
@@ -59,13 +59,26 @@ export class SubscriptionService implements ISubscriptionService{
 
             if(selectedPlan.name==PlanType.Free){
 
-                const subscription = await this._subscriptionRepository.create({
+                let subscription;
+
+                const subscriptionExisits = await this._subscriptionRepository.findOne({
                     userId,
-                    planId,
-                    status:SUBSCRIBTION_STATUS.ACTIVE,
-                    current_period_start:new Date(),
                 })
 
+                if(!subscriptionExisits){
+                    subscription = await this._subscriptionRepository.create({
+                        userId,
+                        planId,
+                        status:SUBSCRIBTION_STATUS.ACTIVE,
+                        current_period_start:new Date(),
+                    })
+                }else{
+                    subscriptionExisits.status = SUBSCRIBTION_STATUS.ACTIVE,
+                    subscriptionExisits.planId = planId,
+                    subscriptionExisits.current_period_start = new Date
+
+                    subscription = await subscriptionExisits.save()
+                }
                 
                 return {
                     subscriptionId:String(subscription._id),
@@ -82,20 +95,32 @@ export class SubscriptionService implements ISubscriptionService{
                 }
 
                 //stripe checkout
-                const  {sessionId,checkoutUrl} = await this.createCheckout({stripeCustomerId,stripePriceId:selectedPlan.stripePriceId})
+                const  {sessionId,checkoutUrl} = await this.createCheckout({stripeCustomerId,stripePriceId:selectedPlan.stripePriceId,userId,planId})
 
+                const subscriptionExisits = await this._subscriptionRepository.findOne({
+                    userId,
+                })
+
+                 if(!subscriptionExisits){
+
+                    await this._subscriptionRepository.create({
+                         userId,
+                         planId,
+                         status:SUBSCRIBTION_STATUS.INCOMPLETE,
+                         current_period_start:new Date(),
+                    })  
+                }else{
+                    subscriptionExisits.status = SUBSCRIBTION_STATUS.INCOMPLETE,
+                    subscriptionExisits.planId = planId,
+                    subscriptionExisits.current_period_start = new Date
+                    await subscriptionExisits.save()
+                }
                 return {
                     sessionId,
                     checkoutUrl
                 }
             }
 
-            await this._subscriptionRepository.create({
-                userId,
-                planId,
-                status:SUBSCRIBTION_STATUS.INCOMPLETE,
-                current_period_start:new Date(),
-            })
 
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         } catch (error) {
@@ -151,12 +176,88 @@ export class SubscriptionService implements ISubscriptionService{
 
             return {
                 subscriptionId:String(subscription._id),
-                subscriptionStatus:subscription.status
+                subscriptionStatus:subscription.status,
+                invoiceUrl:subscription?.invoiceUrl || ""
             }
             
         } catch (error) {
             logger.error(error)
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)   
+        }
+    }
+
+    async handleCheckoutComplete(data:ICheckoutCompleteDto){
+        try {
+            
+            const {metadata,stripeSubscriptionId} = data
+
+            if(!metadata || !metadata?.planId || !metadata?.planId || !stripeSubscriptionId) throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+
+            const {userId,planId} = metadata
+
+            const subscription = await this._subscriptionRepository.findOne({
+                userId,
+                planId
+            })
+
+            if(!subscription) throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+
+            subscription.stripeSubscriptionId = stripeSubscriptionId
+            subscription.status = SUBSCRIBTION_STATUS.PENDING
+            await subscription.save()
+
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+    
+    async handleInvoicePaymentSuccess(data:IHandlePaymentSuccessDto){
+        try {
+            
+            const {subId} = data
+
+            if(!subId) throw new CustomError("Subscribtion id not found ",STATUS_CODES.BAD_REQUEST)
+
+            const subscription = await this._subscriptionRepository.findOne({
+                stripeSubscriptionId:subId
+            })
+
+            if(!subscription) throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+
+            await this._subscriptionRepository.update(String(subscription._id),{
+                status:SUBSCRIBTION_STATUS.ACTIVE
+            })
+
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async handleInvoicePaymentFailure(data:IHandlePaymentFailureDto){
+        try {
+
+            const {subId,invoiceUrl} = data
+
+            console.log(invoiceUrl)
+            console.log(subId)
+
+            if(!subId || !invoiceUrl) throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+
+             const subscription = await this._subscriptionRepository.findOne({
+                stripeSubscriptionId:subId
+             })
+
+            if(!subscription) throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+
+            subscription.invoiceUrl = invoiceUrl
+            subscription.status = SUBSCRIBTION_STATUS.INCOMPLETE
+            await subscription.save()
+            
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 }
