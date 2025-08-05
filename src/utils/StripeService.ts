@@ -161,4 +161,29 @@ export class StripeService implements IStripeService{
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
+    
+    async constructEvent(payload: Buffer, signature: string): Promise<Stripe.Event> {
+        try {
+            return this._stripe.webhooks.constructEvent(
+                payload,
+                signature,
+                ENV.STRIPE_WEBHOOK_SECRET
+            )
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+    
+    async handleStripeEvent(event: Stripe.Event): Promise<void> {
+        try {
+            
+            console.log('event type -',event.type)
+            console.log(event)
+
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
 }

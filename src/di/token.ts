@@ -8,6 +8,7 @@ export enum Token  {
     
     PlanRepository='IPlanRepository',
     UserRepository='IUserRepository',
+    SubscriptionRepository='ISubscriptionRepository',
     
     AdminAuthService="IAdminAuthService",
     PlanService='IPlanService',

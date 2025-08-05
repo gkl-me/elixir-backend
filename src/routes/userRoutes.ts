@@ -30,7 +30,11 @@ router.get('/plans',(req,res,next) => {
     const planController = container.resolve<IPlanController>(Token.PlanController)
     planController.getAvailablePlans(req,res,next)
 })
-router.post('/subscribe',(req,res,next) => {
+router.get('/:id/subscription',(req,res,next) => {
+    const subscriptionController = container.resolve<ISubscriptionController>(Token.SubscriptionController)
+    subscriptionController.find(req,res,next)
+})
+router.post('/subscription/start',(req,res,next) => {
     const subscriptionController = container.resolve<ISubscriptionController>(Token.SubscriptionController)
     subscriptionController.create(req,res,next)
 })

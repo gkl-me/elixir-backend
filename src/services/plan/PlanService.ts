@@ -79,7 +79,9 @@ export class PlanService implements IPlanService{
     async getAvailablePlans(){
         try {
             
-            const availablePlans = await this._planRepository.findAll({isActive:true})
+            const availablePlans = await this._planRepository.findAll({isActive:true},{
+                sort:{"createdAt":1}
+            })
             let plans = null
             if(availablePlans){
                 plans = availablePlans.map(plan => planDtoMapper.toPlanReponse(plan))

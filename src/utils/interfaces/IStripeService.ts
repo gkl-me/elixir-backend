@@ -1,3 +1,4 @@
+import Stripe from "stripe"
 
 
 
@@ -9,4 +10,6 @@ export interface IStripeService{
     createCustomer(email:string,name:string):Promise<string|null>
     createSubscription(customerId:string,priceId:string):Promise<{subscriptionId:string,clientSecret:string}|null>
     createCheckoutSession(customerId:string,priceId:string):Promise<{sessionId:string,checkoutUrl:string}>
+    constructEvent(payload:Buffer,signature:string):Promise<Stripe.Event>
+    handleStripeEvent(event:Stripe.Event):Promise<void>
 }

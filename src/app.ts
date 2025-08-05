@@ -10,6 +10,7 @@ import { errorHandler } from './middlewares/errorHandler';
 import { notFound } from './middlewares/notFound';
 import morganMiddleware from './middlewares/morganMiddleware';
 import adminRoutes from './routes/adminRoutes'
+import webhookRoutes from './routes/webhookRoutes'
 
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
@@ -39,6 +40,9 @@ app.use(morganMiddleware)
 
 app.use('/api/v1/user',userRoutes) 
 app.use('/api/v1/admin',adminRoutes)
+
+//webhooks
+app.use('/webhook',webhookRoutes)
 
 //swagger api docs
 app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))

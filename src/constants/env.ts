@@ -11,7 +11,9 @@ export const ENV = {
 
     ACCESS_TOKEN_SECRET:process.env.ACCESS_TOKEN_SECRET || "secret",
     REFRESH_TOKEN_SECRET:process.env.REFRESH_TOKEN_SECRET || "secret",
+
     STRIPE_KEY:process.env.STRIPE_KEY || "",
+    STRIPE_WEBHOOK_SECRET:process.env.STRIPE_WEBHOOK_SECRET || "",
 
     RESEND_API:process.env.RESEND_API || "",
     RESEND_FROM:process.env.RESEND_FROM || ""
