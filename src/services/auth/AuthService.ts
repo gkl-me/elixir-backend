@@ -5,7 +5,7 @@ import { IPasswordHasher } from "../../utils/interfaces/IPasswordHasher";
 import { ITokenManager } from "../../utils/interfaces/ITokenManager";
 import { IAuthService} from "./interfaces/IAuthService";
 import { LoginSchema, RegisterSchema}  from '../../validator/AuthSchema'
-import { IAuthResponseDTO, ILoginDTO, IRegisterDTO, IVerifyDTO, IVerifyEmailDTO, } from "../../interfaces/dtos/AuthDTO";
+import { IAuthResponseDTO, IGoogleAuthDto, ILoginDTO, IRefreshTokenDto, IRefreshTokenResponseDto, IRegisterDTO, IVerifyDTO, IVerifyEmailDTO, } from "../../interfaces/dtos/AuthDTO";
 import { authDtoMapper } from "../../interfaces/mapper/authDtoMapper";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES, } from "../../constants/messages";
 import { inject, injectable } from "tsyringe";
@@ -13,7 +13,6 @@ import { Token } from "../../di/token";
 import { IEmailService } from "../../utils/interfaces/IEmailService";
 import { ENV } from "../../constants/env";
 import { VERIFY_EMAIL_TEMPLATE } from "../../constants/templates/template";
-import { IGoogleAuthDto } from "../../interfaces/dtos/AdminDto";
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -200,4 +199,26 @@ export class AuthService implements IAuthService {
         }
     }
 
+    async refreshToken(data: IRefreshTokenDto): Promise<IRefreshTokenResponseDto> {
+        try {
+
+            const {refreshToken} = data
+            if(!refreshToken) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
+            
+            const verifyToken = await this._tokenManager.verifyToken(refreshToken,'refresh')
+            if(!verifyToken) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
+
+            const accessToken = this._tokenManager.generateAccessToken(verifyToken.id,verifyToken.role)
+
+            return {
+                accessToken
+            }
+            
+        } catch (error) {
+            if(error instanceof CustomError){
+                throw error
+            }
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
 }

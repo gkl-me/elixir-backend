@@ -6,9 +6,9 @@ import { errorResponse, successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
-import { setCookie } from "../../helper/cookiesHelper";
+import { clearCookie, setCookie } from "../../helper/cookiesHelper";
 import { extractStringQueryParams } from "../../helper/queryParamUtils";
-import { USER_MESSAGES } from "../../constants/messages";
+import { AUTH_MESSAGES, USER_MESSAGES } from "../../constants/messages";
 import { ITokenManager } from "../../utils/interfaces/ITokenManager";
 
 @injectable()
@@ -85,4 +85,33 @@ export class AuthController implements IAuthController {
             next(error)
         }
     }
+
+    async refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+
+            const {refreshToken} = req.cookies
+
+            const {accessToken} = await this._authService.refreshToken({refreshToken})
+            
+            setCookie(res,'access','accessToken',accessToken)
+
+            successResponse(res,AUTH_MESSAGES.TOKEN_REFRESH,STATUS_CODES.OK,{})
+
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            
+            clearCookie(res,'accessToken')
+            clearCookie(res,'refreshToken')
+
+            successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{})
+        } catch (error) {
+            next(error)
+        }
+    }
+
 }

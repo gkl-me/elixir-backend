@@ -29,3 +29,19 @@ export interface IVerifyEmailDTO{
 export interface IVerifyDTO{
     token:string|undefined
 }
+
+export interface IGoogleAuthDto{
+    name:string,
+    email:string,
+    googleId:string,
+    image:string
+}
+
+
+export interface IRefreshTokenDto{
+    refreshToken:string
+}
+
+export interface IRefreshTokenResponseDto{
+    accessToken:string
+}

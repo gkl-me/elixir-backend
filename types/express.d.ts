@@ -6,6 +6,10 @@ declare global{
             admin?:{
                 id:string,
                 role:string
+            },
+            user:{
+                id:string,
+                role:string
             }
         }
     }
