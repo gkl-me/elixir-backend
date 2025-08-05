@@ -1,5 +1,4 @@
-import { IGoogleAuthDto } from "../../../interfaces/dtos/AdminDto"
-import { IAuthResponseDTO, ILoginDTO, IRegisterDTO, IVerifyDTO, IVerifyEmailDTO } from "../../../interfaces/dtos/AuthDTO"
+import { IAuthResponseDTO, IGoogleAuthDto, ILoginDTO, IRefreshTokenDto, IRefreshTokenResponseDto, IRegisterDTO, IVerifyDTO, IVerifyEmailDTO } from "../../../interfaces/dtos/AuthDTO"
 
 
 export interface IAuthService {
@@ -8,4 +7,5 @@ export interface IAuthService {
     sendVerificationEmail(data:IVerifyEmailDTO):Promise<void>
     verifyUser(data:IVerifyDTO):Promise<void>
     googleAuth(data:IGoogleAuthDto):Promise<IAuthResponseDTO>
+    refreshToken(data:IRefreshTokenDto):Promise<IRefreshTokenResponseDto>
 }

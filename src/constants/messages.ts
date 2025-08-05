@@ -16,11 +16,12 @@ export enum CONSTANT_MESSAGES {
 
 export enum AUTH_MESSAGES {
     ALREADY_EXITS="Email already exists please login",
-    BLOCKED="Blocked by admin",
+    BLOCKED="User blocked by admin",
     VERIFY_ERROR="User not verified, Verifcation email sent",
     NOT_FOUND='User not found Signup',
     TOKEN_ERROR="Token not found",
-    GOOGLE_AUTH='Please Login with google'
+    GOOGLE_AUTH='Please Login with google',
+    TOKEN_REFRESH='Token Successfully refreshed',
 }
 
 export enum USER_MESSAGES {
@@ -29,7 +30,7 @@ export enum USER_MESSAGES {
     VERIFY_USER='User successfully verified',
     REGISTER_USER='Verification mail has been sent',
     FETCH_SUCCESS='User details fetched successfully',
-    TOGGLE_SUCCESS='User status changed successfully'
+    TOGGLE_SUCCESS='User status changed successfully',
 }
 
 
