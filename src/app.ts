@@ -10,6 +10,7 @@ import { errorHandler } from './middlewares/errorHandler';
 import { notFound } from './middlewares/notFound';
 import morganMiddleware from './middlewares/morganMiddleware';
 import adminRoutes from './routes/adminRoutes'
+import webhookRoutes from './routes/webhookRoutes'
 
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
@@ -30,6 +31,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
 }))
 
+//webhooks
+app.use('/webhook',webhookRoutes)
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
@@ -39,6 +42,8 @@ app.use(morganMiddleware)
 
 app.use('/api/v1/user',userRoutes) 
 app.use('/api/v1/admin',adminRoutes)
+
+
 
 //swagger api docs
 app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))

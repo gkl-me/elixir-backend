@@ -5,6 +5,7 @@ import { PlanController } from "../../controllers/plan/PlanController"
 import { AuthController } from "../../controllers/auth/AuthController"
 import { SubscriptionController } from "../../controllers/subscription/SubscriptionController"
 import { UserController } from "../../controllers/user/UserController"
+import { StripeWebhookController } from "../../controllers/webhook/StripeWebhook"
 
 //admin controller
 container.register(Token.AdminAuthController,{
@@ -23,4 +24,7 @@ container.register(Token.SubscriptionController,{
 })
 container.register(Token.UserController,{
     useClass:UserController  
+})
+container.register(Token.StripeWebhookController,{
+    useClass:StripeWebhookController
 })

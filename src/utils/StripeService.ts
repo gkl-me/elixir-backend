@@ -5,6 +5,7 @@ import { STATUS_CODES } from "../constants/statusCodes";
 import { IStripeService } from "./interfaces/IStripeService";
 import logger from "../middlewares/logger";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../constants/messages";
+import { ENV } from "../constants/env";
 
 @injectable()
 export class StripeService implements IStripeService{
@@ -83,6 +84,77 @@ export class StripeService implements IStripeService{
         } catch (error) {
             logger.error(error)
             throw new CustomError(PLAN_MESSAGES.STRIPE_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async createCustomer(email: string, name: string): Promise<string | null> {
+        try {
+
+            const customer = await this._stripe.customers.create({
+                email,
+                name,
+            })
+
+            return customer?.id || null
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async createCheckoutSession(customerId: string, priceId: string,userId:string,planId:string): Promise<{ sessionId: string; checkoutUrl: string; }> {
+        try {
+            
+            const session = await this._stripe.checkout.sessions.create({
+                customer:customerId,
+                payment_method_types:['card','us_bank_account'],
+                mode:'subscription',
+                line_items:[{
+                    price:priceId,
+                    quantity:1
+                }],
+                success_url:`${ENV.CLIENT_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url:`${ENV.CLIENT_URL}/subscription/cancel`,
+                metadata:{
+                    userId,
+                    planId
+                }
+            })
+
+            //maybe add metadata for future user
+            return{
+                sessionId:session.id,
+                checkoutUrl:session.url||""
+            }
+
+        } catch (error) {
+            logger.error("Failed to create checkout session",error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+    
+    async constructEvent(payload: Buffer, signature: string): Promise<Stripe.Event> {
+        try {
+            return this._stripe.webhooks.constructEvent(
+                payload,
+                signature,
+                ENV.STRIPE_WEBHOOK_SECRET
+            )
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+    
+    async handleStripeEvent(event: Stripe.Event): Promise<void> {
+        try {
+            
+            console.log('event type -',event.type)
+            console.log(event)
+
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 }

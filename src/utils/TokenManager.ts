@@ -48,4 +48,14 @@ export class TokenManager implements ITokenManager{
             throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
         }
     }
+
+    decodeToken(token: string):{ id: string; role: string; }{
+        try {
+            const decoded = jwt.decode(token) as {id:string,role:string}
+            return decoded
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
 }

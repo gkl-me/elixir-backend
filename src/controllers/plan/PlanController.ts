@@ -1,11 +1,11 @@
-import { inject, injectable } from "tsyringe";
-import { IPlanController } from "./interface/IPlanController";
-import { Token } from "../../di/token";
-import { IPlanService } from "../../services/plan/interfaces/IPlanService";
-import { NextFunction, Request, Response } from "express";
-import { successResponse } from "../../helper/responseHanlder";
-import { STATUS_CODES } from "../../constants/statusCodes";
-import { PLAN_MESSAGES } from "../../constants/messages";
+import { inject, injectable } from "tsyringe"
+import { IPlanController } from "./interface/IPlanController"
+import { IPlanService } from "../../services/plan/interfaces/IPlanService"
+import { Token } from "../../di/token"
+import { NextFunction, Request, Response } from "express"
+import { successResponse } from "../../helper/responseHanlder"
+import { PLAN_MESSAGES } from "../../constants/messages"
+import { STATUS_CODES } from "../../constants/statusCodes"
 
 @injectable()
 export class PlanController implements IPlanController{
@@ -32,6 +32,16 @@ export class PlanController implements IPlanController{
 
             const allPlans = await this._planService.findAllPlans()
             successResponse(res,PLAN_MESSAGES.FETCH_SUCCESS,STATUS_CODES.OK,allPlans)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getAvailablePlans(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+
+            const availablePlans = await this._planService.getAvailablePlans()
+            successResponse(res,PLAN_MESSAGES.FETCH_SUCCESS,STATUS_CODES.OK,availablePlans)
         } catch (error) {
             next(error)
         }

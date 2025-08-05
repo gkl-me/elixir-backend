@@ -9,6 +9,7 @@ import { UpdatePlanSchema } from "../../validator/PlanSchema";
 import { IStripeService } from "../../utils/interfaces/IStripeService";
 import { adminDtoMapper } from "../../interfaces/mapper/adminDtoMapper";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../../constants/messages";
+import { planDtoMapper } from "../../interfaces/mapper/planDtoMapper";
 
 @injectable()
 export class PlanService implements IPlanService{
@@ -62,11 +63,32 @@ export class PlanService implements IPlanService{
             const allPlans = await this._planRepository.findAll({},{sort:{"createdAt":1},})
             let plans = null;
 
-            if(allPlans){
+            if(allPlans && allPlans.length){
                 plans = allPlans.map(plan => adminDtoMapper.toPlanResponseDto(plan))
             }
 
             return plans
+        } catch (error) {
+            if(error instanceof CustomError){
+                throw error
+            }
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async getAvailablePlans(){
+        try {
+            
+            const availablePlans = await this._planRepository.findAll({isActive:true},{
+                sort:{"createdAt":1}
+            })
+            let plans = null
+            if(availablePlans){
+                plans = availablePlans.map(plan => planDtoMapper.toPlanReponse(plan))
+            }
+
+            return plans
+
         } catch (error) {
             if(error instanceof CustomError){
                 throw error
