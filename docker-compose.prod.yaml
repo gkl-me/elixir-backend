@@ -1,0 +1,17 @@
+
+services:
+  app:
+    image: gklme/elixir:latest
+    ports:
+      - "5000:5000"
+    env_file: 
+      - .env
+    depends_on:
+      - redis
+    restart: always
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    restart: always

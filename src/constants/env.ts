@@ -16,7 +16,9 @@ export const ENV = {
     STRIPE_WEBHOOK_SECRET:process.env.STRIPE_WEBHOOK_SECRET || "",
 
     RESEND_API:process.env.RESEND_API || "",
-    RESEND_FROM:process.env.RESEND_FROM || ""
+    RESEND_FROM:process.env.RESEND_FROM || "",
 
-
+    REDIS_HOST:process.env.REDIS_HOST || "redis",
+    REDIS_PORT:process.env.REDIS_PORT || "6359",
+    REDIS_PASSWORD:process.env.REDIS_PASSWORD || "demo"
 }

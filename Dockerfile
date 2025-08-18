@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/package*.json ./
 
-RUN npm ci --omit-dev
+RUN npm ci --only=production
 
 EXPOSE 5000
 
