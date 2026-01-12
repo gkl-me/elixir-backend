@@ -6,6 +6,7 @@ import { CustomError } from "../errors/CustomError";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../constants/messages";
 import { STATUS_CODES } from "../constants/statusCodes";
 import { IUserRepository } from "../repositories/user/interfaces/IUserRepository";
+import { ICacheRepository } from "../repositories/cache/ICacheRepository";
 
 
 
@@ -14,10 +15,18 @@ export const auth = async (req:Request,res:Response,next:NextFunction) => {
         
         const tokenManager = container.resolve<ITokenManager>(Token.TokenManager)
         const userRepository = container.resolve<IUserRepository>(Token.UserRepository)
+        const cacheRepository = container.resolve<ICacheRepository<string>>(Token.CacheRepository)
+
         const {accessToken} = req.cookies
 
         if(!accessToken){
             throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
+        }
+
+        //check blacklisted 
+        const isBlackListed  = await cacheRepository.exists(`bl:${accessToken}`)
+        if(isBlackListed){
+            throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED, STATUS_CODES.UNAUTHORIZED);
         }
 
         const tokenValid = tokenManager.verifyToken(accessToken,'access')
@@ -26,7 +35,7 @@ export const auth = async (req:Request,res:Response,next:NextFunction) => {
             throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
         }
 
-        //check if the user is blocker or not
+        //check if the user is blocked or not
 
         const userFound = await userRepository.findById(tokenValid.id)
 
