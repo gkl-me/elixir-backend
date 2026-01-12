@@ -5,14 +5,16 @@ import { IPasswordHasher } from "../../utils/interfaces/IPasswordHasher";
 import { ITokenManager } from "../../utils/interfaces/ITokenManager";
 import { IAuthService} from "./interfaces/IAuthService";
 import { LoginSchema, RegisterSchema}  from '../../validator/AuthSchema'
-import { IAuthResponseDTO, IGoogleAuthDto, ILoginDTO, IRefreshTokenDto, IRefreshTokenResponseDto, IRegisterDTO, IVerifyDTO, IVerifyEmailDTO, } from "../../interfaces/dtos/AuthDTO";
+import { IAuthResponseDTO, IGoogleAuthDto, ILoginDTO, ILogoutDto, IRefreshTokenDto, IRefreshTokenResponseDto, IRegisterDTO, IVerifyDTO, IVerifyEmailDTO, } from "../../interfaces/dtos/AuthDTO";
 import { authDtoMapper } from "../../interfaces/mapper/authDtoMapper";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES, } from "../../constants/messages";
 import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
 import { IEmailService } from "../../utils/interfaces/IEmailService";
 import { ENV } from "../../constants/env";
-import { VERIFY_EMAIL_TEMPLATE } from "../../constants/templates/template";
+import { VERIFY_EMAIL_TEMPLATE } from "../../templates/template";
+import { sentVerificationEmailJob } from "../../jobs/emailJobs";
+import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -22,6 +24,7 @@ export class AuthService implements IAuthService {
         @inject(Token.PasswordHasher) private _passwordHasher:IPasswordHasher,
         @inject(Token.TokenManager) private _tokenManager:ITokenManager,
         @inject(Token.EmailService) private _emailService:IEmailService,
+        @inject(Token.CacheRepository) private _cacheRepository:ICacheRepository<string>
     ){}
 
     async registerUser(user:IRegisterDTO):Promise<void>{
@@ -55,12 +58,13 @@ export class AuthService implements IAuthService {
             }
 
 
-            await this.sendVerificationEmail(
-                {
-                    email:userToVerify.email, 
-                    userId:String(userToVerify._id)
-                })
+            // await this.sendVerificationEmail(
+            //     {
+            //         email:userToVerify.email, 
+            //         userId:String(userToVerify._id)
+            //     })
 
+            await sentVerificationEmailJob(userToVerify.email,String(userToVerify._id))
 
         } catch (error) {
             if(error instanceof CustomError){
@@ -183,7 +187,7 @@ export class AuthService implements IAuthService {
                     name,
                     email,
                     googleId,
-                    image,
+                    avatarUrl:image,
                     isVerified:true
                 })
             }
@@ -204,6 +208,12 @@ export class AuthService implements IAuthService {
 
             const {refreshToken} = data
             if(!refreshToken) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
+
+            //check blacklisted
+            const isBlackListed = await this._cacheRepository.exists(`bl:${refreshToken}`)
+            if(isBlackListed){
+                throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
+            }
             
             const verifyToken = await this._tokenManager.verifyToken(refreshToken,'refresh')
             if(!verifyToken) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
@@ -213,6 +223,23 @@ export class AuthService implements IAuthService {
             return {
                 accessToken
             }
+            
+        } catch (error) {
+            if(error instanceof CustomError){
+                throw error
+            }
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async logoutUser(data: ILogoutDto): Promise<void> {
+        try {
+
+            const {accessToken,refreshToken} = data
+
+            await this._cacheRepository.set(`bl:${accessToken}`,"1",ENV.ACCESS_TOKEN_TTL)
+            await this._cacheRepository.set(`bl:${refreshToken}`,"1",ENV.REFRESH_TOKEN_TTL)
+
             
         } catch (error) {
             if(error instanceof CustomError){

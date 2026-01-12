@@ -6,7 +6,6 @@ import { BaseRepository } from "../base/BaseRepository";
 import { IUserRepository } from "./interfaces/IUserRepository";
 import { CONSTANT_MESSAGES } from "../../constants/messages";
 import logger from "../../middlewares/logger";
-import errorMap from "zod/lib/locales/en";
 
 
 @injectable()

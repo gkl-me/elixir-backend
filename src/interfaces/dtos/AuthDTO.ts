@@ -45,3 +45,9 @@ export interface IRefreshTokenDto{
 export interface IRefreshTokenResponseDto{
     accessToken:string
 }
+
+
+export interface ILogoutDto{
+    accessToken:string,
+    refreshToken:string
+}

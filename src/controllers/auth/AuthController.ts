@@ -104,7 +104,12 @@ export class AuthController implements IAuthController {
 
     async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            
+
+
+            const {accessToken,refreshToken} = req.cookies
+
+            await this._authService.logoutUser({accessToken,refreshToken})
+
             clearCookie(res,'accessToken')
             clearCookie(res,'refreshToken')
 
