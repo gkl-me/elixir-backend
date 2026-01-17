@@ -5,7 +5,7 @@ import { STATUS_CODES } from "../constants/statusCodes";
 
 
 
-export const authorize = async (...allowedRoles:string[]) => 
+export const authorize = (...allowedRoles:string[]) => 
 (req:Request,res:Response,next:NextFunction) => {
 
     try {

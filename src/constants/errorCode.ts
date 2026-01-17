@@ -1,0 +1,6 @@
+
+
+export const AUTH_ERROR_CODE = {
+    NOT_VERIFIED: "AUTH_NOT_VERIFIED",
+    BLOCKED: "AUTH_BLOCKED",
+}

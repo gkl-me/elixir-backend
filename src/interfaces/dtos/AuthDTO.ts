@@ -1,19 +1,19 @@
 
-export interface IRegisterDTO{
+export interface IRegisterDto{
     name:string,
     email:string,
     password:string,
 }
 
 
-export interface ILoginDTO{
+export interface ILoginDto{
     email:string,
     password:string
 }
 
 
 
-export interface IAuthResponseDTO{
+export interface IAuthResponseDto{
     id:string,
     email:string,
     name:string,
@@ -21,12 +21,15 @@ export interface IAuthResponseDTO{
 }
 
 
-export interface IVerifyEmailDTO{
-    email:string,
-    userId:string
+export interface ISendVerificationEmailDto{
+    email:string
 }
 
-export interface IVerifyDTO{
+export interface IVerifyEmailDto{
+    token:string|undefined
+}
+
+export interface IVerifyUserDTO{
     token:string|undefined
 }
 
@@ -50,4 +53,33 @@ export interface IRefreshTokenResponseDto{
 export interface ILogoutDto{
     accessToken:string,
     refreshToken:string
+}
+
+export interface IResendVerficationDto{
+    email:string
+}
+
+
+export interface IForgotPasswordDto{
+    email:string
+}
+
+
+export interface ISendOtpDto{
+    email:string,
+}
+
+export interface IVerifyOtpDto{
+    otp:string,
+    email:string
+}
+
+export interface IVerifyOtpResponseDto{
+    resetPasswordToken:string
+}
+
+export interface IResetPasswordDto{
+    email:string
+    newPassword:string
+    resetPasswordToken:string
 }

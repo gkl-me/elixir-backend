@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { container } from "tsyringe";
-import { ITokenManager } from "../utils/interfaces/ITokenManager";
+import { ITokenManager } from "../providers/interfaces/ITokenManager";
 import { Token } from "../di/token";
 import { CustomError } from "../errors/CustomError";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../constants/messages";
 import { STATUS_CODES } from "../constants/statusCodes";
 import { IUserRepository } from "../repositories/user/interfaces/IUserRepository";
 import { ICacheRepository } from "../repositories/cache/ICacheRepository";
+import { REDIS_STORE } from "../constants/redis/redisStore";
 
 
 
@@ -24,7 +25,7 @@ export const auth = async (req:Request,res:Response,next:NextFunction) => {
         }
 
         //check blacklisted 
-        const isBlackListed  = await cacheRepository.exists(`bl:${accessToken}`)
+        const isBlackListed  = await cacheRepository.exists(REDIS_STORE.BLACKLIST+accessToken)
         if(isBlackListed){
             throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED, STATUS_CODES.UNAUTHORIZED);
         }

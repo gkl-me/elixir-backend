@@ -1,5 +1,5 @@
 import { container } from "tsyringe"
-import { IPasswordHasher } from "../utils/interfaces/IPasswordHasher"
+import { IPasswordHasher } from "../providers/interfaces/IPasswordHasher"
 import { IUserRepository } from "../repositories/user/interfaces/IUserRepository"
 
 
@@ -15,7 +15,7 @@ export async function seedAdmin(){
         } as const
 
         const passwordHasher = container.resolve<IPasswordHasher>('IPasswordHasher')
-        const userRepository = container.resolve<IUserRepository>('UserRepository')
+        const userRepository = container.resolve<IUserRepository>('IUserRepository')
 
         const userExits = await userRepository.findByEmail(adminData.email)
         const hashedPassword = await passwordHasher.hashPassword(adminData.password)

@@ -3,7 +3,7 @@ import { IStripeWebhookController } from "./IStripeWebhookController";
 import { Token } from "../../di/token";
 import { IStripeWebhookService } from "../../services/webhook/interface/IStripeWebhookService";
 import { Request, Response, NextFunction } from "express";
-import { IStripeService } from "../../utils/interfaces/IStripeService";
+import { IStripeService } from "../../providers/interfaces/IStripeService";
 import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 

@@ -1,8 +1,8 @@
 import { IUser } from "../../models/User";
-import { IAuthResponseDTO } from "../dtos/AuthDTO";
+import { IAuthResponseDto } from "../dtos/AuthDTO";
 
 export class authDtoMapper{
-    static toAuthResponse(user:IUser):IAuthResponseDTO{
+    static toAuthResponse(user:IUser):IAuthResponseDto{
         return {
                 id:String(user._id),
                 name:user.name,
