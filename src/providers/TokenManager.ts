@@ -5,6 +5,7 @@ import { CustomError } from "../errors/CustomError";
 import { STATUS_CODES } from "../constants/statusCodes";
 import logger from "../middlewares/logger";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../constants/messages";
+import crypto from 'crypto'
 
 @injectable()
 export class TokenManager implements ITokenManager{
@@ -58,4 +59,18 @@ export class TokenManager implements ITokenManager{
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
+
+    generateRandomToken():string{
+        return crypto.randomBytes(16).toString("hex");
+    }
+
+    hashToken(token:string):string{
+        return crypto.createHash("sha256").update(token).digest("hex");
+    }
+
+
+    generateRandomOtp():string{
+        return crypto.randomInt(1000,9999).toString()
+    }
+
 }

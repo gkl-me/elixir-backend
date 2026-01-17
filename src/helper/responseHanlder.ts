@@ -9,9 +9,10 @@ export const successResponse = <T>(res:Response,message:string,statusCode:STATUS
     })
 }
 
-export const errorResponse = (res:Response,errorMessage:string, statusCode:STATUS_CODES) => {
+export const errorResponse = (res:Response,errorMessage:string, statusCode:STATUS_CODES,errorCode?:string) => {
     res.status(statusCode).json({
         success:false,
         message:errorMessage,
+        errorCode
     })
 }

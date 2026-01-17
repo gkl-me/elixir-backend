@@ -1,9 +1,9 @@
 import { container } from "tsyringe"
 import { Token } from "../token"
-import { PasswordHasher } from "../../utils/PasswordHasher"
-import { TokenManager } from "../../utils/TokenManager"
-import { StripeService } from "../../utils/StripeService"
-import { EmailService } from "../../utils/EmailService"
+import { PasswordHasher } from "../../providers/PasswordHasher"
+import { TokenManager } from "../../providers/TokenManager"
+import { StripeService } from "../../providers/StripeService"
+import { EmailService } from "../../providers/EmailService"
 
 //utils
 container.register(Token.PasswordHasher,{

@@ -3,4 +3,7 @@ export interface ITokenManager {
     generateRefreshToken(id:string,role:string):string;
     verifyToken(token:string,type:'access'|'refresh'):{id:string,role:string};
     decodeToken(token:string):{id:string,role:string}
+    generateRandomToken():string
+    hashToken(token:string):string
+    generateRandomOtp():string
 }

@@ -1,15 +1,14 @@
 import { NextFunction, Request, response, Response } from "express";
 import { IAuthService } from "../../services/auth/interfaces/IAuthService";
 import { IAuthController } from "./interface/IAuthController";
-import { CustomError } from "../../errors/CustomError";
-import { errorResponse, successResponse } from "../../helper/responseHanlder";
+import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
 import { clearCookie, setCookie } from "../../helper/cookiesHelper";
-import { extractStringQueryParams } from "../../helper/queryParamUtils";
 import { AUTH_MESSAGES, USER_MESSAGES } from "../../constants/messages";
-import { ITokenManager } from "../../utils/interfaces/ITokenManager";
+import { ITokenManager } from "../../providers/interfaces/ITokenManager";
+import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
 @injectable()
 export class AuthController implements IAuthController {
@@ -18,11 +17,11 @@ export class AuthController implements IAuthController {
         @inject(Token.TokenManager) private _tokenManager:ITokenManager
     ){}
 
-    async registerUser(req:Request, res:Response,next:NextFunction){
+    async handleRegister(req:Request, res:Response,next:NextFunction){
         try {
             const { email, password, name } = req.body
             
-            const user = await this._authService.registerUser({email, password, name})
+            const user = await this._authService.register({email, password, name})
 
             return successResponse(res,USER_MESSAGES.REGISTER_USER,STATUS_CODES.CREATED,user)
 
@@ -31,12 +30,12 @@ export class AuthController implements IAuthController {
         }
     }
 
-    async loginUser(req: Request, res: Response,next:NextFunction): Promise<void> {
+    async handleLogin(req: Request, res: Response,next:NextFunction): Promise<void> {
         try {
             
             const {email,password} = req.body
 
-            const authUser = await this._authService.loginUser({email, password})
+            const authUser = await this._authService.login({email, password})
 
             const {...user} = authUser
             const accessToken = this._tokenManager.generateAccessToken(user.id,user.role)
@@ -45,28 +44,15 @@ export class AuthController implements IAuthController {
             setCookie(res,'access','accessToken',accessToken)
             setCookie(res,'refresh','refreshToken',refreshToken)
 
-           return successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user})
+           return successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,user)
 
         } catch (error) {
             next(error)
         }
     }
 
-    async verifyUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
 
-            const {token} = req.params
-
-            await this._authService.verifyUser({token})
-
-            return successResponse(res,USER_MESSAGES.VERIFY_USER,STATUS_CODES.ACCEPTED,{})
-
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    async googleAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async handleGoogleAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
             const {name,email,googleId,image} = req.body
@@ -86,7 +72,7 @@ export class AuthController implements IAuthController {
         }
     }
 
-    async refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async handleRefresh(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
             const {refreshToken} = req.cookies
@@ -102,9 +88,14 @@ export class AuthController implements IAuthController {
         }
     }
 
-    async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async handleLogout(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            
+
+
+            const {accessToken,refreshToken} = req.cookies
+
+            await this._authService.logout({accessToken,refreshToken})
+
             clearCookie(res,'accessToken')
             clearCookie(res,'refreshToken')
 

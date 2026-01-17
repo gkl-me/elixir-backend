@@ -1,7 +1,7 @@
 import { Plan } from '../models/Plan'
 import logger from '../middlewares/logger'
 import { container } from 'tsyringe'
-import { IStripeService } from '../utils/interfaces/IStripeService'
+import { IStripeService } from '../providers/interfaces/IStripeService'
 
 
 const plans= [
