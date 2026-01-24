@@ -18,33 +18,34 @@ export const auth = async (req:Request,res:Response,next:NextFunction) => {
         const userRepository = container.resolve<IUserRepository>(Token.UserRepository)
         const cacheRepository = container.resolve<ICacheRepository<string>>(Token.CacheRepository)
 
-        const {accessToken} = req.cookies
+        const authHeader = req.headers.authorization
+
+        if(!authHeader?.startsWith('Bearer ')) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
+        
+        const accessToken = authHeader.split(" ")[1]
 
         if(!accessToken){
             throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
         }
 
-        //check blacklisted 
-        const isBlackListed  = await cacheRepository.exists(REDIS_STORE.BLACKLIST+accessToken)
-        if(isBlackListed){
-            throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED, STATUS_CODES.UNAUTHORIZED);
-        }
 
-        const tokenValid = tokenManager.verifyToken(accessToken,'access')
+        const payload = tokenManager.verifyToken(accessToken,'access')
 
-        if(!tokenValid){
-            throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
-        }
+        const sessionKey = REDIS_STORE.SESSION+payload.sessionId
+
+        const session = await cacheRepository.get(sessionKey)
+
+        if(!session) throw new CustomError(AUTH_MESSAGES.SESSION_EXPIRED,STATUS_CODES.UNAUTHORIZED)
+
 
         //check if the user is blocked or not
-
-        const userFound = await userRepository.findById(tokenValid.id)
+        const userFound = await userRepository.findById(payload.userId)
 
         if(userFound?.isBlocked){
             throw new CustomError(AUTH_MESSAGES.BLOCKED,STATUS_CODES.FORBIDDEN)
         }
 
-        req.user = {id:tokenValid.id,role:tokenValid.role}
+        req.user = {userId:payload.userId,role:payload.role}
         next()
     } catch (error) {
         if(error instanceof CustomError){
