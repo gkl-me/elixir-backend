@@ -7,6 +7,7 @@ import { successResponse } from "../../helper/responseHanlder";
 import { USER_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { sendVerificationEmailJob } from "../../queues/email/email.producer";
+import { ITokenManager } from "../../providers/interfaces/ITokenManager";
 
 
 
@@ -14,17 +15,26 @@ import { sendVerificationEmailJob } from "../../queues/email/email.producer";
 @injectable()
 export class VerifyController implements IVerifyController{
     constructor(
-        @inject(Token.VerifyService) private readonly _verifyService:IVerifyService
+        @inject(Token.VerifyService) private readonly _verifyService:IVerifyService,
+        @inject(Token.TokenManager) private readonly _tokenManager:ITokenManager
     ){}
 
     async handleVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+
+            console.log(req.cookies)
             
             const verifyEmailToken = req.params.token
 
-            await this._verifyService.verifyEmail({token:verifyEmailToken})
+            const user = await this._verifyService.verifyEmail({token:verifyEmailToken})
 
-            return successResponse(res,USER_MESSAGES.VERIFY_SUCCESS,STATUS_CODES.ACCEPTED,{})
+            const accessToken = this._tokenManager.generateAccessToken(user.id,user.role)
+            const refreshToken = this._tokenManager.generateRefreshToken(user.id,user.role)
+
+            return successResponse(res,USER_MESSAGES.VERIFY_SUCCESS,STATUS_CODES.ACCEPTED,{
+                accessToken,
+                refreshToken
+            })
 
         } catch (error) {
             next(error)

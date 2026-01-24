@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { IVerifyService } from "./interfaces/IVerifyService";
-import { ISendVerificationEmailDto, IVerifyEmailDto } from "../../interfaces/dtos/AuthDTO";
+import { IAuthResponseDto, ISendVerificationEmailDto, IVerifyEmailDto } from "../../interfaces/dtos/AuthDTO";
 import { Token } from "../../di/token";
 import { IEmailService } from "../../providers/interfaces/IEmailService";
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
@@ -12,6 +12,9 @@ import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { ENV } from "../../constants/env";
 import { VERIFY_EMAIL_TEMPLATE } from "../../templates/verifyEmailTemplate";
+import { authDtoMapper } from "../../interfaces/mapper/authDtoMapper";
+import { IVerifyMetaDto } from "../../interfaces/dtos/MetaDto";
+import { IAuthSession } from "../../interfaces/types/session.types";
 
 
 @injectable()
@@ -20,7 +23,7 @@ export class VerifyService implements IVerifyService{
         @inject(Token.EmailService) private readonly _emailService:IEmailService,
         @inject(Token.UserRepository) private readonly _userRepository:IUserRepository,
         @inject(Token.TokenManager) private readonly _tokenManager:ITokenManager,
-        @inject(Token.CacheRepository) private readonly _cacheRepository:ICacheRepository<string>
+        @inject(Token.CacheRepository) private readonly _cacheRepository:ICacheRepository<string|IAuthSession>
     ){}
 
     async sendVerificationEmail(data: ISendVerificationEmailDto): Promise<void> {
@@ -40,7 +43,7 @@ export class VerifyService implements IVerifyService{
             await this._cacheRepository.set(REDIS_STORE.EMAIL_VERIFY+hashToken,email,15*60)
             
             //verification url
-            const verificationUrl = `${ENV.CLIENT_URL}/verify/${verificationToken}?email=${encodeURIComponent(email)}`
+            const verificationUrl = `${ENV.CLIENT_URL}/verify/token/${verificationToken}?email=${encodeURIComponent(email)}`
 
             //call email service to sent mail 
             await this._emailService.sendEmail(email,"Verify your email",VERIFY_EMAIL_TEMPLATE(verificationUrl))
@@ -51,7 +54,7 @@ export class VerifyService implements IVerifyService{
         }
     }
 
-    async verifyEmail(data: IVerifyEmailDto): Promise<void> {
+    async verifyEmail(data: IVerifyEmailDto,meta:IVerifyMetaDto): Promise<IAuthResponseDto> {
         try {
             
             const {token} = data
@@ -64,7 +67,7 @@ export class VerifyService implements IVerifyService{
             //get email from cache
             const email = await this._cacheRepository.get(REDIS_STORE.EMAIL_VERIFY+hashToken)
             
-            if(!email){
+            if(!email || typeof email!="string"){
                 throw new CustomError(AUTH_MESSAGES.INVALID_TOKEN,STATUS_CODES.BAD_REQUEST)
             }
 
@@ -78,6 +81,47 @@ export class VerifyService implements IVerifyService{
 
             user.isVerified = true
             user.save()
+
+
+            //send token and setup session
+
+            const sessionId = this._tokenManager.generateSessionId()
+            const tokenVersion = 1
+
+            const accessToken =  this._tokenManager.generateAccessToken(String(user._id),user.role,sessionId)
+            const refreshToken =  this._tokenManager.generateRefreshToken(String(user._id),user.role,sessionId,tokenVersion)
+
+            const refreshTokenHash =  this._tokenManager.hashToken(refreshToken)
+
+            //session handling,
+
+            const now = new Date();
+
+            const expiresAt = new Date(
+            now.getTime() + 30 * 24 * 60 * 60 * 1000 // 30 days in ms
+            );
+
+            const session:IAuthSession = {
+                userId:String(user._id),
+                refreshTokenHash,
+                tokenVersion,
+                ip:meta.ip,
+                userAgent:meta.userAgent,
+                createdAt:now,
+                expiresAt
+            }
+    
+            await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
+    
+            //add user sessions into redis
+            await this._cacheRepository.set(REDIS_STORE.USER_SESSION+String(user._id),sessionId)
+    
+    
+            const resDto = authDtoMapper.toAuthResponse(user,accessToken,refreshToken)
+    
+            return {
+                ...resDto
+            }
 
         } catch (error) {
             throw error
