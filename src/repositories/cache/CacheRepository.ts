@@ -69,4 +69,38 @@ export class CacheRepository<T> implements ICacheRepository<T> {
         }
     }
 
+    async addSet(key: string, ...values: string[]): Promise<void> {
+        try {
+            
+            if(values.length==0) return 
+            await this._redis.sadd(key,...values)
+
+        } catch (error) {
+            logger.error(error)
+            throw new  CustomError("Redis add to set error",STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async remSet(key: string, value: string): Promise<void> {
+        try {
+            
+            await this._redis.srem(key,value)
+
+        } catch (error) {
+            logger.error(error)
+            throw new  CustomError("Redis remove to set error",STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async getMembers(key: string): Promise<string[]> {
+        try {
+
+            const members = await this._redis.smembers(key)
+            return members
+            
+        } catch (error) {
+            logger.error(error)
+            throw new  CustomError("Redis remove to set error",STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
 }
