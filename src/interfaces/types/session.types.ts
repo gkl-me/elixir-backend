@@ -3,9 +3,9 @@
 export interface IAuthSession{
     userId:string,
     refreshTokenHash:string,
-    tokenVerson:number,
+    tokenVersion:number,
     userAgent?:string,
     ip?:string,
-    createdAt:string,
-    expiresAt:string
+    createdAt:Date,
+    expiresAt:Date
 }

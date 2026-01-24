@@ -17,7 +17,9 @@ export interface IAuthResponseDto{
     id:string,
     email:string,
     name:string,
-    role:string
+    role:string,
+    accessToken:string,
+    refreshToken:string
 }
 
 
@@ -46,12 +48,12 @@ export interface IRefreshTokenDto{
 }
 
 export interface IRefreshTokenResponseDto{
-    accessToken:string
+    newAccessToken:string,
+    newRefreshToken:string
 }
 
 
 export interface ILogoutDto{
-    accessToken:string,
     refreshToken:string
 }
 
