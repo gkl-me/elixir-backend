@@ -6,6 +6,8 @@ import { STATUS_CODES } from "../constants/statusCodes";
 import logger from "../middlewares/logger";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../constants/messages";
 import crypto from 'crypto'
+import { ENV } from "../constants/env";
+import { IAccessTokenPayload, IRefreshTokenPayload } from "../interfaces/types/jwt.types";
 
 @injectable()
 export class TokenManager implements ITokenManager{
@@ -14,46 +16,56 @@ export class TokenManager implements ITokenManager{
     private refreshSecret
 
     constructor(){
-        const access = process.env.ACCESS_TOKEN_SECRET
-        const refresh = process.env.REFRESH_TOKEN_SECRET
-        if(!access){
+        const access_secret = process.env.ACCESS_TOKEN_SECRET
+        const refresh_secret = process.env.REFRESH_TOKEN_SECRET
+        if(!access_secret){
             logger.error('Access token secret env is empty')
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
-        if(!refresh){
+        if(!refresh_secret){
              logger.error('Refresh token secret env is empty')
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
 
-        this.accessSecret = access
-        this.refreshSecret = refresh
+        this.accessSecret = access_secret
+        this.refreshSecret = refresh_secret
     }
 
-    generateAccessToken(id:string,role:string): string {
-        const accessRoken = jwt.sign({id,role},process.env.ACCESS_TOKEN_SECRET!,{expiresIn:'15m'})
+    generateAccessToken(userId:string,role:string,sessionId:string): string {
+        const accessRoken = jwt.sign({
+            userId,
+            role,
+            sessionId
+        },process.env.ACCESS_TOKEN_SECRET!,{expiresIn:ENV.ACCESS_TOKEN_TTL})
         return accessRoken
     }
 
-    generateRefreshToken(id: string, role: string): string {
-        const refreshToken = jwt.sign({id,role},process.env.REFRESH_TOKEN_SECRET!,{expiresIn:'24h'})
+    generateRefreshToken(userId: string, role: string,sessionId:string,tokenVersion:number): string {
+        const refreshToken = jwt.sign({
+            userId,
+            role,
+            sessionId,
+            tokenVersion
+
+        },process.env.REFRESH_TOKEN_SECRET!,{expiresIn:ENV.REFRESH_TOKEN_TTL})
         return refreshToken
     }
 
-    verifyToken(token: string, type:'access'|'refresh'): {id:string,role:string} {
+    verifyToken(token: string, type:'access'|'refresh'){
         try{
             const secret = type === 'access' ? this.accessSecret : this.refreshSecret
-            const decoded  = jwt.verify(token, secret) as {id:string,role:string}
-            return decoded
+            const decoded  = jwt.verify(token, secret)
+            return decoded as IAccessTokenPayload | IRefreshTokenPayload
         }catch(error){
             logger.error(error)
             throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
         }
     }
 
-    decodeToken(token: string):{ id: string; role: string; }{
+    decodeToken(token: string):IAccessTokenPayload|IRefreshTokenPayload{
         try {
-            const decoded = jwt.decode(token) as {id:string,role:string}
-            return decoded
+            const decoded = jwt.decode(token) 
+            return decoded as IAccessTokenPayload | IRefreshTokenPayload
         } catch (error) {
             logger.error(error)
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
@@ -68,9 +80,11 @@ export class TokenManager implements ITokenManager{
         return crypto.createHash("sha256").update(token).digest("hex");
     }
 
-
     generateRandomOtp():string{
         return crypto.randomInt(1000,9999).toString()
     }
 
+    generateSessionId(): string {
+        return crypto.randomUUID()
+    }
 }
