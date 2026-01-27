@@ -127,8 +127,9 @@ export class AuthService implements IAuthService {
 
         const now = new Date();
 
+        //expires at time
         const expiresAt = new Date(
-        now.getTime() + ENV.REFRESH_TOKEN_TTL // 30 days in ms
+        now.getTime() + (ENV.REFRESH_TOKEN_TTL * 1000 ) // 30 days in ms
         );
 
 
@@ -233,8 +234,8 @@ export class AuthService implements IAuthService {
             session.tokenVersion = newVersion
             session.refreshTokenHash = this._tokenManager.hashToken(newRefreshToken)
 
-            //update the redis with new hash and version
-            const ttl = session.expiresAt.getTime() - session.createdAt.getTime()   
+            //update the redis with new hash and version and new ttl
+            const ttl = Math.floor((session.expiresAt.getTime() - session.createdAt.getTime())/1000 )
             await this._cacheRepository.set(REDIS_STORE.SESSION+payload.sessionId,session,ttl)
 
             return {

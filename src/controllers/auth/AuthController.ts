@@ -41,7 +41,7 @@ export class AuthController implements IAuthController {
 
             setCookie(res,'refreshToken',refreshToken)
 
-           return successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user,accessToken})
+           return successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user,accessToken,refreshToken})
 
         } catch (error) {
             next(error)
@@ -71,11 +71,11 @@ export class AuthController implements IAuthController {
 
             const {refreshToken} = req.cookies
 
-            const {newAccessToken,newRefreshToken} = await this._authService.refreshToken({refreshToken})
+            const {newAccessToken,newRefreshToken,} = await this._authService.refreshToken({refreshToken})
 
             setCookie(res,'refreshToken',newRefreshToken)
 
-            successResponse(res,AUTH_MESSAGES.TOKEN_REFRESH,STATUS_CODES.OK,{accessToken:newAccessToken})
+            successResponse(res,AUTH_MESSAGES.TOKEN_REFRESH,STATUS_CODES.OK,{accessToken:newAccessToken,refreshToken:newRefreshToken})
 
         } catch (error) {
             next(error)

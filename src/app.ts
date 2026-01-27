@@ -21,7 +21,6 @@ import mongoose from 'mongoose';
 import { STATUS_CODES } from './constants/statusCodes';
 import { seedPlan } from './seed/seedPlan';
 import { ENV } from './constants/env';
-import './queues/workers'
  
 
 const app = express();
@@ -77,10 +76,7 @@ app.listen(5000, async ()=>{
 
     //seed admin to db
     await seedAdmin()
-    // await seedPlan()
-    
-    //connect redis 
-    // await redisConnection.connect()
+
         
     console.log("Server is running on port 5000")
 })

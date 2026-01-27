@@ -8,6 +8,7 @@ import { USER_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { sendVerificationEmailJob } from "../../queues/email/email.producer";
 import { ITokenManager } from "../../providers/interfaces/ITokenManager";
+import { setCookie } from "../../helper/cookiesHelper";
 
 
 
@@ -22,18 +23,18 @@ export class VerifyController implements IVerifyController{
     async handleVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
-            console.log(req.cookies)
-            
             const verifyEmailToken = req.params.token
+            const userAgent = req.headers["user-agent"]
+            const ip = req.ip
 
-            const user = await this._verifyService.verifyEmail({token:verifyEmailToken})
+            const {accessToken,refreshToken,...user} = await this._verifyService.verifyEmail({token:verifyEmailToken},{ip,userAgent})
 
-            const accessToken = this._tokenManager.generateAccessToken(user.id,user.role)
-            const refreshToken = this._tokenManager.generateRefreshToken(user.id,user.role)
+            setCookie(res,'refreshToken',refreshToken)
 
             return successResponse(res,USER_MESSAGES.VERIFY_SUCCESS,STATUS_CODES.ACCEPTED,{
                 accessToken,
-                refreshToken
+                refreshToken,
+                user
             })
 
         } catch (error) {

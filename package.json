@@ -5,8 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --files --watch src src/app.ts",
+    "worker:dev": "nodemon --files --watch src src/workers.ts",
     "build": "tsc -b",
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "worker:start": "node dist/workers.js"
   },
   "keywords": [],
   "author": "",
