@@ -125,12 +125,10 @@ export class AuthService implements IAuthService {
 
         //session handling,
 
-        const now = new Date();
+        const now = Date.now()
 
         //expires at time
-        const expiresAt = new Date(
-        now.getTime() + (ENV.REFRESH_TOKEN_TTL * 1000 ) // 30 days in ms
-        );
+        const expiresAt = now + ENV.REFRESH_TOKEN_TTL*1000
 
 
         const session:IAuthSession = {
@@ -145,7 +143,7 @@ export class AuthService implements IAuthService {
 
         await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
 
-        //add user sessions into redis
+        //add user sessions into redis user session list
         await this._cacheRepository.set(REDIS_STORE.USER_SESSION+String(userFound._id),sessionId)
 
 
@@ -198,12 +196,6 @@ export class AuthService implements IAuthService {
 
             const {refreshToken} = data
             if(!refreshToken) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
-
-            //check blacklisted
-            const isBlackListed = await this._cacheRepository.exists(REDIS_STORE.BLACKLIST+refreshToken)
-            if(isBlackListed){
-                throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
-            }
             
             //verify token payload
             const payload = await this._tokenManager.verifyToken(refreshToken,'refresh')
@@ -235,7 +227,7 @@ export class AuthService implements IAuthService {
             session.refreshTokenHash = this._tokenManager.hashToken(newRefreshToken)
 
             //update the redis with new hash and version and new ttl
-            const ttl = Math.floor((session.expiresAt.getTime() - session.createdAt.getTime())/1000 )
+            const ttl = Math.floor((session.expiresAt - session.createdAt)/1000 )
             await this._cacheRepository.set(REDIS_STORE.SESSION+payload.sessionId,session,ttl)
 
             return {

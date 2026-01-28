@@ -95,11 +95,8 @@ export class VerifyService implements IVerifyService{
 
             //session handling,
 
-            const now = new Date();
-
-            const expiresAt = new Date(
-            now.getTime() + 30 * 24 * 60 * 60 * 1000 // 30 days in ms
-            );
+            const now = Date.now()
+            const expiresAt = now + ENV.REFRESH_TOKEN_TTL * 1000
 
             const session:IAuthSession = {
                 userId:String(user._id),
