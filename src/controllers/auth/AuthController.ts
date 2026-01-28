@@ -69,7 +69,7 @@ export class AuthController implements IAuthController {
     async handleRefresh(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
-            const {refreshToken} = req.cookies
+            const {refreshToken} = req.body
 
             const {newAccessToken,newRefreshToken,} = await this._authService.refreshToken({refreshToken})
 
@@ -86,7 +86,7 @@ export class AuthController implements IAuthController {
         try {
 
 
-            const {refreshToken} = req.cookies
+            const {refreshToken} = req.body
 
             await this._authService.logout({refreshToken})
 

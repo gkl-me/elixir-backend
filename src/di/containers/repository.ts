@@ -16,5 +16,5 @@ container.register(Token.SubscriptionRepository,{
     useClass:SubscriptionRepository
 })
 container.register(Token.CacheRepository,{
-    useClass:CacheRepository
+    useClass:CacheRepository,
 })

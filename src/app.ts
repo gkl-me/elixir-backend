@@ -21,6 +21,7 @@ import mongoose from 'mongoose';
 import { STATUS_CODES } from './constants/statusCodes';
 import { seedPlan } from './seed/seedPlan';
 import { ENV } from './constants/env';
+import { auth } from './middlewares/auth';
  
 
 const app = express();
@@ -43,6 +44,12 @@ app.use(morganMiddleware)
 
 app.use('/api/v1/auth',authRoutes) 
 app.use('/api/v1/users',authRoutes) 
+
+app.get('/api/v1/demo',auth,(req,res) => {
+    res.json({
+        message:"hello"
+    })
+})
 
 // app.use('/api/v1/admin',adminRoutes)
 
