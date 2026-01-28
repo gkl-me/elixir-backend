@@ -19,13 +19,16 @@ export class PasswordController implements IPasswordController{
     async handleForgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             
+            
             const {email} = req.body
 
-            // call job from queue
-            await sendOtpEmailJob(email)
+            //call forgot password server
+            const {userEmail,expiresAt} = await this._passwordService.forgotPassword({email:email.trim()})
 
-
-            return successResponse(res,AUTH_MESSAGES.OTP_SENT,STATUS_CODES.OK,{})
+            return successResponse(res,AUTH_MESSAGES.OTP_SENT,STATUS_CODES.OK,{
+                email:userEmail,
+                expiresAt
+            })
 
 
         } catch (error) {
@@ -36,11 +39,12 @@ export class PasswordController implements IPasswordController{
     async handleResetPasswrod(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             
-            const {email,newPassword} = req.body
-            const resetPasswordToken = req.params.token
+            const {email,newPassword,resetPasswordToken} = req.body
+
+            //call validator for password
 
             await this._passwordService.resetPassword({
-                email,
+                email:email.trim(),
                 newPassword,
                 resetPasswordToken
             })

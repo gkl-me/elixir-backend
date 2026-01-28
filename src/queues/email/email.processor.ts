@@ -25,6 +25,8 @@ export async function sendVerificationEmailProccessor(job:Job){
 
 export async function sendOtpEmailJobProccessor(job:Job){
     try {
+
+        console.log("Otp email Proccessing")
         
         const {email} = job.data
 

@@ -36,7 +36,7 @@ export class TokenManager implements ITokenManager{
             userId,
             role,
             sessionId
-        },process.env.ACCESS_TOKEN_SECRET!,{expiresIn:ENV.ACCESS_TOKEN_TTL})
+        },process.env.ACCESS_TOKEN_SECRET!,{expiresIn:ENV.ACCESS_TOKEN_TTL*1000})
         return accessRoken
     }
 
@@ -47,7 +47,7 @@ export class TokenManager implements ITokenManager{
             sessionId,
             tokenVersion
 
-        },process.env.REFRESH_TOKEN_SECRET!,{expiresIn:ENV.REFRESH_TOKEN_TTL})
+        },process.env.REFRESH_TOKEN_SECRET!,{expiresIn:ENV.REFRESH_TOKEN_TTL*1000})
         return refreshToken
     }
 

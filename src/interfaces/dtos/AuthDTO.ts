@@ -66,6 +66,10 @@ export interface IForgotPasswordDto{
     email:string
 }
 
+export interface IForgotPasswordResponseDto{
+    userEmail:string,
+    expiresAt:Date
+}
 
 export interface ISendOtpDto{
     email:string,

@@ -6,6 +6,6 @@ export interface IAuthSession{
     tokenVersion:number,
     userAgent?:string,
     ip?:string,
-    createdAt:Date,
-    expiresAt:Date
+    createdAt:number,
+    expiresAt:number
 }

@@ -15,6 +15,7 @@ export const CONSTANT_MESSAGES = {
 
 
 export const AUTH_MESSAGES = {
+    SESSION_EXPIRED:"Session expired login again",
     ALREADY_EXITS:"Email already exists please login",
     BLOCKED:"User blocked by admin",
     VERIFY_ERROR:"User not verified, Verifcation email sent",
@@ -24,11 +25,15 @@ export const AUTH_MESSAGES = {
     GOOGLE_AUTH:'Please Login with google',
     TOKEN_REFRESH:'Token Successfully refreshed',
     OTP_ERROR:'Otp expired, click on resend to get a new otp',
+    OTP_EXPIRED:"Otp expired , click on resend to get new otp",
     INVALID_OTP:'Otp is invalid or does not match',
     RESET_TOKEN_EXPIRED:"Your reset session has expired. Please start again.",
     INVALID_RESET_TOKEN: "Your reset session is invalid. Please start again.",
     OTP_SENT:'Otp has been sent to email',
-    OTP_VERIFIED:"Otp verifed "
+    OTP_VERIFIED:"Otp verifed",
+    OTP_COOLDOWN_ERROR:"Please wait 2 minutes before requesting another OTP",
+    OTP_ATTEMPT_ERROR:"OTP attempt limit reached.Click on resend for new otp.",
+    OTP_RETRY_ERROR:"Otp retry limit. Try again after one hour."
 }
 
 export const USER_MESSAGES = {

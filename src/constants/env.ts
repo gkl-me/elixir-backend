@@ -15,6 +15,8 @@ export const ENV = {
     ACCESS_TOKEN_TTL:15*60,
     REFRESH_TOKEN_TTL: 7 * 24 * 60 * 60,
 
+    OTP_TTL:5*60,
+
     STRIPE_KEY:process.env.STRIPE_KEY || "",
     STRIPE_WEBHOOK_SECRET:process.env.STRIPE_WEBHOOK_SECRET || "",
 

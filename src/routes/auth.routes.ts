@@ -61,7 +61,7 @@ router.post('/forgot-password',(req,res,next) => {
     const passwordController = container.resolve<IPasswordController>(Token.PasswordController)
     passwordController.handleForgotPassword(req,res,next) 
 })
-router.post('/reset-password/:token',(req,res,next)=>{
+router.post('/reset-password',(req,res,next)=>{
     const passwordController = container.resolve<IPasswordController>(Token.PasswordController)
     passwordController.handleResetPasswrod(req,res,next) 
 })

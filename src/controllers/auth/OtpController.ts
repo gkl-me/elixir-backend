@@ -6,7 +6,7 @@ import { IOtpService } from "../../services/auth/interfaces/IOtpService";
 import { successResponse } from "../../helper/responseHanlder";
 import { AUTH_MESSAGES, USER_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
-import { sendOtpEmailJob } from "../../queues/email/email.producer";
+import { IPasswordService } from "../../services/auth/interfaces/IPasswordService";
 
 
 
@@ -14,7 +14,8 @@ import { sendOtpEmailJob } from "../../queues/email/email.producer";
 @injectable()
 export class OtpController  implements IOtpController{
     constructor(
-        @inject(Token.OtpService) private readonly _otpService:IOtpService
+        @inject(Token.OtpService) private readonly _otpService:IOtpService,
+        @inject(Token.PasswordService) private readonly _passwordService:IPasswordService
     ){}
 
     async handleVerifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -22,7 +23,7 @@ export class OtpController  implements IOtpController{
 
             const {otp,email} = req.body
 
-            const {resetPasswordToken} = await this._otpService.verfiyOtp({email,otp})
+            const {resetPasswordToken} = await this._otpService.verfiyOtp({email:email.trim(),otp})
 
             return successResponse(res,AUTH_MESSAGES.OTP_VERIFIED,STATUS_CODES.ACCEPTED,{
                 resetPasswordToken
@@ -38,11 +39,13 @@ export class OtpController  implements IOtpController{
             
             const {email} = req.body
 
+            //call forgot password server
+            const {userEmail,expiresAt} = await this._passwordService.forgotPassword({email:email.trim(),})
 
-            //call job from queue
-            await sendOtpEmailJob(email)
-
-            return successResponse(res,AUTH_MESSAGES.OTP_SENT,STATUS_CODES.OK,{})
+            return successResponse(res,AUTH_MESSAGES.OTP_SENT,STATUS_CODES.OK,{
+                email:userEmail,
+                expiresAt
+            })
 
         } catch (error) {
             next(error)
