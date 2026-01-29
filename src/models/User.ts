@@ -1,11 +1,5 @@
 import { Document, model, Schema } from "mongoose";
-import { PlanType } from "./Plan";
-import { string } from "zod";
 
-export enum UserType{
-    USER='user',
-    COMPANY='company'
-}
 
 export interface IUser extends Document{
     name:string,
@@ -15,12 +9,9 @@ export interface IUser extends Document{
     isBlocked:boolean
     createdAt?:Date
     updatedAt?:Date,
-    role:UserType
-    workSpaceId:string
-    companyId:string
-    stripeCustomerId:string
-    googleId?:string
-    image?:string
+    avatarUrl?:string,
+    googleId?:string,
+    role:'user'|'superAdmin'
 }
 
 const UserSchema = new Schema({
@@ -44,24 +35,15 @@ const UserSchema = new Schema({
     password:{
         type:String,
     },
+    avatarUrl:{
+        type:String
+    },
     role:{
         type:String,
-        default:'user',
-        enum:['user','company']
-    },
-    workSpaceId:{
-        type:String
-    },
-    companyId:{
-        type:String
-    },
-    stripeCustomerId:{
-        type:String,
+        enum:['user','superAdmin'],
+        default:'user'
     },
     googleId:{
-        type:String,
-    },
-    image:{
         type:String
     }
 },{

@@ -3,13 +3,9 @@ import { Request } from "express"
 declare global{
     namespace Express{
         interface Request{
-            admin?:{
-                id:string,
-                role:string
-            },
             user:{
-                id:string,
-                role:string
+            userId:string,
+            role:string
             }
         }
     }

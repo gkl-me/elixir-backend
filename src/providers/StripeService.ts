@@ -107,7 +107,7 @@ export class StripeService implements IStripeService{
             
             const session = await this._stripe.checkout.sessions.create({
                 customer:customerId,
-                payment_method_types:['card','us_bank_account'],
+                payment_method_types:['card','us_bank_account',],
                 mode:'subscription',
                 line_items:[{
                     price:priceId,

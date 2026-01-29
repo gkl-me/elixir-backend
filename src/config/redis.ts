@@ -1,11 +1,27 @@
-import { RedisOptions } from "ioredis";
-import { ENV } from "../constants/env";
+import IORedis from 'ioredis'
+import { ENV } from '../constants/env'
 
 
-
-export const redisConfig:RedisOptions = {
+export const redisConnection = new IORedis({
     host:ENV.REDIS_HOST,
     port:parseInt(ENV.REDIS_PORT),
-    password:ENV.REDIS_PASSWORD,
-    maxRetriesPerRequest:3
-}
+    maxRetriesPerRequest:null
+})
+
+
+
+redisConnection.on('connect',() => {
+    console.log("Redis connected")
+})
+
+
+redisConnection.on('error',(err) => {
+    console.log("Redis Error",err)
+})
+
+
+process.on("SIGINT", async () => {
+  console.log("🛑 Closing Redis...");
+  await redisConnection.quit();
+  process.exit(0);
+});

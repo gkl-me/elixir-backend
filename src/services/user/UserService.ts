@@ -1,25 +1,27 @@
 import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
 import { CustomError } from "../../errors/CustomError";
-import { CONSTANT_MESSAGES } from "../../constants/messages";
+import { AUTH_MESSAGES, CONSTANT_MESSAGES, USER_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
-import { adminDtoMapper } from "../../interfaces/mapper/adminDtoMapper";
+import { userDtoMapper } from "../../interfaces/mapper/userDtoMapper";
 import { Token } from "../../di/token";
-import { IGetAllUsersDto, UserListDto } from "../../interfaces/dtos/UserDTo";
 import { IUserService } from "./interface/IUserService";
+import { IUpdatePasswordDto, IUserListDto, IUserQueryDto } from "../../interfaces/dtos/UserDTo";
+import { IPasswordHasher } from "../../providers/interfaces/IPasswordHasher";
 
 @injectable()
 export class UserService implements IUserService{
     constructor(
-        @inject(Token.UserRepository) private _userRepository:IUserRepository
+        @inject(Token.UserRepository) private _userRepository:IUserRepository,
+        @inject(Token.PasswordHasher) private _passwordHasher:IPasswordHasher
     ){}
 
-    async getAllUsers(data:IGetAllUsersDto):Promise<{users:UserListDto[],totalCount:number}|null>{
+    async getAllUsers(data:IUserQueryDto):Promise<{users:IUserListDto[],totalCount:number}|null>{
         try {
             
             const {search,page,limit,sortBy,sortOrder,status} = data
 
-            const skip = (page) * limit
+            const skip = (page-1) * limit
             const sort:Record<string,-1|1> = {}
             if(sortBy){
                 sort[sortBy] = sortOrder === -1 ? -1 : 1
@@ -38,7 +40,7 @@ export class UserService implements IUserService{
 
             let mappedUsers = null
             if(allUsers?.length){
-                mappedUsers = allUsers.map((user) => adminDtoMapper.toUserListDto(user))
+                mappedUsers = allUsers.map((user) => userDtoMapper.toUserListDto(user))
             }
 
             return {
@@ -47,6 +49,7 @@ export class UserService implements IUserService{
             }
 
         } catch (error) {
+            if(error instanceof CustomError) throw error
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)   
         }
     }
@@ -61,7 +64,29 @@ export class UserService implements IUserService{
             userFound.save()
 
         } catch (error) {
+            if(error instanceof CustomError) throw error
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR) 
+        }
+    }
+
+    async updatePassword(data: IUpdatePasswordDto): Promise<void> {
+        try {
+
+            const {email,newPassword} = data
+
+            const user = await this._userRepository.findByEmail(email)
+            if(!user) throw new CustomError(AUTH_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
+
+            const hashPassword = await this._passwordHasher.hashPassword(newPassword)
+            if(user && user.password){
+                user.password = hashPassword
+                user.save()
+            }
+
+            
+        } catch (error) {
+            if(error instanceof CustomError) throw error
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
 }

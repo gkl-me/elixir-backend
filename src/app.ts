@@ -4,13 +4,13 @@ dotenv.config();
 
 import 'reflect-metadata'
 import './di'
-import userRoutes from './routes/userRoutes'
+import authRoutes from './routes/auth.routes'
+import userRoutes from './routes/user.routes'
 import connectDB from './config/db';
 import { errorHandler } from './middlewares/errorHandler';
 import { notFound } from './middlewares/notFound';
 import morganMiddleware from './middlewares/morganMiddleware';
-import adminRoutes from './routes/adminRoutes'
-import webhookRoutes from './routes/webhookRoutes'
+
 
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
@@ -21,6 +21,7 @@ import mongoose from 'mongoose';
 import { STATUS_CODES } from './constants/statusCodes';
 import { seedPlan } from './seed/seedPlan';
 import { ENV } from './constants/env';
+import { auth } from './middlewares/auth';
  
 
 const app = express();
@@ -32,7 +33,8 @@ app.use(cors({
 }))
 
 //webhooks
-app.use('/webhook',webhookRoutes)
+// app.use('/webhook',webhookRoutes)
+
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
@@ -40,13 +42,21 @@ app.use(cookieParser())
 app.use(morganMiddleware)
 
 
-app.use('/api/v1/user',userRoutes) 
-app.use('/api/v1/admin',adminRoutes)
+app.use('/api/v1/auth',authRoutes) 
+app.use('/api/v1/users',authRoutes) 
+
+app.get('/api/v1/demo',auth,(req,res) => {
+    res.json({
+        message:"hello"
+    })
+})
+
+// app.use('/api/v1/admin',adminRoutes)
 
 
 
 //swagger api docs
-app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
+// app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
 
 //health check route
 app.get('/ping',(req:Request,res:Response) => {
@@ -73,7 +83,8 @@ app.listen(5000, async ()=>{
 
     //seed admin to db
     await seedAdmin()
-    await seedPlan()
+
+        
     console.log("Server is running on port 5000")
 })
 
@@ -85,6 +96,7 @@ process.on('SIGINT', async () => {
     try {
         await mongoose.connection.close();
         console.log('MongoDB connection closed');
+
     } catch (error) {
         console.log('Error while closing mongoose connection',error)
     }

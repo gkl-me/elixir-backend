@@ -11,6 +11,11 @@ export const ENV = {
 
     ACCESS_TOKEN_SECRET:process.env.ACCESS_TOKEN_SECRET || "secret",
     REFRESH_TOKEN_SECRET:process.env.REFRESH_TOKEN_SECRET || "secret",
+    
+    ACCESS_TOKEN_TTL:15*60,
+    REFRESH_TOKEN_TTL: 7 * 24 * 60 * 60,
+
+    OTP_TTL:5*60,
 
     STRIPE_KEY:process.env.STRIPE_KEY || "",
     STRIPE_WEBHOOK_SECRET:process.env.STRIPE_WEBHOOK_SECRET || "",
@@ -20,5 +25,4 @@ export const ENV = {
 
     REDIS_HOST:process.env.REDIS_HOST || "redis",
     REDIS_PORT:process.env.REDIS_PORT || "6359",
-    REDIS_PASSWORD:process.env.REDIS_PASSWORD || "demo"
 }

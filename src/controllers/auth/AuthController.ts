@@ -1,28 +1,25 @@
 import { NextFunction, Request, response, Response } from "express";
 import { IAuthService } from "../../services/auth/interfaces/IAuthService";
 import { IAuthController } from "./interface/IAuthController";
-import { CustomError } from "../../errors/CustomError";
-import { errorResponse, successResponse } from "../../helper/responseHanlder";
+import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
 import { clearCookie, setCookie } from "../../helper/cookiesHelper";
-import { extractStringQueryParams } from "../../helper/queryParamUtils";
 import { AUTH_MESSAGES, USER_MESSAGES } from "../../constants/messages";
-import { ITokenManager } from "../../utils/interfaces/ITokenManager";
+
 
 @injectable()
 export class AuthController implements IAuthController {
     constructor(
         @inject(Token.AuthService) private _authService: IAuthService,
-        @inject(Token.TokenManager) private _tokenManager:ITokenManager
     ){}
 
-    async registerUser(req:Request, res:Response,next:NextFunction){
+    async handleRegister(req:Request, res:Response,next:NextFunction){
         try {
             const { email, password, name } = req.body
             
-            const user = await this._authService.registerUser({email, password, name})
+            const user = await this._authService.register({email, password, name})
 
             return successResponse(res,USER_MESSAGES.REGISTER_USER,STATUS_CODES.CREATED,user)
 
@@ -31,81 +28,68 @@ export class AuthController implements IAuthController {
         }
     }
 
-    async loginUser(req: Request, res: Response,next:NextFunction): Promise<void> {
+    async handleLogin(req: Request, res: Response,next:NextFunction): Promise<void> {
         try {
             
             const {email,password} = req.body
+            const userAgent = req.headers["user-agent"]
+            const ip = req.ip
 
-            const authUser = await this._authService.loginUser({email, password})
+            const authUser = await this._authService.login({email, password},{ip,userAgent})
 
-            const {...user} = authUser
-            const accessToken = this._tokenManager.generateAccessToken(user.id,user.role)
-            const refreshToken = this._tokenManager.generateRefreshToken(user.id,user.role)
+            const {accessToken,refreshToken,...user} = authUser
 
-            setCookie(res,'access','accessToken',accessToken)
-            setCookie(res,'refresh','refreshToken',refreshToken)
+            setCookie(res,'refreshToken',refreshToken)
 
-           return successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user})
-
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    async verifyUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-
-            const {token} = req.params
-
-            await this._authService.verifyUser({token})
-
-            return successResponse(res,USER_MESSAGES.VERIFY_USER,STATUS_CODES.ACCEPTED,{})
+           return successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user,accessToken,refreshToken})
 
         } catch (error) {
             next(error)
         }
     }
 
-    async googleAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+
+    async handleGoogleAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
             const {name,email,googleId,image} = req.body
 
-            const user = await this._authService.googleAuth({name,email,googleId,image})
+            const {accessToken,refreshToken,...user} = await this._authService.googleAuth({name,email,googleId,image})
 
-            const accessToken = this._tokenManager.generateAccessToken(user.id,user.role)
-            const refreshToken = this._tokenManager.generateRefreshToken(user.id,user.role)
 
-            setCookie(res,'access','accessToken',accessToken)
-            setCookie(res,'refresh','refreshToken',refreshToken)
+            setCookie(res,'refreshToken',refreshToken)
 
-            successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,user)
+            successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{accessToken,user})
 
         } catch (error) {
             next(error)
         }
     }
 
-    async refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async handleRefresh(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
-            const {refreshToken} = req.cookies
+            const {refreshToken} = req.body
 
-            const {accessToken} = await this._authService.refreshToken({refreshToken})
-            
-            setCookie(res,'access','accessToken',accessToken)
+            const {newAccessToken,newRefreshToken,} = await this._authService.refreshToken({refreshToken})
 
-            successResponse(res,AUTH_MESSAGES.TOKEN_REFRESH,STATUS_CODES.OK,{})
+            setCookie(res,'refreshToken',newRefreshToken)
+
+            successResponse(res,AUTH_MESSAGES.TOKEN_REFRESH,STATUS_CODES.OK,{accessToken:newAccessToken,refreshToken:newRefreshToken})
 
         } catch (error) {
             next(error)
         }
     }
 
-    async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async handleLogout(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            
-            clearCookie(res,'accessToken')
+
+
+            const {refreshToken} = req.body
+
+            await this._authService.logout({refreshToken})
+
             clearCookie(res,'refreshToken')
 
             successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{})
