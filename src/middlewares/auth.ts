@@ -8,6 +8,7 @@ import { STATUS_CODES } from "../constants/statusCodes";
 import { IUserRepository } from "../repositories/user/interfaces/IUserRepository";
 import { ICacheRepository } from "../repositories/cache/ICacheRepository";
 import { REDIS_STORE } from "../constants/redis/redisStore";
+import { AUTH_ERROR_CODE } from "../constants/errorCode";
 
 
 
@@ -42,7 +43,7 @@ export const auth = async (req:Request,res:Response,next:NextFunction) => {
         const userFound = await userRepository.findById(payload.userId)
 
         if(userFound?.isBlocked){
-            throw new CustomError(AUTH_MESSAGES.BLOCKED,STATUS_CODES.FORBIDDEN)
+            throw new CustomError(AUTH_MESSAGES.BLOCKED,STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
         }
 
         req.user = {userId:payload.userId,role:payload.role}

@@ -90,14 +90,14 @@ export class AuthService implements IAuthService {
 
         //check if the user is verified
         if(!userFound?.isVerified){
-            throw new CustomError(AUTH_MESSAGES.VERIFY_ERROR,  STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.NOT_VERIFIED)
+            throw new CustomError(AUTH_MESSAGES.VERIFY_ERROR,STATUS_CODES.BAD_REQUEST,AUTH_ERROR_CODE.NOT_VERIFIED)
         }
 
 
         //check if the user account is blocked
         // need to send error code here
         if(userFound?.isBlocked){
-            throw new CustomError(AUTH_MESSAGES.BLOCKED, STATUS_CODES.FORBIDDEN)
+            throw new CustomError(AUTH_MESSAGES.BLOCKED, STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
         }
 
         if(!userFound.password && userFound?.googleId){
@@ -144,7 +144,7 @@ export class AuthService implements IAuthService {
         await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
 
         //add user sessions into redis user session list
-        await this._cacheRepository.set(REDIS_STORE.USER_SESSION+String(userFound._id),sessionId)
+        await this._cacheRepository.addSet(REDIS_STORE.USER_SESSION+String(userFound._id),sessionId)
 
 
         const resDto = authDtoMapper.toAuthResponse(userFound,accessToken,refreshToken)
@@ -201,6 +201,10 @@ export class AuthService implements IAuthService {
             const payload = await this._tokenManager.verifyToken(refreshToken,'refresh')
             if(!payload) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
 
+            //check if user is blocked or not
+            const user = await this._userRepository.findById(payload.userId)
+            if(!user?.isBlocked) throw new CustomError(CONSTANT_MESSAGES.FORBIDDEN,STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
+
 
             //session check 
             const session = await this._cacheRepository.get(REDIS_STORE.SESSION+payload.sessionId)
@@ -227,7 +231,7 @@ export class AuthService implements IAuthService {
             session.refreshTokenHash = this._tokenManager.hashToken(newRefreshToken)
 
             //update the redis with new hash and version and new ttl
-            const ttl = Math.floor((session.expiresAt - session.createdAt)/1000 )
+            const ttl = Math.floor((session.expiresAt -  Date.now())/1000 )
             await this._cacheRepository.set(REDIS_STORE.SESSION+payload.sessionId,session,ttl)
 
             return {
