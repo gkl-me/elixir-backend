@@ -4,7 +4,7 @@ import {  IUpdatePasswordDto, IUserListDto, IUserQueryDto } from "../../../inter
 
 
 export interface IUserService{
-    getAllUsers(data:IUserQueryDto):Promise<{users:IUserListDto[],totalCount:number} |null>;
+    getAllUsers(data:IUserQueryDto):Promise<{users:IUserListDto[],totalCount:number}>;
     toggleBlockStatus(id:string):Promise<void>
     updatePassword(data:IUpdatePasswordDto):Promise<void>
 }

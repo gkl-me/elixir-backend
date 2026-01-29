@@ -49,8 +49,9 @@ export class UserRepository extends BaseRepository<IUser> implements IUserReposi
 
         let combineSearch = {
             ...searchFilter,
-            ...(status ? {isBlocked:status === 'true'}:{}),
-            isVerified:true
+            ...(status ? {isBlocked: status === "blocked"}:{}),
+            isVerified:true,
+            role:"user"
         }
 
         return this.findAll(combineSearch,options)

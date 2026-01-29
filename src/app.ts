@@ -4,12 +4,14 @@ dotenv.config();
 
 import 'reflect-metadata'
 import './di'
-import authRoutes from './routes/auth.routes'
-import userRoutes from './routes/user.routes'
 import connectDB from './config/db';
 import { errorHandler } from './middlewares/errorHandler';
 import { notFound } from './middlewares/notFound';
 import morganMiddleware from './middlewares/morganMiddleware';
+
+//route imports
+import authRoutes from './routes/auth.routes'
+import userRoutes from './routes/user.routes'
 
 
 import cookieParser from 'cookie-parser';
@@ -43,15 +45,13 @@ app.use(morganMiddleware)
 
 
 app.use('/api/v1/auth',authRoutes) 
-app.use('/api/v1/users',authRoutes) 
+app.use('/api/v1/users',userRoutes) 
 
 app.get('/api/v1/demo',auth,(req,res) => {
     res.json({
         message:"hello"
     })
 })
-
-// app.use('/api/v1/admin',adminRoutes)
 
 
 

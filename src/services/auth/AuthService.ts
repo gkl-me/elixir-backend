@@ -203,7 +203,7 @@ export class AuthService implements IAuthService {
 
             //check if user is blocked or not
             const user = await this._userRepository.findById(payload.userId)
-            if(!user?.isBlocked) throw new CustomError(CONSTANT_MESSAGES.FORBIDDEN,STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
+            if(user?.isBlocked) throw new CustomError(CONSTANT_MESSAGES.FORBIDDEN,STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
 
 
             //session check 

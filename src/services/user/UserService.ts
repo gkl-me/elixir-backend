@@ -8,6 +8,7 @@ import { Token } from "../../di/token";
 import { IUserService } from "./interface/IUserService";
 import { IUpdatePasswordDto, IUserListDto, IUserQueryDto } from "../../interfaces/dtos/UserDTo";
 import { IPasswordHasher } from "../../providers/interfaces/IPasswordHasher";
+import logger from "../../middlewares/logger";
 
 @injectable()
 export class UserService implements IUserService{
@@ -16,7 +17,7 @@ export class UserService implements IUserService{
         @inject(Token.PasswordHasher) private _passwordHasher:IPasswordHasher
     ){}
 
-    async getAllUsers(data:IUserQueryDto):Promise<{users:IUserListDto[],totalCount:number}|null>{
+    async getAllUsers(data:IUserQueryDto):Promise<{users:IUserListDto[],totalCount:number}>{
         try {
             
             const {search,page,limit,sortBy,sortOrder,status} = data
@@ -49,8 +50,8 @@ export class UserService implements IUserService{
             }
 
         } catch (error) {
-            if(error instanceof CustomError) throw error
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)   
+            logger.error(error)
+            throw error   
         }
     }
 
@@ -64,8 +65,8 @@ export class UserService implements IUserService{
             userFound.save()
 
         } catch (error) {
-            if(error instanceof CustomError) throw error
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR) 
+            logger.error(error)
+            throw error
         }
     }
 
@@ -85,8 +86,8 @@ export class UserService implements IUserService{
 
             
         } catch (error) {
-            if(error instanceof CustomError) throw error
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+            logger.error(error)
+            throw error
         }
     }
 }
