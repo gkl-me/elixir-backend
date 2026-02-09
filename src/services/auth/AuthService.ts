@@ -116,6 +116,10 @@ export class AuthService implements IAuthService {
         }
 
         if(!userFound.password && userFound?.googleId){
+            throw new CustomError(AUTH_MESSAGES.GITHUB_AUTH,STATUS_CODES.BAD_REQUEST)
+        }
+
+        if(!userFound.password && userFound?.githubId){
             throw new CustomError(AUTH_MESSAGES.GOOGLE_AUTH,STATUS_CODES.BAD_REQUEST)
         }
 

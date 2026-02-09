@@ -28,6 +28,8 @@ export const AUTH_MESSAGES = {
     GOOGLE_TOKEN_ERROR:"Google auth faild try again",
     INVALID_GOOGLE_ACC:"Invalid google account",
 
+    GITHUB_AUTH:"Please login with github",
+
     TOKEN_REFRESH:'Token Successfully refreshed',
     OTP_ERROR:'Otp expired, click on resend to get a new otp',
     OTP_EXPIRED:"Otp expired , click on resend to get new otp",
