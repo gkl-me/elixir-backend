@@ -39,7 +39,7 @@ export class AuthController implements IAuthController {
 
             const {accessToken,refreshToken,...user} = authUser
 
-            setCookie(res,'refreshToken',refreshToken)
+            // setCookie(res,'refreshToken',refreshToken)
 
            return successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user,accessToken,refreshToken})
 
@@ -52,15 +52,30 @@ export class AuthController implements IAuthController {
     async handleGoogleAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
-            const {name,email,googleId,image} = req.body
+            const {idToken} = req.body
+            const userAgent = req.headers["user-agent"]
+            const ip = req.ip
 
-            const {accessToken,refreshToken,...user} = await this._authService.googleAuth({name,email,googleId,image})
+            const {accessToken,refreshToken,...user} = await this._authService.googleAuth({idToken},{userAgent,ip})
 
+            successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user,accessToken,refreshToken})
 
-            setCookie(res,'refreshToken',refreshToken)
+        } catch (error) {
+            next(error)
+        }
+    }
 
-            successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{accessToken,user})
+    async handleGithubAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
 
+            const data = req.body
+             const userAgent = req.headers["user-agent"]
+            const ip = req.ip
+
+            const {accessToken,refreshToken,...user} = await this._authService.githubAuth(data,{userAgent,ip})
+
+            successResponse(res,USER_MESSAGES.LOGIN_SUCCESS,STATUS_CODES.OK,{user,accessToken,refreshToken})
+            
         } catch (error) {
             next(error)
         }

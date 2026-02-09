@@ -11,7 +11,9 @@ export interface IUser extends Document{
     updatedAt?:Date,
     avatarUrl?:string,
     googleId?:string,
-    role:'user'|'superAdmin'
+    role:'user'|'superAdmin',
+    githubId?:string,
+    githubUsername?:string,
 }
 
 const UserSchema = new Schema({
@@ -44,6 +46,12 @@ const UserSchema = new Schema({
         default:'user'
     },
     googleId:{
+        type:String
+    },
+    githubId:{
+        type:String
+    },
+    githubUsername:{
         type:String
     }
 },{

@@ -5,7 +5,7 @@ import { IPasswordHasher } from "../../providers/interfaces/IPasswordHasher";
 import { ITokenManager } from "../../providers/interfaces/ITokenManager";
 import { IAuthService} from "./interfaces/IAuthService";
 import { LoginSchema, RegisterSchema}  from '../../validator/AuthSchema'
-import { IAuthResponseDto, IForgotPasswordDto, IGoogleAuthDto, ILoginDto, ILogoutDto, IRefreshTokenDto, IRefreshTokenResponseDto, IRegisterDto } from "../../interfaces/dtos/AuthDTO";
+import { IAuthResponseDto, IForgotPasswordDto, IGithubAuthDto, IGoogleAuthDto, ILoginDto, ILogoutDto, IRefreshTokenDto, IRefreshTokenResponseDto, IRegisterDto } from "../../interfaces/dtos/AuthDTO";
 import { authDtoMapper } from "../../interfaces/mapper/authDtoMapper";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES, USER_MESSAGES, } from "../../constants/messages";
 import { inject, injectable } from "tsyringe";
@@ -19,9 +19,15 @@ import { IUserService } from "../user/interface/IUserService";
 import { sendVerificationEmailJob } from "../../queues/email/email.producer";
 import { IAuthSession } from "../../interfaces/types/session.types";
 import { ILoginMetaDto } from "../../interfaces/dtos/MetaDto";
+import { OAuth2Client } from "google-auth-library";
+import { userDtoMapper } from "../../interfaces/mapper/userDtoMapper";
+import { GithubAuthService } from "../../providers/GithubAuthService";
+import { IGithubAuthService } from "../../providers/interfaces/IGithubAuthService";
 
 @injectable()
 export class AuthService implements IAuthService {
+
+    private _oAuthClient:OAuth2Client
 
     constructor(
         @inject(Token.UserRepository) private _userRepository:IUserRepository,
@@ -29,8 +35,11 @@ export class AuthService implements IAuthService {
         @inject(Token.TokenManager) private _tokenManager:ITokenManager,
         @inject(Token.EmailService) private _emailService:IEmailService,
         @inject(Token.CacheRepository) private _cacheRepository:ICacheRepository<string|IAuthSession>,
-        @inject(Token.UserService) private _userService:IUserService
-    ){}
+        @inject(Token.UserService) private _userService:IUserService,
+        @inject(Token.GithubAuthService) private readonly _githubAuthService:IGithubAuthService
+    ){
+        this._oAuthClient = new OAuth2Client(ENV.GOOGLE_CLIENT_ID)
+    }
 
     async register(user:IRegisterDto):Promise<void>{
         const {name,email,password} = user
@@ -71,6 +80,12 @@ export class AuthService implements IAuthService {
         }
     }
 
+    /**
+     * 
+     * @param {ILoginDto} user 
+     * @param {ILoginMetaDto} meta 
+     * @returns {Promise<IAuthResponseDto>}
+     */
     async login(user:ILoginDto,meta:ILoginMetaDto): Promise<IAuthResponseDto>{
         try {
 
@@ -163,31 +178,178 @@ export class AuthService implements IAuthService {
 
 
     //need to update google auth
-    async googleAuth(data: IGoogleAuthDto): Promise<IAuthResponseDto> {
+    async googleAuth(data: IGoogleAuthDto,meta:ILoginMetaDto): Promise<IAuthResponseDto> {
         try {
             
-            const {name,email,googleId,image} = data
+            const {idToken} = data
 
-            const userFound = await this._userRepository.findByEmail(email)
+            if(!idToken){
+                throw new CustomError(AUTH_MESSAGES.GOOGLE_TOKEN_ERROR,STATUS_CODES.BAD_REQUEST)
+            }
+
+            const ticket = await this._oAuthClient.verifyIdToken({
+                idToken,
+                audience:ENV.GOOGLE_CLIENT_ID
+            })
+
+            const payload = await ticket.getPayload()
+
+            if(!payload?.email){
+                throw new CustomError(AUTH_MESSAGES.INVALID_GOOGLE_ACC,STATUS_CODES.BAD_REQUEST)
+            }
+
+
+            const userFound = await this._userRepository.findByEmail(payload?.email)
+            
             let user;
+            if(userFound && !userFound.googleId){
+                user = await this._userRepository.update(String(userFound._id),{
+                    isVerified:true,
+                    googleId:payload.sub,
+                    avatarUrl:payload?.picture
+                })
+            }
             if(!userFound){
                 user = await this._userRepository.create({
-                    name,
-                    email,
-                    googleId,
-                    avatarUrl:image,
+                    name:payload?.name,
+                    email:payload?.email,
+                    googleId:payload?.sub,
+                    avatarUrl:payload?.picture,
                     isVerified:true
                 })
             }
 
-            if(userFound) return authDtoMapper.toAuthResponse(userFound,"access","refresh")
-            if(user) return authDtoMapper.toAuthResponse(user,"access","refresh")
+            if(!user){
+                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+            }
+
+
+            //session and token manangement
+
+            const sessionId = this._tokenManager.generateSessionId()
+            const tokenVersion = 1
+
+            const accessToken = await this._tokenManager.generateAccessToken(String(user._id),user.role,sessionId)
+            const refreshToken = await this._tokenManager.generateRefreshToken(String(user._id),user.role,sessionId,tokenVersion)
+
+            const refreshTokenHash = await this._tokenManager.hashToken(refreshToken)
+
+            //session handling,
+
+            const now = Date.now()
+
+            //expires at time
+            const expiresAt = now + ENV.REFRESH_TOKEN_TTL*1000
+
+
+            const session:IAuthSession = {
+                userId:String(user._id),
+                refreshTokenHash,
+                tokenVersion,
+                ip:meta.ip,
+                userAgent:meta.userAgent,
+                createdAt:now,
+                expiresAt
+            }
+
+            await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
+
+            //add user sessions into redis user session list
+            await this._cacheRepository.addSet(REDIS_STORE.USER_SESSION+String(user._id),sessionId)
+
+            
+
+            if(user) return authDtoMapper.toAuthResponse(user,accessToken,refreshToken)
 
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR, STATUS_CODES.INTERNAL_SERVER_ERROR);
 
         } catch (error) {
             if(error instanceof CustomError) throw error
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async githubAuth(data: IGithubAuthDto, meta: ILoginMetaDto): Promise<IAuthResponseDto> {
+        try {
+
+
+            const {githubId,name,email,image,githubUsername,access_token} = data
+
+            const gitubEmails = await this._githubAuthService.verifyGithubUser(access_token)
+
+            const emailVerified = gitubEmails.find((e) => e.primary && e.verified && e.email==email)
+            
+            if(!emailVerified){
+                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+            }
+
+
+            const userFound = await this._userRepository.findByEmail(email)
+
+            let user;
+
+            if(userFound && !userFound.githubId){
+                user = await this._userRepository.update(String(userFound._id),{
+                    isVerified:true,
+                    avatarUrl:image,
+                    githubId,
+                    githubUsername
+                })
+            }
+            if(!userFound){
+                user = await this._userRepository.create({
+                    name,
+                    email,
+                    isVerified:true,
+                    avatarUrl:image,
+                    githubId,
+                    githubUsername
+                })
+            }
+
+             if(!user){
+                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+            }
+
+            //session and token manangement
+            const sessionId = this._tokenManager.generateSessionId()
+            const tokenVersion = 1
+
+            const accessToken = await this._tokenManager.generateAccessToken(String(user._id),user.role,sessionId)
+            const refreshToken = await this._tokenManager.generateRefreshToken(String(user._id),user.role,sessionId,tokenVersion)
+
+            const refreshTokenHash = await this._tokenManager.hashToken(refreshToken)
+
+            //session handling,
+            const now = Date.now()
+
+            //expires at time
+            const expiresAt = now + ENV.REFRESH_TOKEN_TTL*1000
+
+
+            const session:IAuthSession = {
+                userId:String(user._id),
+                refreshTokenHash,
+                tokenVersion,
+                ip:meta.ip,
+                userAgent:meta.userAgent,
+                createdAt:now,
+                expiresAt
+            }
+
+            await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
+
+            //add user sessions into redis user session list
+            await this._cacheRepository.addSet(REDIS_STORE.USER_SESSION+String(user._id),sessionId)   
+
+            const resDto = authDtoMapper.toAuthResponse(user,accessToken,refreshToken)
+
+            return {
+                ...resDto
+            }
+
+        } catch (error) {
+            throw error
         }
     }
 
