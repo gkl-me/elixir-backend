@@ -9,26 +9,44 @@ const plans= [
         name:"Free",
         price:0,
         limits:{
-            maxProjects:5,
-            maxTeams:2,
-            maxUsersPerTeam:10
+            projects:5,
+            teams:2,
+            members:5,
+            customRoles:0,
+            storageBytes:100 * 1024 * 1024
+        },
+        features:{
+            githubAutomation:false,
+            automationScripts:false
         }
     },
     {
         name:'Pro',
         price:1000,
         limits:{
-            maxProjects:10,
-            maxTeams:5,
-            maxUsersPerTeam:20
+            projects:10,
+            teams:5,
+            members:10,
+            customRoles:3,
+            storageBytes:300 * 1024 * 1024
+        },
+        features:{
+            githubAutomation:true,
+            automationScripts:true
         }
     },{
         name:'Enterprice',
         price:2000,
         limits:{
-            maxProjects:0,
-            maxTeams:0,
-            maxUsersPerTeam:0
+            projects:-1,
+            teams:-1,
+            members:-1,
+            customRoles:5,
+            storageBytes:500 * 1024 * 1024
+        },
+        features:{
+            githubAutomation:true,
+            automationScripts:true
         }
     }
 ]
@@ -52,6 +70,7 @@ export async function seedPlan(){
                     $set:{
                         name:plan.name,
                         limits:plan.limits,
+                        features:plan.features,
                         stripePriceId:stripePriceId,
                         stripeProductId:stripeProductId,
                         isActive:true,
@@ -72,32 +91,36 @@ export async function seedPlan(){
 async function stripeListing(planName:string,planPrice:number){
     try {
 
-        let stripeProductId=null;
-        let stripePriceId=null;
-
         const stripeServie = container.resolve<IStripeService>('IStripeService')
 
-        const existingProductId = await stripeServie.findProduct(planName)
-        if(existingProductId){
-            stripeProductId=existingProductId
+        let stripeProductId = await stripeServie.findProduct(planName)
 
-            const latestPriceId = await stripeServie.findLatestPrice(stripeProductId)
 
-            stripePriceId=latestPriceId|| null
-        }else{
+        if(!stripeProductId){
 
-            const newProductId = await stripeServie.createProduct(planName)
+            stripeProductId = await stripeServie.createProduct(planName)
 
-            const newPriceId = await stripeServie.createPrice(newProductId,planPrice)
+        }
 
-            stripeProductId = newProductId
-            stripePriceId = newPriceId
+        const latestPriceId = await stripeServie.findLatestPrice(stripeProductId)
+        
+        if(!latestPriceId){
+            const newPriceId = await stripeServie.createPrice(stripeProductId,planPrice)
+            return {stripeProductId,stripePriceId:newPriceId}
+        }
+
+        const latestPrice = await stripeServie.getPrice(latestPriceId)
+
+        if(latestPrice?.unit_amount !== planPrice){
+            const newPriceId = await stripeServie.createPrice(stripeProductId,planPrice)
+            return {stripeProductId,stripePriceId:newPriceId}
         }
 
         return {
             stripeProductId,
-            stripePriceId
+            stripePriceId:latestPriceId
         }
+
     } catch (error) {
         throw new Error('Failed to create product or price in stripe')
     }

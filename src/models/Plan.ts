@@ -3,17 +3,23 @@ import { Document, model, Schema } from "mongoose";
 export enum PlanType  {
     'Free'="Free",
     'Pro'='Pro',
-    'Enterprice'='Enterpricee'
+    'Enterprice'='Enterprice'
 }
 
 export interface IPlan extends Document{
     name:PlanType,
     price:number,
     limits:{
-        maxProjects:number,
-        maxTeams:number
-        maxUsersPerTeam:number
+        projects:number,
+        teams:number,
+        members:number,
+        customRoles:number,
+        storageBytes:number
     },
+    features:{
+        githubAutomation:boolean,
+        automationScripts:boolean
+    }
     stripePriceId?:string,
     stripeProductId?:string,
     isActive:boolean,
@@ -34,20 +40,40 @@ const PlanSchema = new Schema({
         default:0
     },
     limits:{
-        maxProjects:{
+        projects:{
+            type:Number,
+            required:true,
+            min:-1
+        },
+        teams:{
+            type:Number,
+            required:true,
+            min:-1
+        },
+        members:{
+            type:Number,
+            required:true,
+            min:-1
+        },
+        customRoles:{
             type:Number,
             required:true,
             min:0
         },
-        maxTeams:{
+        storageBytes:{
             type:Number,
             required:true,
             min:0
+        }
+    },
+    features:{
+        githubAutomation:{
+            type:Boolean,
+            default:false
         },
-        maxUsersPerTeam:{
-            type:Number,
-            required:true,
-            min:0
+        automationScripts:{
+            type:Boolean,
+            default:false
         }
     },
     stripePriceId:{

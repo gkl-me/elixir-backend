@@ -4,16 +4,23 @@ import { PlanResponseDto } from "../dtos/PlanDto";
 
 
 export class planDtoMapper{
-    static toPlanReponse(plan:IPlan):Omit<PlanResponseDto,'isActive'>{
+    static toPlanResponse(plan:IPlan):PlanResponseDto{
         return {
-            id:plan._id as string,
+            id:String(plan._id),
             name:plan.name,
             price:plan.price,
             limits:{
-                maxProjects:plan.limits.maxProjects,
-                maxTeams:plan.limits.maxTeams,
-                maxUsersPerTeam:plan.limits.maxUsersPerTeam
+                projects:plan.limits.projects,
+                teams:plan.limits.teams,
+                members:plan.limits.members,
+                customRoles:plan.limits.customRoles,
+                storageBytes:plan.limits.storageBytes
             },
+            features:{
+                githubAutomation:plan.features.githubAutomation,
+                automationScripts:plan.features.automationScripts
+            },
+            isActive:plan.isActive
         }
     }
 }

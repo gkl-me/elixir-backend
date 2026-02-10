@@ -205,7 +205,7 @@ export class AuthService implements IAuthService {
 
             const userFound = await this._userRepository.findByEmail(payload?.email)
             
-            let user;
+            let user=userFound;
             if(userFound && !userFound.googleId){
                 user = await this._userRepository.update(String(userFound._id),{
                     isVerified:true,
@@ -290,7 +290,7 @@ export class AuthService implements IAuthService {
 
             const userFound = await this._userRepository.findByEmail(email)
 
-            let user;
+            let user=userFound;
 
             if(userFound && !userFound.githubId){
                 user = await this._userRepository.update(String(userFound._id),{

@@ -16,12 +16,12 @@ export class PlanController implements IPlanController{
     async updatePlan(req: Request, res: Response, next: NextFunction){
         try {
             
-            const {id} = req.params
+            const planId = req.params.id
             const data = req.body
 
-            const updatedPlan = await this._planService.updatePlan({id,data})
+            const updatedPlan = await this._planService.updatePlan({id:planId,data})
 
-            successResponse(res,PLAN_MESSAGES.UPDATE_SUCCESS,STATUS_CODES.OK,updatedPlan)
+            successResponse(res,PLAN_MESSAGES.UPDATE_SUCCESS,STATUS_CODES.OK,{plan:updatedPlan})
         } catch (error) {
             next(error)
         }
@@ -31,17 +31,7 @@ export class PlanController implements IPlanController{
         try {
 
             const allPlans = await this._planService.findAllPlans()
-            successResponse(res,PLAN_MESSAGES.FETCH_SUCCESS,STATUS_CODES.OK,allPlans)
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    async getAvailablePlans(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-
-            const availablePlans = await this._planService.getAvailablePlans()
-            successResponse(res,PLAN_MESSAGES.FETCH_SUCCESS,STATUS_CODES.OK,availablePlans)
+            successResponse(res,PLAN_MESSAGES.FETCH_SUCCESS,STATUS_CODES.OK,{plans:allPlans})
         } catch (error) {
             next(error)
         }

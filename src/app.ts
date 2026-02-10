@@ -12,7 +12,7 @@ import morganMiddleware from './middlewares/morganMiddleware';
 //route imports
 import authRoutes from './routes/auth.routes'
 import userRoutes from './routes/user.routes'
-
+import planRoutes from './routes/plan.routes'
 
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
@@ -46,6 +46,7 @@ app.use(morganMiddleware)
 
 app.use('/api/v1/auth',authRoutes) 
 app.use('/api/v1/users',userRoutes) 
+app.use('/api/v1/plans',planRoutes) 
 
 app.get('/api/v1/demo',auth,(req,res) => {
     res.json({
@@ -83,6 +84,9 @@ app.listen(5000, async ()=>{
 
     //seed admin to db
     await seedAdmin()
+
+    //seed plan collection to db
+    await seedPlan()
 
         
     console.log("Server is running on port 5000")

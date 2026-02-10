@@ -7,6 +7,7 @@ import { VerifyService } from "../../services/auth/VerifyService"
 import { OtpService } from "../../services/auth/OtpService"
 import { PasswordService } from "../../services/auth/PasswordService"
 import { GithubAuthService } from "../../providers/GithubAuthService"
+import { PlanService } from "../../services/plan/PlanService"
 // import { SubscriptionService } from "../../services/subscription/SubscriptionService"
 // import { StripeWebhookService } from "../../services/webhook/StripeWebhookService"
 
@@ -28,6 +29,9 @@ container.register(Token.PasswordService,{
 })
 container.register(Token.GithubAuthService,{
     useClass:GithubAuthService
+})
+container.register(Token.PlanService,{
+    useClass:PlanService
 })
 
 // container.register(Token.PlanService,{
