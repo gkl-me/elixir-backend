@@ -34,8 +34,13 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T>{
         try {
             let allData =  this._model.find(data)
 
+            const sortOptions: Record<string, 1 | -1> = options?.sort ?? {};
+
             if(options?.sort){
-                allData = allData.sort(options.sort)
+                allData = allData.sort({
+                    ...sortOptions,
+                    "createdAt":-1
+                })
             }else{
                 allData = allData.sort({"createdAt":-1})
             }

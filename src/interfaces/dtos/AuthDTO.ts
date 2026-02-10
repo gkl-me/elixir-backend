@@ -36,12 +36,17 @@ export interface IVerifyUserDTO{
 }
 
 export interface IGoogleAuthDto{
-    name:string,
-    email:string,
-    googleId:string,
-    image:string
+    idToken:string
 }
 
+export interface IGithubAuthDto{
+    githubId:string,
+    githubUsername:string
+    name:string,
+    email:string,
+    image:string,
+    access_token:string
+}
 
 export interface IRefreshTokenDto{
     refreshToken:string

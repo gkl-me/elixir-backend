@@ -22,7 +22,14 @@ export const AUTH_MESSAGES = {
     NOT_FOUND:'User not found Signup',
     TOKEN_ERROR:"Token not found or expired",
     INVALID_TOKEN:"Token is invalid or expired",
+
+
     GOOGLE_AUTH:'Please Login with google',
+    GOOGLE_TOKEN_ERROR:"Google auth faild try again",
+    INVALID_GOOGLE_ACC:"Invalid google account",
+
+    GITHUB_AUTH:"Please login with github",
+
     TOKEN_REFRESH:'Token Successfully refreshed',
     OTP_ERROR:'Otp expired, click on resend to get a new otp',
     OTP_EXPIRED:"Otp expired , click on resend to get new otp",

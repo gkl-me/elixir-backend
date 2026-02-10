@@ -18,3 +18,6 @@ container.register(Token.SubscriptionRepository,{
 container.register(Token.CacheRepository,{
     useClass:CacheRepository,
 })
+container.register(Token.PlanRepository,{
+    useClass:PlanRepository
+})

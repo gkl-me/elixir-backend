@@ -5,6 +5,7 @@ export const Token = {
     TokenManager:"ITokenManager",
     EmailService:'IEmailService',
     StripeService:"IStripeService",
+    GithubAuthService:'IGithubAuthService',
 
     
     PlanRepository:'IPlanRepository',

@@ -8,15 +8,20 @@ import { Token } from "../../di/token";
 import { IUserService } from "./interface/IUserService";
 import { IUpdatePasswordDto, IUserListDto, IUserQueryDto } from "../../interfaces/dtos/UserDTo";
 import { IPasswordHasher } from "../../providers/interfaces/IPasswordHasher";
+import logger from "../../middlewares/logger";
+import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
+import { IAuthSession } from "../../interfaces/types/session.types";
+import { REDIS_STORE } from "../../constants/redis/redisStore";
 
 @injectable()
 export class UserService implements IUserService{
     constructor(
         @inject(Token.UserRepository) private _userRepository:IUserRepository,
-        @inject(Token.PasswordHasher) private _passwordHasher:IPasswordHasher
+        @inject(Token.PasswordHasher) private _passwordHasher:IPasswordHasher,
+        @inject(Token.CacheRepository) private readonly _cacheRepository:ICacheRepository<IAuthSession>
     ){}
 
-    async getAllUsers(data:IUserQueryDto):Promise<{users:IUserListDto[],totalCount:number}|null>{
+    async getAllUsers(data:IUserQueryDto):Promise<{users:IUserListDto[],totalCount:number}>{
         try {
             
             const {search,page,limit,sortBy,sortOrder,status} = data
@@ -49,8 +54,8 @@ export class UserService implements IUserService{
             }
 
         } catch (error) {
-            if(error instanceof CustomError) throw error
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)   
+            logger.error(error)
+            throw error   
         }
     }
 
@@ -60,12 +65,28 @@ export class UserService implements IUserService{
             const userFound = await this._userRepository.findById(id)
             if(!userFound) throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
 
+
+            //delete add exiting session for the user 
+            const sessionKey = REDIS_STORE.USER_SESSION + String(userFound._id)
+
+            const sessionIds = await this._cacheRepository.getMembers(sessionKey)
+
+            //delete individual sessions
+            if(sessionIds.length > 0){
+                sessionIds.forEach((id) => {
+                    this._cacheRepository.delete(REDIS_STORE.SESSION+id)
+                })
+            }
+
+            //delete sessions
+            this._cacheRepository.delete(sessionKey)
+
             userFound.isBlocked = !userFound.isBlocked
             userFound.save()
 
         } catch (error) {
-            if(error instanceof CustomError) throw error
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR) 
+            logger.error(error)
+            throw error
         }
     }
 
@@ -85,8 +106,8 @@ export class UserService implements IUserService{
 
             
         } catch (error) {
-            if(error instanceof CustomError) throw error
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+            logger.error(error)
+            throw error
         }
     }
 }

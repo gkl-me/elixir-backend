@@ -26,6 +26,10 @@ router.post('/google-auth',(req,res,next) => {
     const authController = container.resolve<IAuthController>(Token.AuthController)
     authController.handleGoogleAuth(req,res,next)
 })
+router.post('/github-auth',(req,res,next) => {
+    const authController = container.resolve<IAuthController>(Token.AuthController)
+    authController.handleGithubAuth(req,res,next)
+})
 router.post('/refresh',(req,res,next) =>{
     const authController = container.resolve<IAuthController>(Token.AuthController)
     authController.handleRefresh(req,res,next)

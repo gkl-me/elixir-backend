@@ -57,13 +57,11 @@ export class StripeService implements IStripeService{
     async findProduct(planName: string): Promise<string | null> {
         try {
 
-            const products = await this._stripe.products.list({
-                limit:100
+            const products = await this._stripe.products.search({
+                query:`metadata['planName']:'${planName}'`
             })
 
-            const existingProduct = products.data.find(p => p.metadata.planName == planName)
-            let productId = existingProduct?.id ?? null
-            return productId
+            return products.data[0]?.id ?? null
 
         } catch (error) {
             logger.error(error)
@@ -75,12 +73,25 @@ export class StripeService implements IStripeService{
         try {
             const prices = await this._stripe.prices.list({
                 product:productId,
-                limit:100,
+                active:true,
+                type:'recurring'
             })
 
-            const latestPrice = prices.data.filter( p  => p.active).sort((a,b) => b.created - a.created)[0]
+            const latest = prices.data.filter(p => p.recurring?.interval=="month")
+                                      .sort((a,b) => b.created - a.created)[0]
 
-            return latestPrice?.id || null
+            return latest?.id || null
+        } catch (error) {
+            logger.error(error)
+            throw new CustomError(PLAN_MESSAGES.STRIPE_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async getPrice(priceId:string):Promise<Stripe.Price>{
+        try {
+
+            return await this._stripe.prices.retrieve(priceId)
+
         } catch (error) {
             logger.error(error)
             throw new CustomError(PLAN_MESSAGES.STRIPE_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)

@@ -19,6 +19,7 @@ export interface IAuthController{
     handleRegister(req:Request,res:Response,next:NextFunction):Promise<void>,
     handleLogin(req:Request,res:Response,next:NextFunction):Promise<void>,
     handleGoogleAuth(req:Request,res:Response,next:NextFunction):Promise<void>,
+    handleGithubAuth(req:Request,res:Response,next:NextFunction):Promise<void>,
     handleRefresh(req:Request,res:Response,next:NextFunction):Promise<void>,
     handleLogout(req:Request,res:Response,next:NextFunction):Promise<void>,
 }

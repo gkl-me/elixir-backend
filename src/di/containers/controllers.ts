@@ -7,6 +7,7 @@ import { UserController } from "../../controllers/user/UserController"
 import { VerifyController } from "../../controllers/auth/VerifyController"
 import { OtpController } from "../../controllers/auth/OtpController"
 import { PasswordController } from "../../controllers/auth/PasswordController"
+import { PlanController } from "../../controllers/plan/PlanController"
 // import { StripeWebhookController } from "../../controllers/webhook/StripeWebhook"
 
 
@@ -30,6 +31,9 @@ container.register(Token.OtpController,{
 })
 container.register(Token.PasswordController,{
     useClass:PasswordController
+})
+container.register(Token.PlanController,{
+    useClass:PlanController
 })
 
 // container.register(Token.SubscriptionController,{
