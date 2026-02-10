@@ -4,10 +4,9 @@ import mongoose, { Document, model,  } from "mongoose";
 
 export interface ICompany extends Document{
     name:string,
-    industry:string,
-    employees:number,
+    type:string,
+    size:number,
     email:string,
-    password:string,
     website?:string,
     isBlocked:boolean,
     createdAt?:Date
@@ -20,22 +19,17 @@ const CompanySchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    industry:{
+    type:{
         type:String,
         required:true
     },
-    employees:{
+    size:{
         type:Number,
         required:true
     },
-    adminEmail:{
+    email:{
         type:String,
         required:true,
-        unique:true
-    },
-    adminPassword:{
-        type:String,
-        required:true
     },
     website:{
         type:String

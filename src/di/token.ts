@@ -12,6 +12,7 @@ export const Token = {
     UserRepository:'IUserRepository',
     SubscriptionRepository:'ISubscriptionRepository',
     CacheRepository:"ICacheRepository",
+    OnboardingRepository:"IOnboardingRepository",
     
 
     PlanService:'IPlanService',
@@ -22,6 +23,7 @@ export const Token = {
     VerifyService:"IVerifyService",
     OtpService:"IOtpService",
     PasswordService:"IPasswordService",
+    OnboardingServive:'IOnboardingService',
 
     
     VerifyController:"IVerifyController",
@@ -31,5 +33,6 @@ export const Token = {
     AuthController:'IAuthController',
     SubscriptionController:'ISubscriptionController',
     UserController:'IUserController',
-    StripeWebhookController:'IStripeWebhookController'
+    StripeWebhookController:'IStripeWebhookController',
+    OnboardingController:"IOnboardingController"
 }
