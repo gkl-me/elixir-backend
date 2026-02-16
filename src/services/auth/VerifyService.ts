@@ -54,7 +54,7 @@ export class VerifyService implements IVerifyService{
         }
     }
 
-    async verifyEmail(data: IVerifyEmailDto,meta:IVerifyMetaDto): Promise<IAuthResponseDto> {
+    async verifyEmail(data: IVerifyEmailDto,meta:IVerifyMetaDto): Promise<void> {
         try {
             
             const {token} = data
@@ -80,45 +80,7 @@ export class VerifyService implements IVerifyService{
             await this._cacheRepository.delete(REDIS_STORE.EMAIL_VERIFY+hashToken)
 
             user.isVerified = true
-            user.save()
-
-
-            //send token and setup session
-
-            const sessionId = this._tokenManager.generateSessionId()
-            const tokenVersion = 1
-
-            const accessToken =  this._tokenManager.generateAccessToken(String(user._id),user.role,sessionId)
-            const refreshToken =  this._tokenManager.generateRefreshToken(String(user._id),user.role,sessionId,tokenVersion)
-
-            const refreshTokenHash =  this._tokenManager.hashToken(refreshToken)
-
-            //session handling,
-
-            const now = Date.now()
-            const expiresAt = now + ENV.REFRESH_TOKEN_TTL * 1000
-
-            const session:IAuthSession = {
-                userId:String(user._id),
-                refreshTokenHash,
-                tokenVersion,
-                ip:meta.ip,
-                userAgent:meta.userAgent,
-                createdAt:now,
-                expiresAt
-            }
-    
-            await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
-    
-            //add user sessions into redis
-            await this._cacheRepository.set(REDIS_STORE.USER_SESSION+String(user._id),sessionId)
-    
-    
-            const resDto = authDtoMapper.toAuthResponse(user,accessToken,refreshToken)
-    
-            return {
-                ...resDto
-            }
+            await user.save()
 
         } catch (error) {
             throw error

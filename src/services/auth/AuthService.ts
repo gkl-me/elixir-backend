@@ -204,6 +204,11 @@ export class AuthService implements IAuthService {
 
 
             const userFound = await this._userRepository.findByEmail(payload?.email)
+
+            //check if the user is blocked or not 
+            if(userFound?.isBlocked){
+                throw new CustomError(AUTH_MESSAGES.BLOCKED,STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
+            }
             
             let user=userFound;
             if(userFound && !userFound.googleId){
@@ -289,6 +294,12 @@ export class AuthService implements IAuthService {
 
 
             const userFound = await this._userRepository.findByEmail(email)
+
+            //check if the user is blocked or not 
+            if(userFound?.isBlocked){
+                throw new CustomError(AUTH_MESSAGES.BLOCKED,STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
+            }
+            
 
             let user=userFound;
 

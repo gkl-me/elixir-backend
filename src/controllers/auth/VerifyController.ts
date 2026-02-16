@@ -27,15 +27,9 @@ export class VerifyController implements IVerifyController{
             const userAgent = req.headers["user-agent"]
             const ip = req.ip
 
-            const {accessToken,refreshToken,...user} = await this._verifyService.verifyEmail({token:verifyEmailToken},{ip,userAgent})
+            await this._verifyService.verifyEmail({token:verifyEmailToken},{ip,userAgent})
 
-            setCookie(res,'refreshToken',refreshToken)
-
-            return successResponse(res,USER_MESSAGES.VERIFY_SUCCESS,STATUS_CODES.ACCEPTED,{
-                accessToken,
-                refreshToken,
-                user
-            })
+            return successResponse(res,USER_MESSAGES.VERIFY_SUCCESS,STATUS_CODES.ACCEPTED,{})
 
         } catch (error) {
             next(error)
