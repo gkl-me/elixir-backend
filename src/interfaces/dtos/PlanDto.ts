@@ -1,4 +1,4 @@
-import { IPlan } from "../../models/Plan";
+import { IPlan, PlanType } from "../../models/Plan";
 
 export interface updatePlanDto{
     id:string,
@@ -8,6 +8,7 @@ export interface updatePlanDto{
 export interface PlanResponseDto{
     id:string,
     name:string,
+    type:PlanType,
     price:number,
     limits:{
         projects:number,
@@ -23,8 +24,8 @@ export interface PlanResponseDto{
     isActive:boolean
 }
 
-export interface PlanDTo{
-    id:string,
+export interface ICreatePlanDTo{
+    type:PlanType,
     name:string,
     price:number,
     limits:{
@@ -39,4 +40,9 @@ export interface PlanDTo{
         automationScripts:boolean
     }
     isActive:boolean
+}
+
+
+export interface ITogglePlanStatusDto{
+    planId:string
 }

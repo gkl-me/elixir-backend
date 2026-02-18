@@ -11,12 +11,18 @@ const router = express.Router()
 
 router.get('/',(req,res,next) => {
     const planController  = container.resolve<IPlanController>(Token.PlanController)
-    planController.findAllPlans(req,res,next)
+    planController.handleFindAllPlans(req,res,next)
 })
 
-router.patch('/update/:id',auth,authorize('superAdmin'),(req,res,next) => {
+router.post('/create',auth,authorize('superAdmin'),(req,res,next) => {
     const planController  = container.resolve<IPlanController>(Token.PlanController)
-    planController.updatePlan(req,res,next)
+    planController.handleCreatePlan(req,res,next)
+})
+
+router.patch('/toggle/:id',auth,authorize('superAdmin'),(req,res,next) => {
+    console.log("controller called")
+    const planController  = container.resolve<IPlanController>(Token.PlanController)
+    planController.handleTogglePlanStatus(req,res,next)
 })
 
 

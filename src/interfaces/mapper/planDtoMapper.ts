@@ -8,6 +8,7 @@ export class planDtoMapper{
         return {
             id:String(plan._id),
             name:plan.name,
+            type:plan.type,
             price:plan.price,
             limits:{
                 projects:plan.limits.projects,
