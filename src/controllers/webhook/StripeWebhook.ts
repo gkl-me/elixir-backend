@@ -1,18 +1,17 @@
 import { inject, injectable } from "tsyringe";
-import { IStripeWebhookController } from "./IStripeWebhookController";
+import { IStripeWebhookController } from "./interface/IStripeWebhookController";
 import { Token } from "../../di/token";
-import { IStripeWebhookService } from "../../services/webhook/interface/IStripeWebhookService";
 import { Request, Response, NextFunction } from "express";
 import { IStripeService } from "../../providers/interfaces/IStripeService";
 import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { addStripeJob } from "../../queues/stripe/stripe.producer";
 
 
 
 @injectable()
 export class StripeWebhookController implements IStripeWebhookController{
     constructor(
-        @inject(Token.StripeWebhookService) private _stripeWebhook:IStripeWebhookService,
         @inject(Token.StripeService) private _stripeService:IStripeService
     ){}
 
@@ -22,7 +21,9 @@ export class StripeWebhookController implements IStripeWebhookController{
             const sig = String(req.headers['stripe-signature'])
             const event = await this._stripeService.constructEvent(req.body,sig)
 
-            this._stripeWebhook.handleEvent(event)
+            //add the event into queue
+            await addStripeJob(event)
+
             successResponse(res,"Stripe Webhook recieved",STATUS_CODES.OK,{})
         } catch (error) {
             console.log(error)

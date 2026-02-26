@@ -9,9 +9,9 @@ export interface IOnboarding extends Document{
     currentStep:number,
     isCompleted:boolean,
 
-    paymentStatus:'idle'|'completed'|'failed'|'processing',
+    paymentStatus:'pending'|'incomplete'|'success'|'failed',
 
-    planName:PlanType,
+    planType:PlanType,
     planId:string,
     planPrice:number,
 
@@ -24,6 +24,8 @@ export interface IOnboarding extends Document{
         phone:string,
         size:number
     }
+
+    sessionId?:string
 
     createdAt?:Date,
     updatedAt?:Date   
@@ -46,12 +48,13 @@ const OnboardingSchema = new Schema({
     },
     paymentStatus:{
         type: String,
-        enum: ["pending", "completed", "failed","processing"],
+        enum: ["pending", "incomplete", "success","failed"],
         default: "pending",
     },
-    planName:{
+    planType:{
         type:String,
-        enum:['Free','Pro','Enterprice']
+        enum:['Free','Pro','Enterprice'],
+        default:'Free'
     },
     planId:{
         type:String,
@@ -61,6 +64,9 @@ const OnboardingSchema = new Schema({
     },
     workspaceName:{
         type:String,
+    },
+    sessionId:{
+        type:String
     },
     company:{
         name:{

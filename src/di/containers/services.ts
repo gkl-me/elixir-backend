@@ -8,6 +8,10 @@ import { OtpService } from "../../services/auth/OtpService"
 import { PasswordService } from "../../services/auth/PasswordService"
 import { PlanService } from "../../services/plan/PlanService"
 import { OnboardingService } from "../../services/onboarding/OnboardingService"
+import { CompanyService } from "../../services/company/CompanyService"
+import { WorkspaceService } from "../../services/workspace/WorkspaceService"
+import { SubscriptionService } from "../../services/subscription/SubscriptionService"
+import { PaymentService } from "../../services/payment/PaymentService"
 // import { SubscriptionService } from "../../services/subscription/SubscriptionService"
 // import { StripeWebhookService } from "../../services/webhook/StripeWebhookService"
 
@@ -30,8 +34,20 @@ container.register(Token.PasswordService,{
 container.register(Token.PlanService,{
     useClass:PlanService
 })
-container.register(Token.OnboardingServive,{
+container.register(Token.OnboardingService,{
     useClass:OnboardingService
+})
+container.register(Token.CompanyService,{
+    useClass:CompanyService
+})
+container.register(Token.WorkspaceService,{
+    useClass:WorkspaceService
+})
+container.register(Token.SubscriptionService,{
+    useClass:SubscriptionService
+})
+container.register(Token.PaymentService,{
+    useClass:PaymentService
 })
 
 // container.register(Token.PlanService,{

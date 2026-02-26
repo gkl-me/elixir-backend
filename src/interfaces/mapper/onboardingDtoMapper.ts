@@ -10,12 +10,13 @@ export class onboardingDtoMapper{
         return {
             userId:onboarding.userId,
             planId:onboarding.planId,
-            planName:onboarding.planName,
+            planType:onboarding.planType,
             planPrice:onboarding.planPrice,
             currentStep:onboarding.currentStep,
             isCompleted:onboarding.isCompleted,
             paymentStatus:onboarding.paymentStatus,
             company:onboarding.company,
+            workspaceName:onboarding.workspaceName
         }
     }
 }

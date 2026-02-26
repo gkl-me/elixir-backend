@@ -13,6 +13,9 @@ import morganMiddleware from './middlewares/morganMiddleware';
 import authRoutes from './routes/auth.routes'
 import userRoutes from './routes/user.routes'
 import planRoutes from './routes/plan.routes'
+import onboardingRoutes from './routes/onboarding.routes'
+import webhookRoutes from './routes/webhook.routes'
+import paymentRoutes from './routes/payment.routes'
 
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
@@ -35,7 +38,7 @@ app.use(cors({
 }))
 
 //webhooks
-// app.use('/webhook',webhookRoutes)
+app.use('/api/v1/webhook',webhookRoutes)
 
 
 app.use(express.json());
@@ -47,6 +50,8 @@ app.use(morganMiddleware)
 app.use('/api/v1/auth',authRoutes) 
 app.use('/api/v1/users',userRoutes) 
 app.use('/api/v1/plans',planRoutes) 
+app.use('/api/v1/onboarding',onboardingRoutes)
+app.use('/api/v1/payment',paymentRoutes)
 
 app.get('/api/v1/demo',auth,(req,res) => {
     res.json({
