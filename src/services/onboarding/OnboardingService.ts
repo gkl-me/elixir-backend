@@ -52,9 +52,6 @@ export class OnboardingService implements IOnboardingService{
                 throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
             }
 
-            //validate the onboarding data
-        
-
             const updatedOnboarding = await this._onboardingRepository.update(String(onboarding._id),payload)      
 
             return onboardingDtoMapper.toOnboardingResponse(updatedOnboarding!)

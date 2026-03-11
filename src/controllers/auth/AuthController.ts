@@ -7,6 +7,8 @@ import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
 import { clearCookie, setCookie } from "../../helper/cookiesHelper";
 import { AUTH_MESSAGES, USER_MESSAGES } from "../../constants/messages";
+import { LoginSchema, RegisterSchema } from "../../validator/AuthSchema";
+import { CustomError } from "../../errors/CustomError";
 
 
 @injectable()
@@ -17,7 +19,17 @@ export class AuthController implements IAuthController {
 
     async handleRegister(req:Request, res:Response,next:NextFunction){
         try {
-            const { email, password, name } = req.body
+            const data = req.body
+
+
+            //validate user data using zod
+            const validate = RegisterSchema.safeParse(data)
+            if(!validate.success){
+                const errorMessages = validate.error.errors[0].message
+                throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
+            }
+
+            const {email,password,name} = validate.data
             
             const user = await this._authService.register({email, password, name})
 
@@ -31,9 +43,18 @@ export class AuthController implements IAuthController {
     async handleLogin(req: Request, res: Response,next:NextFunction): Promise<void> {
         try {
             
-            const {email,password} = req.body
+            const data = req.body
             const userAgent = req.headers["user-agent"]
             const ip = req.ip
+
+            //validate user data using zod
+            const validate = LoginSchema.safeParse(data)
+            if(!validate.success){
+                const errorMessages = validate.error.errors[0].message
+                throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
+            }
+
+            const {email,password} = validate.data
 
             const authUser = await this._authService.login({email, password},{ip,userAgent})
 

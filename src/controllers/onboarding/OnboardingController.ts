@@ -5,6 +5,8 @@ import { IOnboardingService } from "../../services/onboarding/interface/IOnboard
 import { Request, Response, NextFunction } from "express";
 import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { OnboardingStateSchema } from "../../validator/OnboardingSchema";
+import { CustomError } from "../../errors/CustomError";
 
 
 
@@ -36,7 +38,15 @@ export class OnboardingController implements IOnboardingController{
             const data = req.body
             const userId = req.user.userId
 
-            const onboarding = await this._onboardingService.saveOnboardingStep({...data,userId})
+            ///validate the onboadring data
+            const validate = OnboardingStateSchema.safeParse(data)
+            if(!validate.success){
+                const errorMessage = validate.error.errors[0].message
+                console.log("validate error",validate.error)
+                throw new CustomError(errorMessage, STATUS_CODES.BAD_REQUEST)
+            }
+
+            const onboarding = await this._onboardingService.saveOnboardingStep({...validate.data,userId})
 
             successResponse(res,"Successfully step completed onboarding",STATUS_CODES.OK,{onboarding})
 

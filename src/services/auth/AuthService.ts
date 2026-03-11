@@ -20,7 +20,6 @@ import { sendVerificationEmailJob } from "../../queues/email/email.producer";
 import { IAuthSession } from "../../interfaces/types/session.types";
 import { ILoginMetaDto } from "../../interfaces/dtos/MetaDto";
 import { OAuth2Client } from "google-auth-library";
-import { userDtoMapper } from "../../interfaces/mapper/userDtoMapper";
 import { GithubAuthService } from "../../providers/GithubAuthService";
 import { IGithubAuthService } from "../../providers/interfaces/IGithubAuthService";
 
@@ -45,14 +44,6 @@ export class AuthService implements IAuthService {
         const {name,email,password} = user
 
         try {
-
-            //validate user data using zod
-            const validate = RegisterSchema.safeParse(user)
-            if(!validate.success){
-                const errorMessages = validate.error.errors[0].message
-                throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
-            }
-
 
             const hashedPassword = await this._passwordHasher.hashPassword(password)
 
@@ -90,13 +81,6 @@ export class AuthService implements IAuthService {
         try {
 
         const {email,password} = user
-
-        //validate user data using zod
-        const validate = LoginSchema.safeParse(user)
-        if(!validate.success){
-            const errorMessages = validate.error.errors[0].message
-            throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
-        }
 
         const userFound = await this._userRepository.findByEmail(email)
         
