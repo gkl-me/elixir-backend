@@ -7,7 +7,7 @@ export interface ICreateSubscriptionDto{
     workspaceId:string,
     stripeSubscriptionId?:string,
     stripePriceId?:string,
-    status?:'active'|'inactive'|'canceled',
+    status?:'active'|'inactive'|'cancelled',
     currentPeriodStart?:Date,
     currentPeriodEnd?:Date,
 }

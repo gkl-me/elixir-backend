@@ -1,13 +1,15 @@
-import { IWorkspace } from "../../../models/Workspace"
+import { IWorkspace } from "../../../models/Workspace";
 
-
-
-
-export interface IWorkspaceService{
-    createWorkspace({name,userId,companyId,subscriptionId}:{
-        name:string,
-        userId:string,
-        companyId?:string,
-        subscriptionId?:string
-    }):Promise<IWorkspace>
+export interface IWorkspaceService {
+  createWorkspace({
+    name,
+    ownerId,
+    companyId,
+    subscriptionId,
+  }: {
+    name: string;
+    ownerId: string;
+    companyId?: string;
+    subscriptionId?: string;
+  }): Promise<IWorkspace>;
 }
