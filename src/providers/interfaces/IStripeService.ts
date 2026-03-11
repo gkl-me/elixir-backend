@@ -9,7 +9,7 @@ export interface IStripeService{
     findLatestPrice(productId:string):Promise<string|null>,
     getPrice(priceId:string):Promise<Stripe.Price>,
     createCustomer(email:string,name:string,userId:string):Promise<string|null>
-    createCheckoutSession(customerId:string,priceId:string,planId:string,userId:string):Promise<{sessionId:string,payment_url:string}>
+    createCheckoutSession(customerId:string,priceId:string,userId:string,planId:string):Promise<{sessionId:string,payment_url:string}>
     retriveSession(sessionId:string):Promise<Stripe.Checkout.Session>
     expireSession(sessionId:string):Promise<Stripe.Checkout.Session|null>
     getSubscription(customerId:string):Promise<Stripe.Subscription|null>

@@ -54,11 +54,12 @@ export class PaymentService implements IPaymentService {
                 console.log("canceleed subscription")
             }
 
-            const session = await this._stripeService.createCheckoutSession(user.stripeCustomerId,plan.stripePriceId,planId,userId)
+            const session = await this._stripeService.createCheckoutSession(user.stripeCustomerId,plan.stripePriceId,userId,planId)
 
             return session
             
         } catch (error) {
+            console.log("payment checkout error",error)
             logger.error("Checkout service error",error)
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }

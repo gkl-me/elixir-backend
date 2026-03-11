@@ -9,7 +9,6 @@ import { CONSTANT_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { IWorkspaceService } from "../workspace/interface/IWorkspaceService";
 import { ISubscriptionService } from "../subscription/interface/ISubscriptionService";
-import { ICompanyService } from "../company/interface/ICompanyService";
 import { IPaymentService } from "../payment/interface/IPaymentService";
 
 
@@ -94,7 +93,7 @@ export class OnboardingService implements IOnboardingService{
 
             //save onboarding details indb
             onboarding.isCompleted = true
-            onboarding.paymentStatus = "pending"
+            onboarding.paymentStatus = "success"
             onboarding.currentStep = 3
 
             
@@ -105,6 +104,7 @@ export class OnboardingService implements IOnboardingService{
                     sessionId:onboarding.sessionId??""
                 })
                 onboarding.sessionId = session.sessionId
+                onboarding.paymentStatus  = "pending"
                 console.log("session",session)
                 await onboarding.save()
                 return {

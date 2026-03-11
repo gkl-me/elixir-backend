@@ -6,7 +6,6 @@ import { IStripeService } from "./interfaces/IStripeService";
 import logger from "../middlewares/logger";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../constants/messages";
 import { ENV } from "../constants/env";
-import { tryCatch } from "bullmq";
 
 @injectable()
 export class StripeService implements IStripeService{
@@ -145,6 +144,7 @@ export class StripeService implements IStripeService{
             }
 
         } catch (error) {
+            console.log("error in stripe checkout",error)
             logger.error("Failed to create checkout session",error)
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
