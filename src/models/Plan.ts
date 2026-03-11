@@ -7,7 +7,8 @@ export enum PlanType  {
 }
 
 export interface IPlan extends Document{
-    name:PlanType,
+    name:string,
+    type:PlanType,
     price:number,
     limits:{
         projects:number,
@@ -30,9 +31,11 @@ export interface IPlan extends Document{
 const PlanSchema = new Schema({
     name:{
         type:String,
-        enum:['Free','Pro','Enterprice'],
         required:true,
-        unique:true
+    },
+    type:{
+        type:String,
+        enum:['Free','Pro','Enterprice'],
     },
     price:{
         type:Number,

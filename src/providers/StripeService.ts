@@ -54,11 +54,11 @@ export class StripeService implements IStripeService{
         }
     }
 
-    async findProduct(planName: string): Promise<string | null> {
+    async findProduct(planType: string): Promise<string | null> {
         try {
 
             const products = await this._stripe.products.search({
-                query:`metadata['planName']:'${planName}'`
+                query:`metadata['planName']:'${planType}'`
             })
 
             return products.data[0]?.id ?? null
@@ -98,12 +98,15 @@ export class StripeService implements IStripeService{
         }
     }
 
-    async createCustomer(email: string, name: string): Promise<string | null> {
+    async createCustomer(email: string, name: string,userId:string): Promise<string | null> {
         try {
 
             const customer = await this._stripe.customers.create({
                 email,
                 name,
+                metadata:{
+                    userId
+                }
             })
 
             return customer?.id || null
@@ -113,7 +116,7 @@ export class StripeService implements IStripeService{
         }
     }
 
-    async createCheckoutSession(customerId: string, priceId: string,userId:string,planId:string): Promise<{ sessionId: string; checkoutUrl: string; }> {
+    async createCheckoutSession(customerId: string, priceId: string,userId:string,planId:string): Promise<{ sessionId: string; payment_url: string; }> {
         try {
             
             const session = await this._stripe.checkout.sessions.create({
@@ -124,26 +127,103 @@ export class StripeService implements IStripeService{
                     price:priceId,
                     quantity:1
                 }],
-                success_url:`${ENV.CLIENT_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url:`${ENV.CLIENT_URL}/subscription/cancel`,
-                metadata:{
-                    userId,
-                    planId
+                success_url:`${ENV.CLIENT_URL}/payment/verify?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url:`${ENV.CLIENT_URL}/payment/verify`,
+                subscription_data:{
+                    metadata:{
+                        userId,
+                        planId
+                    }
                 }
             })
 
             //maybe add metadata for future user
             return{
                 sessionId:session.id,
-                checkoutUrl:session.url||""
+                payment_url:session.url||""
             }
 
         } catch (error) {
+            console.log("error in stripe checkout",error)
             logger.error("Failed to create checkout session",error)
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
-    
+
+    async retriveSession(sessionId:string){
+        try {
+            
+            return await this._stripe.checkout.sessions.retrieve(sessionId)
+
+        } catch (error) {
+            logger.error("Failed to retriver checkout session",error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async expireSession(sessionId:string){
+        try {
+
+            const seession = await  this._stripe.checkout.sessions.retrieve(sessionId)
+            if(seession.status == "open"){
+                return await this._stripe.checkout.sessions.expire(sessionId)
+            }
+
+            return null
+
+        } catch (error) {
+            logger.error("Failed to expires checkout session",error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async getSubscription(customerId:string){
+        try {
+
+            const subs = await this._stripe.subscriptions.list({
+                customer:customerId,
+                status:"all",
+                limit:5
+            })
+
+            console.log("sub list",subs)
+
+            return subs.data.find((s) => 
+                ["active", "trialing", "past_due", "incomplete"].includes(s.status)
+            ) ?? null
+            
+        } catch (error) {
+            logger.error("Failed to get open invoices",error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async cancelSubscription(subscriptionId:string){
+        try {
+            
+            await this._stripe.subscriptions.cancel(subscriptionId)
+
+        } catch (error) {
+            logger.error("Cancel Subscription failed")
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async getOpenInvoice(customerId:string){
+        try {    
+            const invoices = await this._stripe.invoices.list({
+                customer:customerId,
+                status:"open",
+                limit:1
+            })
+
+            return invoices.data[0] ?? null
+        } catch (error) {
+            logger.error("Failed to get open invoices",error)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
     async constructEvent(payload: Buffer, signature: string): Promise<Stripe.Event> {
         try {
             return this._stripe.webhooks.constructEvent(
@@ -156,12 +236,15 @@ export class StripeService implements IStripeService{
             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
         }
     }
-    
-    async handleStripeEvent(event: Stripe.Event): Promise<void> {
+
+    async getSubscriptionFromInvoice(invoice: Stripe.Invoice): Promise<Stripe.Invoice.Parent.SubscriptionDetails|null> {
         try {
             
-            console.log('event type -',event.type)
-            console.log(event)
+            const subscription = invoice.parent?.subscription_details
+
+            if(typeof subscription == 'string') throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+
+            return subscription ?? null
 
         } catch (error) {
             logger.error(error)

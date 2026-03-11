@@ -99,7 +99,7 @@ export class UserService implements IUserService{
             if(!user) throw new CustomError(AUTH_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
 
             const hashPassword = await this._passwordHasher.hashPassword(newPassword)
-            if(user && user.password){
+            if(user){
                 user.password = hashPassword
                 user.save()
             }

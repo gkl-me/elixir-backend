@@ -7,6 +7,7 @@ import { IStripeService } from '../providers/interfaces/IStripeService'
 const plans= [
     {
         name:"Free",
+        type:"Free",
         price:0,
         limits:{
             projects:5,
@@ -22,6 +23,7 @@ const plans= [
     },
     {
         name:'Pro',
+        type:'Pro',
         price:1000,
         limits:{
             projects:10,
@@ -36,6 +38,7 @@ const plans= [
         }
     },{
         name:'Enterprice',
+        type:'Enterprice',
         price:2000,
         limits:{
             projects:-1,
@@ -59,8 +62,8 @@ export async function seedPlan(){
             let stripePriceId=null
             let stripeProductId=null
 
-            if(plan.name!=='Free'){
-                let res = await stripeListing(plan.name,plan.price)
+            if(plan.type!=='Free'){
+                let res = await stripeListing(plan.type,plan.price)
                 stripePriceId = res.stripePriceId
                 stripeProductId = res.stripeProductId
             }
@@ -69,6 +72,7 @@ export async function seedPlan(){
                 await Plan.updateOne({name:plan.name},{
                     $set:{
                         name:plan.name,
+                        type:plan.type,
                         limits:plan.limits,
                         features:plan.features,
                         stripePriceId:stripePriceId,
@@ -88,17 +92,17 @@ export async function seedPlan(){
 }
 
 
-async function stripeListing(planName:string,planPrice:number){
+async function stripeListing(planType:string,planPrice:number){
     try {
 
         const stripeServie = container.resolve<IStripeService>('IStripeService')
 
-        let stripeProductId = await stripeServie.findProduct(planName)
+        let stripeProductId = await stripeServie.findProduct(planType)
 
 
         if(!stripeProductId){
 
-            stripeProductId = await stripeServie.createProduct(planName)
+            stripeProductId = await stripeServie.createProduct(planType)
 
         }
 

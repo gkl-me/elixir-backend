@@ -4,6 +4,7 @@ import { PasswordHasher } from "../../providers/PasswordHasher"
 import { TokenManager } from "../../providers/TokenManager"
 import { StripeService } from "../../providers/StripeService"
 import { EmailService } from "../../providers/EmailService"
+import { GithubAuthService } from "../../providers/GithubAuthService"
 
 //utils
 container.register(Token.PasswordHasher,{
@@ -17,4 +18,7 @@ container.register(Token.StripeService,{
 })
 container.register(Token.EmailService,{
     useClass:EmailService
+})
+container.register(Token.GithubAuthService,{
+    useClass:GithubAuthService
 })

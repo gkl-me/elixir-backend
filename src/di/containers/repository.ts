@@ -4,6 +4,9 @@ import { PlanRepository } from "../../repositories/plan/PlanRepository"
 import { UserRepository } from "../../repositories/user/UserRepository"
 import { SubscriptionRepository } from "../../repositories/subscription/SubscriptionRepository"
 import { CacheRepository } from "../../repositories/cache/CacheRepository"
+import { OnboardingRepository } from "../../repositories/onboarding/OnboardingRepository"
+import { CompanyRepository } from "../../repositories/company/CompanyRepository"
+import { WorkspaceRepository } from "../../repositories/workspace/WorkspaceRepository"
 
 //repository 
 container.register(Token.PlanRepository,{
@@ -20,4 +23,13 @@ container.register(Token.CacheRepository,{
 })
 container.register(Token.PlanRepository,{
     useClass:PlanRepository
+})
+container.register(Token.OnboardingRepository,{
+    useClass:OnboardingRepository
+})
+container.register(Token.CompanyRepository,{
+    useClass:CompanyRepository
+})
+container.register(Token.WorkspaceRepository,{
+    useClass:WorkspaceRepository
 })

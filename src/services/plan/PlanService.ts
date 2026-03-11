@@ -2,77 +2,112 @@ import { inject, injectable } from "tsyringe";
 import { IPlanService } from "./interfaces/IPlanService";
 import { Token } from "../../di/token";
 import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
-import { updatePlanDto } from "../../interfaces/dtos/PlanDto";
+import { ICreatePlanDTo, IGetPlanDto, ITogglePlanStatusDto, updatePlanDto } from "../../interfaces/dtos/PlanDto";
 import { CustomError } from "../../errors/CustomError";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { UpdatePlanSchema } from "../../validator/PlanSchema";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../../constants/messages";
 import { planDtoMapper } from "../../interfaces/mapper/planDtoMapper";
 import { IStripeService } from "../../providers/interfaces/IStripeService";
+import logger from "../../middlewares/logger";
 
 @injectable()
-export class PlanService implements IPlanService{
+export class PlanService implements IPlanService {
     constructor(
-        @inject(Token.PlanRepository) private _planRepository:IPlanRepository,
-        @inject(Token.StripeService) private _stripeService:IStripeService
-    ){}
+        @inject(Token.PlanRepository) private _planRepository: IPlanRepository,
+        @inject(Token.StripeService) private _stripeService: IStripeService
+    ) { }
 
-    async updatePlan(updateData:updatePlanDto){
+    async createPlan(data: ICreatePlanDTo) {
         try {
-            const {id,data} = updateData
 
-            
-            const existingPlan = await this._planRepository.findById(id)
-            if(!existingPlan){
-                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+            //disable all exiting plan with same type
+            await this._planRepository.updateMany(
+                { type: data.type },
+                { $set: { isActive: false } }
+            )
+
+            let stripeProductId;
+            let stripePriceId;
+            if (data.type !== 'Free') {
+                stripeProductId = await this._stripeService.findProduct(data.type)
+
+                if (!stripeProductId) {
+                    stripeProductId = await this._stripeService.createProduct(data.type)
+                }
+                stripePriceId = await this._stripeService.createPrice(stripeProductId, data.price)
+
             }
 
-            // //validate update data
-            // const validateData = UpdatePlanSchema.safeParse(data)
-            // if(!validateData.success){
-            //     throw new CustomError(validateData.error.errors[0].message,STATUS_CODES.BAD_REQUEST)
-            // }
-            
+            const newPlan = await this._planRepository.create({
+                ...data,
+                isActive: true,
+                stripePriceId,
+                stripeProductId
+            })
 
-            //update the value of price to cents
-            if(existingPlan.name!=='Free' && data.price &&  existingPlan.price !== data.price){
-                data.price = Number(data.price) * 100
-                const priceId = await this._stripeService.createPrice(existingPlan.stripeProductId!,data.price)
-                data.stripePriceId = priceId
-            }
+            return planDtoMapper.toPlanResponse(newPlan)
 
-
-            //update the db 
-            const updatedPlan = await this._planRepository.update(id,data)
-            if(!updatedPlan){
-                throw new CustomError(PLAN_MESSAGES.UPDATE_ERROR,STATUS_CODES.BAD_REQUEST)
-            }
-
-            return planDtoMapper.toPlanResponse(updatedPlan)
 
         } catch (error) {
-            if(error instanceof CustomError){
-                throw error
-            }
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw error
         }
     }
 
-    async findAllPlans(){
+    async findAllPlans(data: IGetPlanDto) {
         try {
-            const allPlans = await this._planRepository.findAll({},{sort:{"createdAt":1},})
+
+            const { page, limit } = data
+            const skip = (page - 1) * limit
+
+
+            const allPlans = await this._planRepository.findAll({},
+                {
+                    sort: { "isActive": -1, "createdAt": 1 },
+                    skip,
+                    limit
+                })
+            const totalPage = Math.ceil((allPlans?.length || 6) / 6)
             let plans = null;
 
-            if(allPlans && allPlans.length){
+            if (allPlans && allPlans.length) {
                 plans = allPlans.map(plan => planDtoMapper.toPlanResponse(plan))
             }
 
-            return plans
+            return { plans, totalPage, currentPage: page }
         } catch (error) {
-            if(error instanceof CustomError){
+            if (error instanceof CustomError) {
                 throw error
             }
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR, STATUS_CODES.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async togglePlanStatus(data: ITogglePlanStatusDto): Promise<void> {
+        try {
+
+            const { planId } = data
+
+            const plan = await this._planRepository.findById(planId)
+            if (!plan) throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+
+            if (!plan.isActive) {
+
+                await this._planRepository.updateMany({
+                    type: plan.type,
+                    _id: { $ne: plan._id }
+                }, {
+                    $set: { isActive: false }
+                })
+
+            }
+
+            plan.isActive = !plan.isActive
+            await plan.save()
+
+        } catch (error) {
+            logger.error("error from toggle plan status", error)
+            throw error
         }
     }
 }

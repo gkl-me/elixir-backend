@@ -14,6 +14,7 @@ export interface IUser extends Document{
     role:'user'|'superAdmin',
     githubId?:string,
     githubUsername?:string,
+    stripeCustomerId?:string
 }
 
 const UserSchema = new Schema({
@@ -52,6 +53,9 @@ const UserSchema = new Schema({
         type:String
     },
     githubUsername:{
+        type:String
+    },
+    stripeCustomerId:{
         type:String
     }
 },{

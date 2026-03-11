@@ -1,24 +1,27 @@
 import { Document, model, Mongoose, Schema } from "mongoose";
 
-export enum SUBSCRIBTION_STATUS{
-    INCOMPLETE='incomplete',
-    ACTIVE='active',
-    OVERDUE='overdue',
-    CANCELED='canceled',
-    PENDING='pending'
-}
+export type SUBSCRIBTION_STATUS = 'active'|'inactive'|'canceled'
 
 export interface ISubscription extends Document{
+
+
     userId:string,
+    workspaceId:string
+
+    stripeSubscriptionId:string
+    stripePriceId:string
+
     planId:string
-    stripePriceId?:string,
-    stripeSubscriptionId?:string,
+
     status:SUBSCRIBTION_STATUS,
-    current_period_start?:Date,
-    current_period_end?:Date,
-    invoiceUrl?:string,
-    createdAt:Date,
-    updatedAt:Date
+
+    currentPeriodStart?:Date,
+    currentPeriodEnd?:Date,
+
+    cancelAtPeriodEnd?:Date
+
+    createdAt?:Date,
+    updatedAt?:Date
 }
 
 
@@ -27,28 +30,30 @@ const SubscriptionSchema  = new Schema({
         type:String,
         required:true
     },
-    planId:{
-        type:String,
-        required:true
+    workSpaceId:{
+        type:String
     },
     stripePriceId:{
-        type:String,
+        type:String
     },
     stripeSubscriptionId:{
         type:String
     },
     status:{
         type:String,
-        enum:['incomplete','active','canceled','overdue','pending'],
-        default:'incomplete'
+        enum:['active','inactive','cancelled'],
+        default:'inactive'
     },
-    current_period_start:{
+    currentPeriodStart:{
         type:Date
     },
-    current_period_end:{
+    currentPeriodEnd:{
         type:Date
     },
-    invoiceUrl:{
+    cancelAtPeriodEnd:{
+        type:Date
+    },
+    planId:{
         type:String
     }
 },{

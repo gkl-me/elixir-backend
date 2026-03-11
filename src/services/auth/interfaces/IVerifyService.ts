@@ -4,5 +4,5 @@ import { IVerifyMetaDto } from "../../../interfaces/dtos/MetaDto"
 
 export interface IVerifyService {
     sendVerificationEmail(data:ISendVerificationEmailDto):Promise<void>
-    verifyEmail(data:IVerifyEmailDto,meta:IVerifyMetaDto):Promise<IAuthResponseDto>
+    verifyEmail(data:IVerifyEmailDto,meta:IVerifyMetaDto):Promise<void>
 }
