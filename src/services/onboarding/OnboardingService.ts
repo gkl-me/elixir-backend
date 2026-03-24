@@ -94,7 +94,7 @@ export class OnboardingService implements IOnboardingService {
         );
       }
 
-      if (onboarding.planType == "Free") {
+      if (onboarding.planType === "Free") {
         //create workspace
         const workspace = await this._workspaceService.createWorkspace({
           name: onboarding.workspaceName!,

@@ -1,4 +1,4 @@
-import { NextFunction, Request, response, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { IAuthService } from "../../services/auth/interfaces/IAuthService";
 import { IAuthController } from "./interface/IAuthController";
 import { successResponse } from "../../helper/responseHanlder";
@@ -14,7 +14,11 @@ import { CustomError } from "../../errors/CustomError";
 export class AuthController implements IAuthController {
   constructor(@inject(Token.AuthService) private _authService: IAuthService) {}
 
-  async handleRegister(req: Request, res: Response, next: NextFunction) {
+  async handleRegister(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const data = req.body;
 

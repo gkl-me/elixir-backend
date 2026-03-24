@@ -2,6 +2,7 @@ import { inject, injectable } from "tsyringe";
 import { IWorkspaceService } from "./interface/IWorkspaceService";
 import { Token } from "../../di/token";
 import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
+import { IWorkspace } from "../../models/Workspace";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -20,7 +21,7 @@ export class WorkspaceService implements IWorkspaceService {
     ownerId: string;
     companyId?: string;
     subscriptionId?: string;
-  }) {
+  }): Promise<IWorkspace> {
     try {
       const workspace = await this._workspaceRepository.create({
         name,

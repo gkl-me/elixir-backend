@@ -5,8 +5,8 @@ export const requestIdMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): void => {
   req.requestId = uuid();
   res.setHeader("X-Request-Id", req.requestId);
-  next();
+  return next();
 };

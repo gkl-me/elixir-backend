@@ -8,11 +8,10 @@ import { APP_ROLES } from "../constants/roles";
 
 const router = express.Router();
 
+const planController = container.resolve<IPlanController>(Token.PlanController);
+
 router.get("/", (req, res, next) => {
-  const planController = container.resolve<IPlanController>(
-    Token.PlanController,
-  );
-  planController.handleFindAllPlans(req, res, next);
+  void planController.handleFindAllPlans(req, res, next);
 });
 
 router.post(
@@ -20,10 +19,7 @@ router.post(
   auth,
   authorize(APP_ROLES.SUPER_ADMIN),
   (req, res, next) => {
-    const planController = container.resolve<IPlanController>(
-      Token.PlanController,
-    );
-    planController.handleCreatePlan(req, res, next);
+    void planController.handleCreatePlan(req, res, next);
   },
 );
 
@@ -32,11 +28,7 @@ router.patch(
   auth,
   authorize(APP_ROLES.SUPER_ADMIN),
   (req, res, next) => {
-    console.log("controller called");
-    const planController = container.resolve<IPlanController>(
-      Token.PlanController,
-    );
-    planController.handleTogglePlanStatus(req, res, next);
+    void planController.handleTogglePlanStatus(req, res, next);
   },
 );
 

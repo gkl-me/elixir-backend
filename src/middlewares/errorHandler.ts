@@ -10,7 +10,7 @@ export const errorHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): void => {
   if (err) {
     if (err instanceof CustomError) {
       logger.warn("request.failed", {
@@ -39,6 +39,6 @@ export const errorHandler = (
       STATUS_CODES.INTERNAL_SERVER_ERROR,
     );
   } else {
-    next();
+    return next();
   }
 };

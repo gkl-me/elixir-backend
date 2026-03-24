@@ -10,53 +10,65 @@ import { Token } from "../../di/token";
 import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
 @injectable()
-export class UserController implements IUserController{
-    
-    constructor(
-        @inject(Token.UserService) private _userService:IUserService
-    ){}
+export class UserController implements IUserController {
+  constructor(@inject(Token.UserService) private _userService: IUserService) {}
 
+  async getAllUsers(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const params = extractStringQueryParams(req.query, [
+        "search",
+        "sortBy",
+        "limit",
+        "page",
+        "sortOrder",
+        "status",
+      ]);
 
-    async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
+      const processedParams = {
+        search: params?.search || "",
+        page: parseInt(params?.page || "1"),
+        limit: parseInt(params?.limit || "10"),
+        sortBy: params?.sortBy || "",
+        sortOrder: params?.sortOrder === "desc" ? -1 : 1,
+        status: params?.status || "",
+      };
 
-            const params = extractStringQueryParams(req.query,['search','sortBy','limit','page','sortOrder','status'])
-
-            const processedParams = {
-                search:params?.search || "",
-                page:parseInt(params?.page || "1"),
-                limit:parseInt(params?.limit || "10"),
-                sortBy:params?.sortBy || "",
-                sortOrder:params?.sortOrder == 'desc' ? -1 : 1,
-                status:params?.status || ""
-            }
-
-            const {users,totalCount} = await this._userService.getAllUsers(processedParams)
-            successResponse(res,USER_MESSAGES.FETCH_SUCCESS,STATUS_CODES.OK,{
-                users,
-                totalCount
-            })
-        } catch (error) {
-            next(error)
-        }
+      const { users, totalCount } =
+        await this._userService.getAllUsers(processedParams);
+      successResponse(res, USER_MESSAGES.FETCH_SUCCESS, STATUS_CODES.OK, {
+        users,
+        totalCount,
+      });
+    } catch (error) {
+      next(error);
     }
+  }
 
-    async toggleBlockStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
+  async toggleBlockStatus(
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const params = extractStringQueryParams(req.params, ["id"]);
+      const userId = params?.id;
 
-            const userId = req.params.id
+      if (!userId) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST,
+        );
+      }
 
-            if(!userId){
-                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
-            }
+      await this._userService.toggleBlockStatus(userId);
 
-            await this._userService.toggleBlockStatus(userId)
-
-            successResponse(res,USER_MESSAGES.TOGGLE_SUCCESS,STATUS_CODES.OK,{})
-
-        } catch (error) {
-            next(error)
-        }
+      successResponse(res, USER_MESSAGES.TOGGLE_SUCCESS, STATUS_CODES.OK, {});
+    } catch (error) {
+      next(error);
     }
-
+  }
 }

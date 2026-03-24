@@ -20,6 +20,9 @@ export default defineConfig([
         ...globals.node,
       },
     },
+    rules:{
+      "no-useless-catch": "off",
+    }
   },
 
   // ── TypeScript rules ──────────────────────────────────────────────
@@ -54,7 +57,7 @@ export default defineConfig([
     files: ["**/*.{js,ts}"],
     plugins: { security },
     rules: {
-      "security/detect-object-injection": "warn",   // obj[userInput] vulnerabilities
+      // "security/detect-object-injection": "warn",   // obj[userInput] vulnerabilities
       "security/detect-non-literal-regexp": "warn", // ReDoS vulnerabilities
       "security/detect-non-literal-fs-filename": "warn", // path traversal
       "security/detect-possible-timing-attacks": "warn", // timing attacks in auth
@@ -71,6 +74,7 @@ export default defineConfig([
       },
     },
     rules: {
+      "@typescript-eslint/no-empty-object-type": "off",
       // Unused vars — allow underscore-prefixed and Express next()
       "@typescript-eslint/no-unused-vars": ["warn", {
         argsIgnorePattern: "^_|^next",

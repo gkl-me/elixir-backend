@@ -1,4 +1,4 @@
-import { Document, model, Mongoose, Schema } from "mongoose";
+import { Document, model, Schema } from "mongoose";
 
 export type SUBSCRIBTION_STATUS = "active" | "inactive" | "cancelled";
 

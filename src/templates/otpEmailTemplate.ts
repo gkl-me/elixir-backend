@@ -1,4 +1,4 @@
-export const RESET_PASSWORD_OTP_TEMPLATE = (otp: string) => `
+export const RESET_PASSWORD_OTP_TEMPLATE = (otp: string): string => `
 <!DOCTYPE html>
 <html lang="en" style="margin: 0; padding: 0;">
   <head>

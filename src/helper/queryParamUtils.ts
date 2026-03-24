@@ -11,10 +11,10 @@ export function extractStringQueryParams<T extends string>(
     for(const key of keys){
         const value = query[key]
 
-        if(typeof value=='string'){
+        if(typeof value==='string'){
             result[key] = value
             hasValidParam = true
-        }else if(Array.isArray(value) && typeof value[0]=='string'){
+        }else if(Array.isArray(value) && typeof value[0]==='string'){
             result[key] = value[0]
             hasValidParam = true
         }

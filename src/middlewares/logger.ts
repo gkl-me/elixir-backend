@@ -1,12 +1,12 @@
 import path from "path";
-import { createLogger, format, transports } from "winston";
+import { createLogger, format } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 import { ENV } from "../constants/env";
 
 const logDir = path.join(__dirname, "../../", "logs");
 
 const logger = createLogger({
-  level: ENV.NODE_ENV == "production" ? "info" : "debug",
+  level: ENV.NODE_ENV === "production" ? "info" : "debug",
   format: format.combine(
     format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     format.errors({ stack: true }),

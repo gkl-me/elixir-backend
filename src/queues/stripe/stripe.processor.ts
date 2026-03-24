@@ -13,7 +13,7 @@ import { ISubscriptionRepository } from "../../repositories/subscription/interfa
 import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
 import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
 
-export async function handleStripeEventProcessor(job: Job) {
+export async function handleStripeEventProcessor(job: Job): Promise<void> {
   const { event } = job.data as { event: Stripe.Event };
 
   switch (event.type) {
@@ -26,9 +26,11 @@ export async function handleStripeEventProcessor(job: Job) {
     default:
       break;
   }
+
+  return;
 }
 
-async function handlePaymentSuccess(event: Stripe.Event) {
+async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
   try {
     console.log("Payment success");
 
@@ -69,7 +71,7 @@ async function handlePaymentSuccess(event: Stripe.Event) {
 
     let companyId;
 
-    if (onboarding.planType == "Enterprice" && onboarding.company) {
+    if (onboarding.planType === "Enterprice" && onboarding.company) {
       const company = await _companyRepository.create(onboarding.company);
       companyId = company.id;
     }
@@ -101,7 +103,7 @@ async function handlePaymentSuccess(event: Stripe.Event) {
   }
 }
 
-async function handlePaymentFailed(event: Stripe.Event) {
+async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
   try {
     console.log("Payment failed");
 
