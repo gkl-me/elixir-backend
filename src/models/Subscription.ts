@@ -28,7 +28,7 @@ const SubscriptionSchema = new Schema(
       type: String,
       required: true,
     },
-    workSpaceId: {
+    workspaceId: {
       type: String,
     },
     stripePriceId: {

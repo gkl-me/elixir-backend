@@ -33,7 +33,7 @@ export class OnboardingService implements IOnboardingService {
     private readonly _subscriptionService: ISubscriptionService,
     @inject(Token.PaymentService)
     private readonly _paymentService: IPaymentService,
-  ) {}
+  ) { }
 
   async getUserOnboarding(
     data: IGetOnboardingDto,
@@ -96,17 +96,22 @@ export class OnboardingService implements IOnboardingService {
 
       if (onboarding.planType === "Free") {
         //create workspace
-        const workspace = await this._workspaceService.createWorkspace({
-          name: onboarding.workspaceName!,
-          ownerId: userId,
-        });
+        // const workspace = await this._workspaceService.createWorkspace({
+        //   name: onboarding.workspaceName!,
+        //   ownerId: userId,
+        // });
 
-        //create subscription
-        await this._subscriptionService.createSubscription({
-          userId,
+        // //create subscription
+        // await this._subscriptionService.createSubscription({
+        //   userId,
+        //   planId: onboarding.planId,
+        //   workspaceId: String(workspace._id),
+        // });
+        await this._workspaceService.bootStrapWorkspace({
+          ownerId: userId,
+          workspaceName: onboarding.workspaceName!,
           planId: onboarding.planId,
-          workspaceId: String(workspace._id),
-        });
+        })
       }
 
       //save onboarding details indb

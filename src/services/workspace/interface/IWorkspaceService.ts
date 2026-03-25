@@ -12,4 +12,12 @@ export interface IWorkspaceService {
     companyId?: string;
     subscriptionId?: string;
   }): Promise<IWorkspace>;
+  bootStrapWorkspace(data: {
+    ownerId: string;
+    workspaceName: string;
+    planId: string;
+    companyId?: string;
+    stripePriceId?: string;
+    stripeSubscriptionId?: string;
+  }): Promise<void>;
 }

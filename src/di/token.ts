@@ -12,6 +12,7 @@ export const Token = {
   OnboardingRepository: "IOnboardingRepository",
   CompanyRepository: "ICompanyRepository",
   WorkspaceRepository: "IWorkspaceRepository",
+  WorkspaceRoleRepository: "IWorkspaceRoleRepository",
 
   PlanService: "IPlanService",
   AuthService: "IAuthService",

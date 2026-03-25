@@ -21,6 +21,21 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
     }
   }
 
+  async createMany(data: Partial<T>[]): Promise<T[]> {
+    try {
+      const created = await this._model.insertMany(data, {
+        ordered: true,
+      });
+      return created as unknown as T[];
+    } catch (error) {
+      logger.error(error);
+      throw new CustomError(
+        `Unable to create many entires ${this._model.modelName}`,
+        STATUS_CODES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async findAll(
     data: FilterQuery<T>,
     options?: {

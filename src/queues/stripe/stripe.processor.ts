@@ -10,8 +10,8 @@ import { CONSTANT_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { ICompanyRepository } from "../../repositories/company/interface/ICompanyRepository";
 import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
-import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
 import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
+import { IWorkspaceService } from "../../services/workspace/interface/IWorkspaceService";
 
 export async function handleStripeEventProcessor(job: Job): Promise<void> {
   const { event } = job.data as { event: Stripe.Event };
@@ -43,8 +43,8 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     const _companyRepository = container.resolve<ICompanyRepository>(
       Token.CompanyRepository,
     );
-    const _workspaceRepository = container.resolve<IWorkspaceRepository>(
-      Token.WorkspaceRepository,
+    const _workspaceService = container.resolve<IWorkspaceService>(
+      Token.WorkspaceService,
     );
     const _subscriptionRepository = container.resolve<ISubscriptionRepository>(
       Token.SubscriptionRepository,
@@ -76,23 +76,31 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       companyId = company.id;
     }
 
-    const workspace = await _workspaceRepository.create({
-      ownerId: userId,
-      name: onboarding.workspaceName || "Personal Workspace",
-      companyId,
-      type: "company",
-    });
+    // const workspace = await _workspaceRepository.create({
+    //   ownerId: userId,
+    //   name: onboarding.workspaceName || "Personal Workspace",
+    //   companyId,
+    //   type: "company",
+    // });
 
-    const subscription = await _subscriptionRepository.create({
-      workspaceId: workspace.id,
-      userId,
+    // const subscription = await _subscriptionRepository.create({
+    //   workspaceId: workspace.id,
+    //   userId,
+    //   stripePriceId: plan.stripePriceId,
+    //   planId,
+    //   stripeSubscriptionId: sub?.subscription as string,
+    // });
+
+    // workspace.subscriptionId = String(subscription._id);
+    // await workspace.save();
+
+    await _workspaceService.bootStrapWorkspace({
+      ownerId: userId!,
+      workspaceName: onboarding.workspaceName || "Personal Workspace",
+      planId: onboarding.planId,
       stripePriceId: plan.stripePriceId,
-      planId,
       stripeSubscriptionId: sub?.subscription as string,
-    });
-
-    workspace.subscriptionId = String(subscription._id);
-    await workspace.save();
+    })
 
     onboarding.paymentStatus = "success";
     onboarding.isCompleted = true;

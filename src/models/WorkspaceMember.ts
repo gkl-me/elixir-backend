@@ -1,14 +1,12 @@
 import { model, Schema } from "mongoose";
 
-export type WorkspaceRole = "owner" | "member" | "admin";
-export type MembershipStatus = "active" | "blocked";
-
 export interface IWorkspaceMember extends Document {
   workspaceId: string;
   userId: string;
-  role: WorkspaceRole;
-  status: MembershipStatus;
+  roleId: string;
+  isRemoved: boolean;
   invitedByUserId: string;
+  joinedAt?: Date;
   createAt?: Date;
   updateAt?: Date;
 }
@@ -23,19 +21,19 @@ const WorkspaceMemberSchema = new Schema(
       type: String,
       required: true,
     },
-    role: {
+    roleId: {
       type: String,
-      enum: ["owner", "admin", "member"],
       required: true,
     },
-    status: {
-      type: String,
-      enum: ["active", "blocked"],
-      default: "active",
-      required: true,
+    isRemoved: {
+      type: Boolean,
+      default: false,
     },
     invitedByUserId: {
       type: String,
+    },
+    joinedAt: {
+      type: Date,
     },
   },
   {
