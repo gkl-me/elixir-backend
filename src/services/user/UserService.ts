@@ -7,6 +7,7 @@ import { userDtoMapper } from "../../interfaces/mapper/userDtoMapper";
 import { Token } from "../../di/token";
 import { IUserService } from "./interface/IUserService";
 import {
+  IChangePasswordDto,
   IUpdatePasswordDto,
   IUserListDto,
   IUserQueryDto,
@@ -16,6 +17,7 @@ import logger from "../../middlewares/logger";
 import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
 import { IAuthSession } from "../../interfaces/types/session.types";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
+import { logError } from "../../middlewares/loggerHelper";
 
 @injectable()
 export class UserService implements IUserService {
@@ -115,6 +117,36 @@ export class UserService implements IUserService {
     } catch (error) {
       logger.error(error);
       throw error;
+    }
+  }
+
+  async changePassword(data: IChangePasswordDto): Promise<void> {
+    try {
+
+      const {newPassword,currentPassword,userId} = data
+
+      const user = await this._userRepository.findById(userId)
+
+      if(!user || !user.password){
+        throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND)
+      }
+
+      const verifyPassword = await this._passwordHasher.comparePasswords(currentPassword,user.password)
+
+      if(!verifyPassword){
+        throw new CustomError(AUTH_MESSAGES.INVALID_CREDENTIALS, STATUS_CODES.UNAUTHORIZED)
+      }
+
+      const hashPassword = await this._passwordHasher.hashPassword(newPassword);
+      user.password = hashPassword
+      await user.save()
+      
+
+    } catch (error) {
+      logError(error,{
+        service:"UserService.changePassword",
+      })
+      throw error
     }
   }
 }

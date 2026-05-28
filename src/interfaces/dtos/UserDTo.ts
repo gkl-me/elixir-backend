@@ -23,3 +23,10 @@ export interface IUpdatePasswordDto{
     newPassword:string,
     email:string
 }
+
+
+export interface IChangePasswordDto{
+    userId:string
+    currentPassword:string,
+    newPassword:string
+}

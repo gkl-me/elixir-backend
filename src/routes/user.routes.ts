@@ -22,4 +22,8 @@ router.patch(
   },
 );
 
+router.patch("/change-password", auth, (req, res, next) => {
+  void userController.changePassword(req, res, next);
+});
+
 export default router;

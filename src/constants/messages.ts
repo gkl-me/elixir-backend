@@ -1,3 +1,5 @@
+import { INVALID } from "zod"
+
 export const CONSTANT_MESSAGES = {
 
     SUCCESS:"Request completed successfully.",
@@ -15,6 +17,9 @@ export const CONSTANT_MESSAGES = {
 
 
 export const AUTH_MESSAGES = {
+
+    INVALID_CREDENTIALS:"Invalid email or password",
+
     SESSION_EXPIRED:"Session expired login again",
     ALREADY_EXITS:"Email already exists please login",
     BLOCKED:"User blocked by admin",
@@ -44,6 +49,9 @@ export const AUTH_MESSAGES = {
 }
 
 export const USER_MESSAGES = {
+
+    PASSWORD_UPDATED:"Password updated successfully",
+
     LOGIN_SUCCESS:'User successfully logged in',
     LOGOUT_SUCCESS:'User logout success',
     VERIFY_SUCCESS:'User successfully verified',
