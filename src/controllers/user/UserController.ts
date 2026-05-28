@@ -72,7 +72,7 @@ export class UserController implements IUserController {
     }
   }
 
-  async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async handleChangePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
 
       const { currentPassword, newPassword } = req.body;
@@ -84,6 +84,21 @@ export class UserController implements IUserController {
 
       successResponse(res, USER_MESSAGES.PASSWORD_UPDATED, STATUS_CODES.OK, {})
       
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async handleListActiveSessions(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      
+      const userId = req.user.userId
+      const accessToken = req.headers.authorization?.split(" ")[1] || ""
+
+      const activeSessions = await this._userService.listActiveSessions({userId,accessToken})
+
+      successResponse(res, USER_MESSAGES.FETCH_SUCCESS, STATUS_CODES.OK, {activeSessions})
+
     } catch (error) {
       next(error)
     }

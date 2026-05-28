@@ -8,6 +8,8 @@ import { Token } from "../../di/token";
 import { IUserService } from "./interface/IUserService";
 import {
   IChangePasswordDto,
+  IListActiveSessionsDto,
+  IListActiveSessionsResponseDto,
   IUpdatePasswordDto,
   IUserListDto,
   IUserQueryDto,
@@ -18,6 +20,8 @@ import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
 import { IAuthSession } from "../../interfaces/types/session.types";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { logError } from "../../middlewares/loggerHelper";
+import { ITokenManager } from "../../providers/interfaces/ITokenManager";
+import { de } from "zod/v4/locales";
 
 @injectable()
 export class UserService implements IUserService {
@@ -26,6 +30,7 @@ export class UserService implements IUserService {
     @inject(Token.PasswordHasher) private _passwordHasher: IPasswordHasher,
     @inject(Token.CacheRepository)
     private readonly _cacheRepository: ICacheRepository<IAuthSession>,
+    @inject(Token.TokenManager) private _tokenManager: ITokenManager,
   ) {}
 
   async getAllUsers(
@@ -145,6 +150,47 @@ export class UserService implements IUserService {
     } catch (error) {
       logError(error,{
         service:"UserService.changePassword",
+      })
+      throw error
+    }
+  }
+
+  async listActiveSessions(data:IListActiveSessionsDto): Promise<IListActiveSessionsResponseDto[]> {
+    try {
+
+      const {userId,accessToken} = data
+
+      const decodedToken = this._tokenManager.decodeToken(accessToken)
+
+      const currentSession = await this._cacheRepository.get(REDIS_STORE.SESSION + decodedToken.sessionId)
+      
+      const sessionKey = REDIS_STORE.USER_SESSION + String(userId);
+
+      const sessionIds = await this._cacheRepository.getMembers(sessionKey);
+
+      // Fetch details for each session ID
+      const activeSessions:IListActiveSessionsResponseDto[] = [];
+      for (const id of sessionIds) {
+        const session = await this._cacheRepository.get(REDIS_STORE.SESSION + id);
+        if (session && id !== decodedToken.sessionId) {
+          activeSessions.push({
+            ...session,
+            isCurrentSession: false
+          });
+        }else if(session && id === decodedToken.sessionId){
+          activeSessions.push({
+            ...session,
+            isCurrentSession: true
+          })
+        }
+      }
+
+
+      return activeSessions
+
+    } catch (error) {
+      logError(error,{
+        service:"UserService.listActiveSessions",
       })
       throw error
     }

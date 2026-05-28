@@ -23,7 +23,11 @@ router.patch(
 );
 
 router.patch("/change-password", auth, (req, res, next) => {
-  void userController.changePassword(req, res, next);
+  void userController.handleChangePassword(req, res, next);
+});
+
+router.get("/active-sessions", auth, (req, res, next) => {
+  void userController.handleListActiveSessions(req, res, next);
 });
 
 export default router;

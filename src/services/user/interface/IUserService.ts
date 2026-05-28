@@ -1,4 +1,5 @@
-import {  IChangePasswordDto, IUpdatePasswordDto, IUserListDto, IUserQueryDto } from "../../../interfaces/dtos/UserDTo";
+import {  IChangePasswordDto, IListActiveSessionsDto, IListActiveSessionsResponseDto, IUpdatePasswordDto, IUserListDto, IUserQueryDto } from "../../../interfaces/dtos/UserDTo";
+import { IAuthSession } from "../../../interfaces/types/session.types";
 
 
 
@@ -8,4 +9,5 @@ export interface IUserService{
     toggleBlockStatus(id:string):Promise<void>
     updatePassword(data:IUpdatePasswordDto):Promise<void>
     changePassword(data:IChangePasswordDto):Promise<void>
+    listActiveSessions(data:IListActiveSessionsDto):Promise<IListActiveSessionsResponseDto[]>
 }
