@@ -132,15 +132,15 @@ export class UserService implements IUserService {
 
       const user = await this._userRepository.findById(userId)
 
-      if(!user || !user.password){
+      if(!user){
         throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND)
       }
 
-      const verifyPassword = await this._passwordHasher.comparePasswords(currentPassword,user.password)
+      // const verifyPassword = await this._passwordHasher.comparePasswords(currentPassword,user.password)
 
-      if(!verifyPassword){
-        throw new CustomError(AUTH_MESSAGES.INVALID_CREDENTIALS, STATUS_CODES.UNAUTHORIZED)
-      }
+      // if(!verifyPassword){
+      //   throw new CustomError(AUTH_MESSAGES.INVALID_CREDENTIALS, STATUS_CODES.UNAUTHORIZED)
+      // }
 
       const hashPassword = await this._passwordHasher.hashPassword(newPassword);
       user.password = hashPassword

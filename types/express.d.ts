@@ -6,6 +6,11 @@ declare global {
         role: string;
       };
       requestId?: string;
+      workspaceMember?: {
+        workspaceMemberId: string;
+        workspaceRoleId: string;
+        permissions: string[];
+      }
     }
   }
 }

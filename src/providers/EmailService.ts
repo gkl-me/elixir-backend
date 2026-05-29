@@ -6,6 +6,7 @@ import { STATUS_CODES } from "../constants/statusCodes";
 import logger from "../middlewares/logger";
 import { injectable } from "tsyringe";
 import { ENV } from "../constants/env";
+import { logError } from "../middlewares/loggerHelper";
 
 @injectable()
 export class EmailService implements IEmailService {
@@ -39,7 +40,9 @@ export class EmailService implements IEmailService {
         );
       }
     } catch (error) {
-      logger.error(error);
+      logError(error,{
+        service:"EmailService",
+      })
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
         STATUS_CODES.INTERNAL_SERVER_ERROR,

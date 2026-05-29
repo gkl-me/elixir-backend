@@ -1,3 +1,5 @@
+import { BUILTIN_ROLES, WORKSPACE_PERMISSIONS } from "./workspacePermissions";
+
 export const builtInRoles = (workspaceId: string, ownerId: string) => {
   return [
     {
@@ -13,7 +15,7 @@ export const builtInRoles = (workspaceId: string, ownerId: string) => {
       workspaceId,
       key: "admin",
       name: "Admin",
-      permissions: [],
+      permissions: [...BUILTIN_ROLES.admin],
       createdByUserId: ownerId,
       isEditable: false,
       isDeletable: false,
@@ -22,7 +24,7 @@ export const builtInRoles = (workspaceId: string, ownerId: string) => {
       workspaceId,
       key: "member",
       name: "Member",
-      permissions: [],
+      permissions: [...BUILTIN_ROLES.member],
       createdByUserId: ownerId,
       isEditable: false,
       isDeletable: false,
