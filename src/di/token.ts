@@ -41,4 +41,5 @@ export const Token = {
   OnboardingController: "IOnboardingController",
   PaymentController: "IPaymentController",
   CompanyController: "ICompanyController",
+  WorkspaceController:"IWorkspaceController",
 };

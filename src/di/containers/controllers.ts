@@ -12,6 +12,7 @@ import { OnboardingController } from "../../controllers/onboarding/OnboardingCon
 import { PaymentController } from "../../controllers/payment/PaymenController";
 import { StripeWebhookController } from "../../controllers/webhook/StripeWebhook";
 import { CompanyController } from "../../controllers/company/CompanyController";
+import { WorkspaceController } from "../../controllers/workspace/WorkspaceController";
 // import { StripeWebhookController } from "../../controllers/webhook/StripeWebhook"
 
 // container.register(Token.PlanController,{
@@ -49,6 +50,10 @@ container.register(Token.StripeWebhookController, {
 container.register(Token.CompanyController, {
   useClass: CompanyController,
 });
+container.register(Token.WorkspaceController,{
+    useClass:WorkspaceController
+})
+
 
 // container.register(Token.SubscriptionController,{
 //     useClass:SubscriptionController

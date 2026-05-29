@@ -6,6 +6,12 @@ import { IWorkspace } from "../../models/Workspace";
 import { builtInRoles } from "../../constants/builtInRoles";
 import { IWorkspaceRoleRepository } from "../../repositories/workspace/interface/IWorkspaceRoleRepository";
 import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
+import { logError } from "../../middlewares/loggerHelper";
+import { CustomError } from "../../errors/CustomError";
+import { CONSTANT_MESSAGES } from "../../constants/messages";
+import { STATUS_CODES } from "../../constants/statusCodes";
+import { IWorkspaceMemberRepository } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
+import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -16,6 +22,10 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _workspaceRoleRepository: IWorkspaceRoleRepository,
     @inject(Token.SubscriptionRepository)
     private readonly _subscriptionRepository: ISubscriptionRepository,
+    @inject(Token.WorkspaceMemberRepository)
+    private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
+    @inject(Token.UserRepository)
+    private readonly _userRepository: IUserRepository
   ) {}
 
   async createWorkspace({
@@ -76,6 +86,48 @@ export class WorkspaceService implements IWorkspaceService {
       await workspace.save();
     } catch (error) {
       throw error;
+    }
+  }
+
+
+  async workspaceContext(data: { userId: string }): Promise<{ workspaceId: string; memberId: string; roleId: string; name: string; email: string; }> {
+    try {
+
+
+      const {userId} = data;
+
+      const workspace = await this._workspaceRepository.findOne({ownerId: userId})
+      const user = await this._userRepository.findById(userId)
+
+      if(!user) {
+        throw new CustomError(CONSTANT_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
+      }
+
+      if(!workspace) {
+        throw new CustomError(CONSTANT_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
+      }
+
+      const member = await this._workspaceMemberRepository.findOne({workspaceId:workspace._id, userId, isRemoved:false})
+
+      if(!member) {
+        throw new CustomError(CONSTANT_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
+      }
+
+      const role = await this._workspaceRoleRepository.findById(member.roleId)
+
+      return {
+        workspaceId: String(workspace._id),
+        memberId: String(member._id),
+        roleId: String(role?._id),
+        name: user.name,
+        email: user.email,
+      }
+
+    } catch (error) {
+     logError(error,{
+      service:"WorkspaceService.workspaceContext"
+     }) 
+     throw error;
     }
   }
 }

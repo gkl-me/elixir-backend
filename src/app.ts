@@ -17,6 +17,7 @@ import onboardingRoutes from "./routes/onboarding.routes";
 import webhookRoutes from "./routes/webhook.routes";
 import paymentRoutes from "./routes/payment.routes";
 import companyRoutes from "./routes/company.routes";
+import workspaceRoutes from "./routes/workspace.routes";
 
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -56,6 +57,7 @@ app.use("/api/v1/plans", planRoutes);
 app.use("/api/v1/onboarding", onboardingRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/company", companyRoutes);
+app.use("/api/v1/workspace", workspaceRoutes);
 
 app.get("/api/v1/demo", auth, (req, res) => {
   res.json({
