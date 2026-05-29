@@ -30,4 +30,8 @@ router.get("/active-sessions", auth, (req, res, next) => {
   void userController.handleListActiveSessions(req, res, next);
 });
 
+router.put("/update-profile",auth,(req,res,next) => {
+  void userController.handleUpdateProfile(req,res,next)
+})
+
 export default router;

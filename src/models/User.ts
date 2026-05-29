@@ -3,6 +3,8 @@ import { Document, model, Schema } from "mongoose";
 export interface IUser extends Document {
   name: string;
   email: string;
+  bio:string
+  jobTitle:string
   password?: string;
   isVerified: boolean;
   isBlocked: boolean;

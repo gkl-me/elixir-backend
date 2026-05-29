@@ -51,6 +51,7 @@ export const AUTH_MESSAGES = {
 export const USER_MESSAGES = {
 
     PASSWORD_UPDATED:"Password updated successfully",
+    PROFILE_UPDATED:"User profile updated successfully",
 
     LOGIN_SUCCESS:'User successfully logged in',
     LOGOUT_SUCCESS:'User logout success',

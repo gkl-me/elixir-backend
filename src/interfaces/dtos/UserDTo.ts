@@ -49,3 +49,11 @@ export interface IListActiveSessionsResponseDto{
     expiresAt:number,
     isCurrentSession:boolean
 }
+
+
+export interface IUpdateUserProfileDto {
+    name:string,
+    jobTitle:string,
+    bio:string
+    userId:string
+}

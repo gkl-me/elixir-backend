@@ -11,6 +11,7 @@ import {
   IListActiveSessionsDto,
   IListActiveSessionsResponseDto,
   IUpdatePasswordDto,
+  IUpdateUserProfileDto,
   IUserListDto,
   IUserQueryDto,
 } from "../../interfaces/dtos/UserDTo";
@@ -191,6 +192,26 @@ export class UserService implements IUserService {
     } catch (error) {
       logError(error,{
         service:"UserService.listActiveSessions",
+      })
+      throw error
+    }
+  }
+
+
+  async updateProfile(data: IUpdateUserProfileDto): Promise<void> {
+    try {
+
+      const {name,bio,jobTitle,userId}  = data
+
+      const user = await this._userRepository.update(userId,{
+        name,
+        bio,
+        jobTitle
+      })
+      
+    } catch (error) {
+      logError(error,{
+        service:"UserService.updateProfile",
       })
       throw error
     }

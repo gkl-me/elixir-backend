@@ -103,4 +103,26 @@ export class UserController implements IUserController {
       next(error)
     }
   }
+
+
+  async handleUpdateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+
+
+      const {name,bio,jobTitle} = req.body
+      const userId = req.user.userId
+
+      await this._userService.updateProfile({
+        name,
+        bio,
+        userId,
+        jobTitle
+      })
+
+      successResponse(res,USER_MESSAGES.PROFILE_UPDATED,STATUS_CODES.OK,{})
+
+    } catch (error) {
+      next(error)
+    }
+  }
 }

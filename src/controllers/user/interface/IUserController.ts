@@ -5,4 +5,5 @@ export interface IUserController{
     toggleBlockStatus(req:Request,res:Response,next:NextFunction):Promise<void>
     handleChangePassword(req:Request,res:Response,next:NextFunction):Promise<void>
     handleListActiveSessions(req:Request,res:Response,next:NextFunction):Promise<void>
+    handleUpdateProfile(req:Request,res:Response,next:NextFunction):Promise<void>
 }
