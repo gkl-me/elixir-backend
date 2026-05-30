@@ -71,4 +71,58 @@ export class UserController implements IUserController {
       next(error);
     }
   }
+
+  async handleChangePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user.userId
+
+      //validate input
+
+      await this._userService.changePassword({userId,currentPassword,newPassword})
+
+      successResponse(res, USER_MESSAGES.PASSWORD_UPDATED, STATUS_CODES.OK, {})
+      
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async handleListActiveSessions(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      
+      const userId = req.user.userId
+      const accessToken = req.headers.authorization?.split(" ")[1] || ""
+
+      const activeSessions = await this._userService.listActiveSessions({userId,accessToken})
+
+      successResponse(res, USER_MESSAGES.FETCH_SUCCESS, STATUS_CODES.OK, {activeSessions})
+
+    } catch (error) {
+      next(error)
+    }
+  }
+
+
+  async handleUpdateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+
+
+      const {name,bio,jobTitle} = req.body
+      const userId = req.user.userId
+
+      await this._userService.updateProfile({
+        name,
+        bio,
+        userId,
+        jobTitle
+      })
+
+      successResponse(res,USER_MESSAGES.PROFILE_UPDATED,STATUS_CODES.OK,{})
+
+    } catch (error) {
+      next(error)
+    }
+  }
 }

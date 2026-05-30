@@ -1,3 +1,5 @@
+import { int } from "zod/v4"
+import { IAuthSession } from "../types/session.types"
 
 
 export interface IUserListDto{
@@ -22,4 +24,36 @@ export interface IUserQueryDto{
 export interface IUpdatePasswordDto{
     newPassword:string,
     email:string
+}
+
+
+export interface IChangePasswordDto{
+    userId:string
+    currentPassword:string,
+    newPassword:string
+}
+
+export interface IListActiveSessionsDto{
+    userId:string,
+    accessToken:string,
+}
+
+
+export interface IListActiveSessionsResponseDto{
+    userId:string,
+    refreshTokenHash:string,
+    tokenVersion:number,
+    userAgent?:string,
+    ip?:string,
+    createdAt:number,
+    expiresAt:number,
+    isCurrentSession:boolean
+}
+
+
+export interface IUpdateUserProfileDto {
+    name:string,
+    jobTitle:string,
+    bio:string
+    userId:string
 }

@@ -8,6 +8,7 @@ import { OnboardingRepository } from "../../repositories/onboarding/OnboardingRe
 import { CompanyRepository } from "../../repositories/company/CompanyRepository";
 import { WorkspaceRepository } from "../../repositories/workspace/WorkspaceRepository";
 import { WorkspaceRoleRepository } from "../../repositories/workspace/WorkspaceRoleRepository";
+import { WorkspaceMemberRepository } from "../../repositories/workspace/WorkspaceMemberRepository";
 
 //repository
 container.register(Token.PlanRepository, {
@@ -37,3 +38,6 @@ container.register(Token.WorkspaceRepository, {
 container.register(Token.WorkspaceRoleRepository, {
   useClass: WorkspaceRoleRepository,
 });
+container.register(Token.WorkspaceMemberRepository,{
+  useClass: WorkspaceMemberRepository
+})

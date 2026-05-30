@@ -1,3 +1,5 @@
+import { Workspace } from "../models/Workspace";
+
 export const Token = {
   PasswordHasher: "IPasswordHasher",
   TokenManager: "ITokenManager",
@@ -13,6 +15,7 @@ export const Token = {
   CompanyRepository: "ICompanyRepository",
   WorkspaceRepository: "IWorkspaceRepository",
   WorkspaceRoleRepository: "IWorkspaceRoleRepository",
+  WorkspaceMemberRepository: "IWorkspaceMemberRepository",
 
   PlanService: "IPlanService",
   AuthService: "IAuthService",
@@ -38,4 +41,5 @@ export const Token = {
   OnboardingController: "IOnboardingController",
   PaymentController: "IPaymentController",
   CompanyController: "ICompanyController",
+  WorkspaceController:"IWorkspaceController",
 };
