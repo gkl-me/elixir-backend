@@ -15,6 +15,8 @@ export const ENV = {
     ACCESS_TOKEN_TTL:15*60,
     REFRESH_TOKEN_TTL: 7 * 24 * 60 * 60,
 
+    OTP_TTL:5*60,
+
     STRIPE_KEY:process.env.STRIPE_KEY || "",
     STRIPE_WEBHOOK_SECRET:process.env.STRIPE_WEBHOOK_SECRET || "",
 
@@ -23,4 +25,8 @@ export const ENV = {
 
     REDIS_HOST:process.env.REDIS_HOST || "redis",
     REDIS_PORT:process.env.REDIS_PORT || "6359",
+
+    GOOGLE_CLIENT_ID:process.env.GOOGLE_CLIENT_ID||"",
+
+    GITHUB_BASE_URL:process.env.GITHUB_BASE_URL||'https://api.github.com'
 }

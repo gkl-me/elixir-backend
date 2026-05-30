@@ -1,9 +1,23 @@
+import {
+  IAccessTokenPayload,
+  IRefreshTokenPayload,
+} from "../../interfaces/types/jwt.types";
+
 export interface ITokenManager {
-    generateAccessToken(id:string,role:string):string;
-    generateRefreshToken(id:string,role:string):string;
-    verifyToken(token:string,type:'access'|'refresh'):{id:string,role:string};
-    decodeToken(token:string):{id:string,role:string}
-    generateRandomToken():string
-    hashToken(token:string):string
-    generateRandomOtp():string
+  generateAccessToken(userId: string, role: string, sessionId: string): string;
+  generateRefreshToken(
+    userId: string,
+    role: string,
+    sessionId: string,
+    tokenVersion: number,
+  ): string;
+  verifyToken(
+    token: string,
+    type: "access" | "refresh",
+  ): IAccessTokenPayload | IRefreshTokenPayload;
+  decodeToken(token: string): IAccessTokenPayload | IRefreshTokenPayload;
+  generateRandomToken(): string;
+  hashToken(token: string): string;
+  generateRandomOtp(): string;
+  generateSessionId(): string;
 }

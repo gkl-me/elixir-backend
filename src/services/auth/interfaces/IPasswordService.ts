@@ -1,9 +1,9 @@
-import { IForgotPasswordDto, IResetPasswordDto } from "../../../interfaces/dtos/AuthDTO";
+import { IForgotPasswordDto, IForgotPasswordResponseDto, IResetPasswordDto } from "../../../interfaces/dtos/AuthDTO";
 
 
 
 
 export interface IPasswordService{
-    forgotPassword(data:IForgotPasswordDto):Promise<void>
+    forgotPassword(data:IForgotPasswordDto):Promise<IForgotPasswordResponseDto>
     resetPassword(data:IResetPasswordDto):Promise<void>
 }

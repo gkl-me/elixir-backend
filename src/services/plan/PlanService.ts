@@ -1,99 +1,128 @@
-// import { inject, injectable } from "tsyringe";
-// import { IPlanService } from "./interfaces/IPlanService";
-// import { Token } from "../../di/token";
-// import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
-// import { updatePlanDto } from "../../interfaces/dtos/PlanDto";
-// import { CustomError } from "../../errors/CustomError";
-// import { STATUS_CODES } from "../../constants/statusCodes";
-// import { UpdatePlanSchema } from "../../validator/PlanSchema";
-// import { IStripeService } from "../../utils/interfaces/IStripeService";
-// import { adminDtoMapper } from "../../interfaces/mapper/adminDtoMapper";
-// import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../../constants/messages";
-// import { planDtoMapper } from "../../interfaces/mapper/planDtoMapper";
+import { inject, injectable } from "tsyringe";
+import { IPlanService } from "./interfaces/IPlanService";
+import { Token } from "../../di/token";
+import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
+import {
+  ICreatePlanDTo,
+  IGetPlanDto,
+  ITogglePlanStatusDto,
+  PlanResponseDto,
+} from "../../interfaces/dtos/PlanDto";
+import { CustomError } from "../../errors/CustomError";
+import { STATUS_CODES } from "../../constants/statusCodes";
+import { CONSTANT_MESSAGES } from "../../constants/messages";
+import { planDtoMapper } from "../../interfaces/mapper/planDtoMapper";
+import { IStripeService } from "../../providers/interfaces/IStripeService";
+import logger from "../../middlewares/logger";
 
-// @injectable()
-// export class PlanService implements IPlanService{
-//     constructor(
-//         @inject(Token.PlanRepository) private _planRepository:IPlanRepository,
-//         @inject(Token.StripeService) private _stripeService:IStripeService
-//     ){}
+@injectable()
+export class PlanService implements IPlanService {
+  constructor(
+    @inject(Token.PlanRepository) private _planRepository: IPlanRepository,
+    @inject(Token.StripeService) private _stripeService: IStripeService,
+  ) {}
 
-//     async updatePlan(updateData:updatePlanDto){
-//         try {
-//             const {id,data} = updateData
+  async createPlan(data: ICreatePlanDTo): Promise<PlanResponseDto | null> {
+    try {
+      //disable all exiting plan with same type
+      await this._planRepository.updateMany(
+        { type: data.type },
+        { $set: { isActive: false } },
+      );
 
-            
-//             const existingPlan = await this._planRepository.findById(id)
-//             if(!existingPlan){
-//                 throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
-//             }
+      let stripeProductId;
+      let stripePriceId;
+      if (data.type !== "Free") {
+        stripeProductId = await this._stripeService.findProduct(data.type);
 
-//             //validate update data
-//             const validateData = UpdatePlanSchema.safeParse(data)
-//             if(!validateData.success){
-//                 throw new CustomError(validateData.error.errors[0].message,STATUS_CODES.BAD_REQUEST)
-//             }
-            
-//             //update the value of price to cents
-//             if(existingPlan.name!=='Free' && data.price &&  existingPlan.price !== data.price){
-//                 data.price = Number(data.price) * 100
-//                 const priceId = await this._stripeService.createPrice(existingPlan.stripeProductId!,data.price)
-//                 data.stripePriceId = priceId
-//             }
+        if (!stripeProductId) {
+          stripeProductId = await this._stripeService.createProduct(data.type);
+        }
+        stripePriceId = await this._stripeService.createPrice(
+          stripeProductId,
+          data.price,
+        );
+      }
 
+      const newPlan = await this._planRepository.create({
+        ...data,
+        isActive: true,
+        stripePriceId,
+        stripeProductId,
+      });
 
-//             //update the db 
-//             const updatedPlan = await this._planRepository.update(id,data)
-//             if(!updatedPlan){
-//                 throw new CustomError(PLAN_MESSAGES.UPDATE_ERROR,STATUS_CODES.BAD_REQUEST)
-//             }
+      return planDtoMapper.toPlanResponse(newPlan);
+    } catch (error) {
+      throw error;
+    }
+  }
 
-//             return adminDtoMapper.toPlanResponseDto(updatedPlan)
+  async findAllPlans(
+    data: IGetPlanDto,
+  ): Promise<{
+    plans: PlanResponseDto[] | null;
+    totalPage: number;
+    currentPage: number;
+  }> {
+    try {
+      const { page, limit } = data;
+      const skip = (page - 1) * limit;
 
-//         } catch (error) {
-//             if(error instanceof CustomError){
-//                 throw error
-//             }
-//             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
-//         }
-//     }
+      const allPlans = await this._planRepository.findAll(
+        {},
+        {
+          sort: { isActive: -1, createdAt: 1 },
+          skip,
+          limit,
+        },
+      );
+      const totalPage = Math.ceil((allPlans?.length || 6) / 6);
+      let plans = null;
 
-//     async findAllPlans(){
-//         try {
-//             const allPlans = await this._planRepository.findAll({},{sort:{"createdAt":1},})
-//             let plans = null;
+      if (allPlans && allPlans.length) {
+        plans = allPlans.map((plan) => planDtoMapper.toPlanResponse(plan));
+      }
 
-//             if(allPlans && allPlans.length){
-//                 plans = allPlans.map(plan => adminDtoMapper.toPlanResponseDto(plan))
-//             }
+      return { plans, totalPage, currentPage: page };
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(
+        CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
-//             return plans
-//         } catch (error) {
-//             if(error instanceof CustomError){
-//                 throw error
-//             }
-//             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
-//         }
-//     }
+  async togglePlanStatus(data: ITogglePlanStatusDto): Promise<void> {
+    try {
+      const { planId } = data;
 
-//     async getAvailablePlans(){
-//         try {
-            
-//             const availablePlans = await this._planRepository.findAll({isActive:true},{
-//                 sort:{"createdAt":1}
-//             })
-//             let plans = null
-//             if(availablePlans){
-//                 plans = availablePlans.map(plan => planDtoMapper.toPlanReponse(plan))
-//             }
+      const plan = await this._planRepository.findById(planId);
+      if (!plan)
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST,
+        );
 
-//             return plans
+      if (!plan.isActive) {
+        await this._planRepository.updateMany(
+          {
+            type: plan.type,
+            _id: { $ne: plan._id },
+          },
+          {
+            $set: { isActive: false },
+          },
+        );
+      }
 
-//         } catch (error) {
-//             if(error instanceof CustomError){
-//                 throw error
-//             }
-//             throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
-//         }
-//     }
-// }
+      plan.isActive = !plan.isActive;
+      await plan.save();
+    } catch (error) {
+      logger.error("error from toggle plan status", error);
+      throw error;
+    }
+  }
+}

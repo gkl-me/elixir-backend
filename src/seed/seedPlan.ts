@@ -1,104 +1,143 @@
-import { Plan } from '../models/Plan'
-import logger from '../middlewares/logger'
-import { container } from 'tsyringe'
-import { IStripeService } from '../providers/interfaces/IStripeService'
+import { Plan } from "../models/Plan";
+import logger from "../middlewares/logger";
+import { container } from "tsyringe";
+import { IStripeService } from "../providers/interfaces/IStripeService";
+import { logError } from "../middlewares/loggerHelper";
 
-
-const plans= [
-    {
-        name:"Free",
-        price:0,
-        limits:{
-            maxProjects:5,
-            maxTeams:2,
-            maxUsersPerTeam:10
-        }
+const plans = [
+  {
+    name: "Free",
+    type: "Free",
+    price: 0,
+    limits: {
+      projects: 5,
+      teams: 2,
+      members: 5,
+      customRoles: 0,
+      storageBytes: 100 * 1024 * 1024,
     },
-    {
-        name:'Pro',
-        price:1000,
-        limits:{
-            maxProjects:10,
-            maxTeams:5,
-            maxUsersPerTeam:20
-        }
-    },{
-        name:'Enterprice',
-        price:2000,
-        limits:{
-            maxProjects:0,
-            maxTeams:0,
-            maxUsersPerTeam:0
-        }
+    features: {
+      githubAutomation: false,
+      automationScripts: false,
+    },
+  },
+  {
+    name: "Pro",
+    type: "Pro",
+    price: 1000,
+    limits: {
+      projects: 10,
+      teams: 5,
+      members: 10,
+      customRoles: 3,
+      storageBytes: 300 * 1024 * 1024,
+    },
+    features: {
+      githubAutomation: true,
+      automationScripts: true,
+    },
+  },
+  {
+    name: "Enterprice",
+    type: "Enterprice",
+    price: 2000,
+    limits: {
+      projects: -1,
+      teams: -1,
+      members: -1,
+      customRoles: 5,
+      storageBytes: 500 * 1024 * 1024,
+    },
+    features: {
+      githubAutomation: true,
+      automationScripts: true,
+    },
+  },
+];
+
+export async function seedPlan(): Promise<void> {
+  try {
+    for (const plan of plans) {
+      let stripePriceId = null;
+      let stripeProductId = null;
+
+      if (plan.type !== "Free") {
+        const res = await stripeListing(plan.type, plan.price);
+        stripePriceId = res.stripePriceId;
+        stripeProductId = res.stripeProductId;
+      }
+
+      //add to db
+      await Plan.updateOne(
+        { name: plan.name },
+        {
+          $set: {
+            name: plan.name,
+            type: plan.type,
+            limits: plan.limits,
+            features: plan.features,
+            stripePriceId: stripePriceId,
+            stripeProductId: stripeProductId,
+            isActive: true,
+            price: plan.price,
+          },
+        },
+        {
+          upsert: true,
+        },
+      );
     }
-]
 
-export async function seedPlan(){
-    try {
-
-        for(let plan of plans){
-
-            let stripePriceId=null
-            let stripeProductId=null
-
-            if(plan.name!=='Free'){
-                let res = await stripeListing(plan.name,plan.price)
-                stripePriceId = res.stripePriceId
-                stripeProductId = res.stripeProductId
-            }
-
-            //add to db 
-                await Plan.updateOne({name:plan.name},{
-                    $set:{
-                        name:plan.name,
-                        limits:plan.limits,
-                        stripePriceId:stripePriceId,
-                        stripeProductId:stripeProductId,
-                        isActive:true,
-                        price:plan.price
-                    }
-                },{
-                    upsert:true
-                })
-        }
-
-        console.log('Plans Successfully seed to the db')
-    } catch (error) {
-        logger.error(error)
-    }
+    console.log("Plans Successfully seed to the db");
+  } catch (error) {
+    logger.error(error);
+  }
 }
 
+async function stripeListing(
+  planType: string,
+  planPrice: number,
+): Promise<{
+  stripeProductId: string;
+  stripePriceId: string;
+}> {
+  try {
+    const stripeServie = container.resolve<IStripeService>("IStripeService");
 
-async function stripeListing(planName:string,planPrice:number){
-    try {
+    let stripeProductId = await stripeServie.findProduct(planType);
 
-        let stripeProductId=null;
-        let stripePriceId=null;
-
-        const stripeServie = container.resolve<IStripeService>('IStripeService')
-
-        const existingProductId = await stripeServie.findProduct(planName)
-        if(existingProductId){
-            stripeProductId=existingProductId
-
-            const latestPriceId = await stripeServie.findLatestPrice(stripeProductId)
-
-            stripePriceId=latestPriceId|| null
-        }else{
-
-            const newProductId = await stripeServie.createProduct(planName)
-
-            const newPriceId = await stripeServie.createPrice(newProductId,planPrice)
-
-            stripeProductId = newProductId
-            stripePriceId = newPriceId
-        }
-
-        return {
-            stripeProductId,
-            stripePriceId
-        }
-    } catch (error) {
-        throw new Error('Failed to create product or price in stripe')
+    if (!stripeProductId) {
+      stripeProductId = await stripeServie.createProduct(planType);
     }
+
+    const latestPriceId = await stripeServie.findLatestPrice(stripeProductId);
+
+    if (!latestPriceId) {
+      const newPriceId = await stripeServie.createPrice(
+        stripeProductId,
+        planPrice,
+      );
+      return { stripeProductId, stripePriceId: newPriceId };
+    }
+
+    const latestPrice = await stripeServie.getPrice(latestPriceId);
+
+    if (latestPrice?.unit_amount !== planPrice) {
+      const newPriceId = await stripeServie.createPrice(
+        stripeProductId,
+        planPrice,
+      );
+      return { stripeProductId, stripePriceId: newPriceId };
+    }
+
+    return {
+      stripeProductId,
+      stripePriceId: latestPriceId,
+    };
+  } catch (error) {
+    logError(error, {
+      service: "SeedPlan.StripeListing",
+    });
+    throw error;
+  }
 }

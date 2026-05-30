@@ -1,8 +1,18 @@
-import { PlanResponseDto, updatePlanDto } from "../../../interfaces/dtos/PlanDto";
+import {
+  ICreatePlanDTo,
+  IGetPlanDto,
+  ITogglePlanStatusDto,
+  PlanResponseDto,
+} from "../../../interfaces/dtos/PlanDto";
 
-
-export interface IPlanService{
-    updatePlan:(updateData:updatePlanDto) => Promise<PlanResponseDto|null>
-    findAllPlans:() => Promise<PlanResponseDto[]|null>
-    getAvailablePlans:() => Promise<Omit<PlanResponseDto,'isActive'>[]|null>
+export interface IPlanService {
+  createPlan(data: ICreatePlanDTo): Promise<PlanResponseDto | null>;
+  findAllPlans(
+    data: IGetPlanDto,
+  ): Promise<{
+    plans: PlanResponseDto[] | null;
+    totalPage: number;
+    currentPage: number;
+  }>;
+  togglePlanStatus(data: ITogglePlanStatusDto): Promise<void>;
 }

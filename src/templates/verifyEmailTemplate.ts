@@ -1,4 +1,4 @@
-export const VERIFY_EMAIL_TEMPLATE = (verifyUrl: string) => `
+export const VERIFY_EMAIL_TEMPLATE = (verifyUrl: string): string => `
 <!DOCTYPE html>
 <html lang="en" style="margin: 0; padding: 0;">
   <head>

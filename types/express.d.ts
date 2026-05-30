@@ -1,19 +1,18 @@
-import { Request } from "express"
-
-declare global{
-    namespace Express{
-        interface Request{
-            admin?:{
-                id:string,
-                role:string
-            },
-            user:{
-                id:string,
-                role:string
-            }
-        }
+declare global {
+  namespace Express {
+    interface Request {
+      user: {
+        userId: string;
+        role: string;
+      };
+      requestId?: string;
+      workspaceMember?: {
+        workspaceMemberId: string;
+        workspaceRoleId: string;
+        permissions: string[];
+      }
     }
+  }
 }
 
-
-export {}
+export {};

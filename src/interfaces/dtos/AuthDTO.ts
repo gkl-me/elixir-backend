@@ -17,7 +17,9 @@ export interface IAuthResponseDto{
     id:string,
     email:string,
     name:string,
-    role:string
+    role:string,
+    accessToken:string,
+    refreshToken:string
 }
 
 
@@ -34,24 +36,29 @@ export interface IVerifyUserDTO{
 }
 
 export interface IGoogleAuthDto{
-    name:string,
-    email:string,
-    googleId:string,
-    image:string
+    idToken:string
 }
 
+export interface IGithubAuthDto{
+    githubId:string,
+    githubUsername:string
+    name:string,
+    email:string,
+    image:string,
+    access_token:string
+}
 
 export interface IRefreshTokenDto{
     refreshToken:string
 }
 
 export interface IRefreshTokenResponseDto{
-    accessToken:string
+    newAccessToken:string,
+    newRefreshToken:string
 }
 
 
 export interface ILogoutDto{
-    accessToken:string,
     refreshToken:string
 }
 
@@ -64,6 +71,10 @@ export interface IForgotPasswordDto{
     email:string
 }
 
+export interface IForgotPasswordResponseDto{
+    userEmail:string,
+    expiresAt:Date
+}
 
 export interface ISendOtpDto{
     email:string,

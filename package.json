@@ -5,24 +5,35 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --files --watch src src/app.ts",
-    "build": "tsc -b",
-    "start": "node dist/app.js"
+    "worker:dev": "nodemon --files --watch src src/workers.ts",
+    "build": "npm run lint && npm run typecheck && tsc -b",
+    "start": "node dist/app.js",
+    "worker:start": "node dist/workers.js",
+    "lint": "eslint . --ext .ts --max-warnings=0",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.13.5",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.58.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "eslint-plugin-import-x": "^4.16.2",
+    "eslint-plugin-n": "^17.24.0",
+    "eslint-plugin-security": "^4.0.0",
     "express": "^4.21.2",
-    "ioredis": "^5.7.0",
+    "google-auth-library": "^10.5.0",
+    "ioredis": "^5.9.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.0",
     "morgan": "^1.10.0",
+    "octokit": "^5.0.5",
     "reflect-metadata": "^0.2.2",
     "resend": "^4.1.2",
     "stripe": "^18.3.0",
@@ -34,6 +45,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
@@ -43,7 +55,11 @@
     "@types/morgan": "^1.9.9",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/winston": "^2.4.4",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
     "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript-eslint": "^8.57.0"
   }
 }
