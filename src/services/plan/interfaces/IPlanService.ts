@@ -7,9 +7,7 @@ import {
 
 export interface IPlanService {
   createPlan(data: ICreatePlanDTo): Promise<PlanResponseDto | null>;
-  findAllPlans(
-    data: IGetPlanDto,
-  ): Promise<{
+  findAllPlans(data: IGetPlanDto): Promise<{
     plans: PlanResponseDto[] | null;
     totalPage: number;
     currentPage: number;

@@ -23,7 +23,7 @@ export class OtpService implements IOtpService {
     @inject(Token.EmailService) private readonly _emailService: IEmailService,
     @inject(Token.TokenManager) private readonly _tokenManager: ITokenManager,
     @inject(Token.CacheRepository)
-    private readonly _cacheRepository: ICacheRepository<string | IOtpType>,
+    private readonly _cacheRepository: ICacheRepository<string | IOtpType>
   ) {}
 
   async sendOtp(data: ISendOtpDto): Promise<void> {
@@ -41,14 +41,14 @@ export class OtpService implements IOtpService {
         if (now < existing.expiresAt) {
           throw new CustomError(
             AUTH_MESSAGES.OTP_COOLDOWN_ERROR,
-            STATUS_CODES.TOO_MANY_REQUEST,
+            STATUS_CODES.TOO_MANY_REQUEST
           );
         }
 
         if (existing.retries >= 5) {
           throw new CustomError(
             AUTH_MESSAGES.OTP_ATTEMPT_ERROR,
-            STATUS_CODES.TOO_MANY_REQUEST,
+            STATUS_CODES.TOO_MANY_REQUEST
           );
         }
       }
@@ -69,7 +69,7 @@ export class OtpService implements IOtpService {
       await this._emailService.sendEmail(
         email,
         "Reset Password OTP",
-        RESET_PASSWORD_OTP_TEMPLATE(otp),
+        RESET_PASSWORD_OTP_TEMPLATE(otp)
       );
     } catch (error) {
       throw error;
@@ -86,7 +86,7 @@ export class OtpService implements IOtpService {
       if (!payload)
         throw new CustomError(
           AUTH_MESSAGES.OTP_ERROR,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       const now = Date.now();
@@ -95,7 +95,7 @@ export class OtpService implements IOtpService {
       if (now > payload.expiresAt) {
         throw new CustomError(
           AUTH_MESSAGES.OTP_ERROR,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -108,7 +108,7 @@ export class OtpService implements IOtpService {
           await this._cacheRepository.delete(key);
           throw new CustomError(
             AUTH_MESSAGES.OTP_ATTEMPT_ERROR,
-            STATUS_CODES.BAD_REQUEST,
+            STATUS_CODES.BAD_REQUEST
           );
         }
 
@@ -117,7 +117,7 @@ export class OtpService implements IOtpService {
 
         throw new CustomError(
           AUTH_MESSAGES.INVALID_OTP,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -133,7 +133,7 @@ export class OtpService implements IOtpService {
       await this._cacheRepository.set(
         REDIS_STORE.RESET_TOKEN + email,
         hashResetPasswordToken,
-        15 * 60,
+        15 * 60
       );
 
       return {

@@ -18,7 +18,7 @@ export class EmailService implements IEmailService {
       logger.error("Resend api env is empty");
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
     this._resend = new Resend(api);
@@ -36,16 +36,16 @@ export class EmailService implements IEmailService {
       if (response.error) {
         throw new CustomError(
           response.error.message,
-          STATUS_CODES.INTERNAL_SERVER_ERROR,
+          STATUS_CODES.INTERNAL_SERVER_ERROR
         );
       }
     } catch (error) {
-      logError(error,{
-        service:"EmailService",
-      })
+      logError(error, {
+        service: "EmailService",
+      });
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

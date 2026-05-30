@@ -1,10 +1,9 @@
-
 services:
   app:
     image: gklme/elixir:latest
     ports:
       - "5000:5000"
-    env_file: 
+    env_file:
       - .env
     depends_on:
       - redis

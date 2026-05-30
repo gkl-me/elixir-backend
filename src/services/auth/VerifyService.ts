@@ -25,7 +25,7 @@ export class VerifyService implements IVerifyService {
     private readonly _userRepository: IUserRepository,
     @inject(Token.TokenManager) private readonly _tokenManager: ITokenManager,
     @inject(Token.CacheRepository)
-    private readonly _cacheRepository: ICacheRepository<string | IAuthSession>,
+    private readonly _cacheRepository: ICacheRepository<string | IAuthSession>
   ) {}
 
   async sendVerificationEmail(data: ISendVerificationEmailDto): Promise<void> {
@@ -44,7 +44,7 @@ export class VerifyService implements IVerifyService {
       await this._cacheRepository.set(
         REDIS_STORE.EMAIL_VERIFY + hashToken,
         email,
-        15 * 60,
+        15 * 60
       );
 
       //verification url
@@ -54,7 +54,7 @@ export class VerifyService implements IVerifyService {
       await this._emailService.sendEmail(
         email,
         "Verify your email",
-        VERIFY_EMAIL_TEMPLATE(verificationUrl),
+        VERIFY_EMAIL_TEMPLATE(verificationUrl)
       );
     } catch (error) {
       throw error;
@@ -67,7 +67,7 @@ export class VerifyService implements IVerifyService {
       if (!token)
         throw new CustomError(
           AUTH_MESSAGES.TOKEN_ERROR,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       //hash token
@@ -75,13 +75,13 @@ export class VerifyService implements IVerifyService {
 
       //get email from cache
       const email = await this._cacheRepository.get(
-        REDIS_STORE.EMAIL_VERIFY + hashToken,
+        REDIS_STORE.EMAIL_VERIFY + hashToken
       );
 
       if (!email || typeof email !== "string") {
         throw new CustomError(
           AUTH_MESSAGES.INVALID_TOKEN,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 

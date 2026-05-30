@@ -33,7 +33,7 @@ const morganMiddleware = morgan(morganFormat, {
       logger.info(message.trim());
 
       const match = message.match(
-        /(\S+)\s+(\S+)\s+(\S+)\s+(\d{3})\s+-\s+([\d.]+)\s+ms/,
+        /(\S+)\s+(\S+)\s+(\S+)\s+(\d{3})\s+-\s+([\d.]+)\s+ms/
       );
       if (match) {
         const [_, timestamp, _method, _url, status, _responseTime] = match;

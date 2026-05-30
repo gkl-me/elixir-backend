@@ -20,7 +20,7 @@ export async function seedAdmin(): Promise<void> {
 
     const userExits = await userRepository.findByEmail(adminData.email);
     const hashedPassword = await passwordHasher.hashPassword(
-      adminData.password,
+      adminData.password
     );
 
     if (userExits && userExits.password) {
@@ -28,7 +28,7 @@ export async function seedAdmin(): Promise<void> {
 
       const passwordMatch = await passwordHasher.comparePasswords(
         adminData.password,
-        userExits?.password,
+        userExits?.password
       );
       if (!passwordMatch) {
         await userRepository.update(userExits.id, {

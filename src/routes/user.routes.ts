@@ -19,7 +19,7 @@ router.patch(
   authorize(APP_ROLES.SUPER_ADMIN),
   (req, res, next) => {
     void userController.toggleBlockStatus(req, res, next);
-  },
+  }
 );
 
 router.patch("/change-password", auth, (req, res, next) => {
@@ -30,8 +30,8 @@ router.get("/active-sessions", auth, (req, res, next) => {
   void userController.handleListActiveSessions(req, res, next);
 });
 
-router.put("/update-profile",auth,(req,res,next) => {
-  void userController.handleUpdateProfile(req,res,next)
-})
+router.put("/update-profile", auth, (req, res, next) => {
+  void userController.handleUpdateProfile(req, res, next);
+});
 
 export default router;

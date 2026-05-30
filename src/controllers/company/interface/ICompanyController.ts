@@ -4,6 +4,6 @@ export interface ICompanyController {
   handleGetAllCompany(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void>;
 }

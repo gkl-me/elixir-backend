@@ -43,7 +43,7 @@ const CompanySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const Company = model<ICompany>("company", CompanySchema);

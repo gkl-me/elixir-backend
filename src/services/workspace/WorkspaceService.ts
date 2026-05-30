@@ -70,7 +70,8 @@ export class WorkspaceService implements IWorkspaceService {
 
       const roles = builtInRoles(String(workspace._id), data.ownerId);
 
-      const workspaceRoles = await this._workspaceRoleRepository.createMany(roles);
+      const workspaceRoles =
+        await this._workspaceRoleRepository.createMany(roles);
 
       const subscription = await this._subscriptionRepository.create({
         workspaceId: String(workspace._id),
@@ -82,7 +83,7 @@ export class WorkspaceService implements IWorkspaceService {
         currentPeriodStart: new Date(),
       });
 
-      const roleId = workspaceRoles.find(role => role.name === "Owner")?._id
+      const roleId = workspaceRoles.find((role) => role.name === "Owner")?._id;
 
       const workspaceMember = await this._workspaceMemberRepository.create({
         workspaceId: String(workspace._id),
@@ -91,7 +92,7 @@ export class WorkspaceService implements IWorkspaceService {
         isRemoved: false,
         invitedByUserId: data.ownerId,
         joinedAt: new Date(),
-      })
+      });
 
       workspace.subscriptionId = String(subscription._id);
       await workspace.save();
@@ -100,37 +101,57 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-
-  async workspaceContext(data: { userId: string }): Promise<{ workspaceId: string; memberId: string; roleId: string; name: string; email: string; }> {
+  async workspaceContext(data: {
+    userId: string;
+  }): Promise<{
+    workspaceId: string;
+    memberId: string;
+    roleId: string;
+    name: string;
+    email: string;
+  }> {
     try {
-
-
-      const {userId} = data;
+      const { userId } = data;
 
       console.log("User ID in workspaceContext:", userId); // Debug log to check userId
 
-      const workspace = await this._workspaceRepository.findOne({ownerId: userId})
-      const user = await this._userRepository.findById(userId)
+      const workspace = await this._workspaceRepository.findOne({
+        ownerId: userId,
+      });
+      const user = await this._userRepository.findById(userId);
 
       console.log("Workspace found:", workspace); // Debug log to check workspace
       console.log("User found:", user); // Debug log to check user
 
-      if(!user) {
-        throw new CustomError(CONSTANT_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
+      if (!user) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        );
       }
 
-      if(!workspace) {
-        throw new CustomError(CONSTANT_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
+      if (!workspace) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        );
       }
 
-      const member = await this._workspaceMemberRepository.findOne({workspaceId:workspace._id, userId, isRemoved:false})
+      const member = await this._workspaceMemberRepository.findOne({
+        workspaceId: workspace._id,
+        userId,
+        isRemoved: false,
+      });
       console.log("Workspace member found:", member); // Debug log to check workspace member
 
-      if(!member) {
-        throw new CustomError(CONSTANT_MESSAGES.NOT_FOUND,STATUS_CODES.NOT_FOUND)
+      if (!member) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        );
       }
 
-      const role = await this._workspaceRoleRepository.findById(member.roleId)
+      const role = await this._workspaceRoleRepository.findById(member.roleId);
       console.log("Workspace role found:", role); // Debug log to check workspace role
 
       return {
@@ -139,13 +160,12 @@ export class WorkspaceService implements IWorkspaceService {
         roleId: String(role?._id),
         name: user.name,
         email: user.email,
-      }
-
+      };
     } catch (error) {
-     logError(error,{
-      service:"WorkspaceService.workspaceContext"
-     }) 
-     throw error;
+      logError(error, {
+        service: "WorkspaceService.workspaceContext",
+      });
+      throw error;
     }
   }
 }

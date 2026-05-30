@@ -24,14 +24,14 @@ export class TokenManager implements ITokenManager {
       logger.error("Access token secret env is empty");
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
     if (!refresh_secret) {
       logger.error("Refresh token secret env is empty");
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
 
@@ -47,7 +47,7 @@ export class TokenManager implements ITokenManager {
         sessionId,
       },
       process.env.ACCESS_TOKEN_SECRET!,
-      { expiresIn: ENV.ACCESS_TOKEN_TTL * 1000 },
+      { expiresIn: ENV.ACCESS_TOKEN_TTL * 1000 }
     );
     return accessRoken;
   }
@@ -56,7 +56,7 @@ export class TokenManager implements ITokenManager {
     userId: string,
     role: string,
     sessionId: string,
-    tokenVersion: number,
+    tokenVersion: number
   ): string {
     const refreshToken = jwt.sign(
       {
@@ -66,14 +66,14 @@ export class TokenManager implements ITokenManager {
         tokenVersion,
       },
       process.env.REFRESH_TOKEN_SECRET!,
-      { expiresIn: ENV.REFRESH_TOKEN_TTL * 1000 },
+      { expiresIn: ENV.REFRESH_TOKEN_TTL * 1000 }
     );
     return refreshToken;
   }
 
   verifyToken(
     token: string,
-    type: "access" | "refresh",
+    type: "access" | "refresh"
   ): IAccessTokenPayload | IRefreshTokenPayload {
     try {
       const secret = type === "access" ? this.accessSecret : this.refreshSecret;
@@ -83,7 +83,7 @@ export class TokenManager implements ITokenManager {
       logger.error(error);
       throw new CustomError(
         CONSTANT_MESSAGES.UNAUTHORIZED,
-        STATUS_CODES.UNAUTHORIZED,
+        STATUS_CODES.UNAUTHORIZED
       );
     }
   }
@@ -96,7 +96,7 @@ export class TokenManager implements ITokenManager {
       logger.error(error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

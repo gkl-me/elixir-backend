@@ -35,22 +35,22 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     console.log("Payment success");
 
     const _stripeService = container.resolve<IStripeService>(
-      Token.StripeService,
+      Token.StripeService
     );
     const _onboardingRepository = container.resolve<IOnboardingRepository>(
-      Token.OnboardingRepository,
+      Token.OnboardingRepository
     );
     const _companyRepository = container.resolve<ICompanyRepository>(
-      Token.CompanyRepository,
+      Token.CompanyRepository
     );
     const _workspaceService = container.resolve<IWorkspaceService>(
-      Token.WorkspaceService,
+      Token.WorkspaceService
     );
     const _subscriptionRepository = container.resolve<ISubscriptionRepository>(
-      Token.SubscriptionRepository,
+      Token.SubscriptionRepository
     );
     const _planRepository = container.resolve<IPlanRepository>(
-      Token.PlanRepository,
+      Token.PlanRepository
     );
 
     const invoice = event.data.object as Stripe.Invoice;
@@ -66,7 +66,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     if (!onboarding || !plan)
       throw new CustomError(
         CONSTANT_MESSAGES.BAD_REQUEST,
-        STATUS_CODES.BAD_REQUEST,
+        STATUS_CODES.BAD_REQUEST
       );
 
     let companyId;
@@ -100,7 +100,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       planId: onboarding.planId,
       stripePriceId: plan.stripePriceId,
       stripeSubscriptionId: sub?.subscription as string,
-    })
+    });
 
     onboarding.paymentStatus = "success";
     onboarding.isCompleted = true;
@@ -116,10 +116,10 @@ async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
     console.log("Payment failed");
 
     const _onboardingRepository = container.resolve<IOnboardingRepository>(
-      Token.OnboardingRepository,
+      Token.OnboardingRepository
     );
     const _stripeService = container.resolve<IStripeService>(
-      Token.StripeService,
+      Token.StripeService
     );
 
     const invoice = event.data.object as Stripe.Invoice;
@@ -131,7 +131,7 @@ async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
     if (!onboarding)
       throw new CustomError(
         CONSTANT_MESSAGES.BAD_REQUEST,
-        STATUS_CODES.BAD_REQUEST,
+        STATUS_CODES.BAD_REQUEST
       );
 
     onboarding.paymentStatus = "failed";

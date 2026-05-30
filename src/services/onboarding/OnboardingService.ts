@@ -32,11 +32,11 @@ export class OnboardingService implements IOnboardingService {
     @inject(Token.SubscriptionService)
     private readonly _subscriptionService: ISubscriptionService,
     @inject(Token.PaymentService)
-    private readonly _paymentService: IPaymentService,
-  ) { }
+    private readonly _paymentService: IPaymentService
+  ) {}
 
   async getUserOnboarding(
-    data: IGetOnboardingDto,
+    data: IGetOnboardingDto
   ): Promise<IResponeOnboardingDto> {
     try {
       const { userId } = data;
@@ -54,7 +54,7 @@ export class OnboardingService implements IOnboardingService {
   }
 
   async saveOnboardingStep(
-    data: ISaveOnboardingStepDto,
+    data: ISaveOnboardingStepDto
   ): Promise<IResponeOnboardingDto> {
     try {
       const { userId, ...payload } = data;
@@ -64,13 +64,13 @@ export class OnboardingService implements IOnboardingService {
         //onboarding not found
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
       const updatedOnboarding = await this._onboardingRepository.update(
         String(onboarding._id),
-        payload,
+        payload
       );
 
       return onboardingDtoMapper.toOnboardingResponse(updatedOnboarding!);
@@ -80,7 +80,7 @@ export class OnboardingService implements IOnboardingService {
   }
 
   async completeOnboarding(
-    data: ICompleteOnboardingDto,
+    data: ICompleteOnboardingDto
   ): Promise<ICompleteOnboardingResDto> {
     try {
       const { userId } = data;
@@ -90,7 +90,7 @@ export class OnboardingService implements IOnboardingService {
       if (!onboarding) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -111,7 +111,7 @@ export class OnboardingService implements IOnboardingService {
           ownerId: userId,
           workspaceName: onboarding.workspaceName!,
           planId: onboarding.planId,
-        })
+        });
       }
 
       //save onboarding details indb
@@ -143,7 +143,7 @@ export class OnboardingService implements IOnboardingService {
     }
   }
   async completeOnboardingPayment(
-    data: ICompleteOnboardingPaymentDto,
+    data: ICompleteOnboardingPaymentDto
   ): Promise<ICompleteOnboardingPaymentResDto> {
     try {
       const { userId } = data;
@@ -152,7 +152,7 @@ export class OnboardingService implements IOnboardingService {
       if (!onboarding) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -181,7 +181,7 @@ export class OnboardingService implements IOnboardingService {
       if (!onboarding) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -196,7 +196,7 @@ export class OnboardingService implements IOnboardingService {
   }
 
   async verifyPaymentStatus(
-    data: IVerifyPaymentStatusDto,
+    data: IVerifyPaymentStatusDto
   ): Promise<IVerifyPaymentStatusResDto> {
     try {
       const { userId } = data;
@@ -205,7 +205,7 @@ export class OnboardingService implements IOnboardingService {
       if (!onboarding) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 

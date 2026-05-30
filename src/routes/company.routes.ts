@@ -9,7 +9,7 @@ import { APP_ROLES } from "../constants/roles";
 const router = express.Router();
 
 const companyController = container.resolve<ICompanyController>(
-  Token.CompanyController,
+  Token.CompanyController
 );
 
 router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {

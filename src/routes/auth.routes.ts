@@ -10,11 +10,11 @@ const router = Router();
 
 const authController = container.resolve<IAuthController>(Token.AuthController);
 const verifyController = container.resolve<IVerifyController>(
-  Token.VerifyController,
+  Token.VerifyController
 );
 const otpController = container.resolve<IOtpController>(Token.OtpController);
 const passwordController = container.resolve<IPasswordController>(
-  Token.PasswordController,
+  Token.PasswordController
 );
 
 //auth routes

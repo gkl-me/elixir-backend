@@ -20,4 +20,4 @@ export const OnboardingStateSchema = z
 
     company: CompanySchema,
   })
-  .partial(); 
+  .partial();

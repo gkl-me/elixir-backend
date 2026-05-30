@@ -10,7 +10,7 @@ declare global {
         workspaceMemberId: string;
         workspaceRoleId: string;
         permissions: string[];
-      }
+      };
     }
   }
 }

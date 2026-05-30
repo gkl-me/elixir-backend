@@ -4,14 +4,14 @@ import { IWorkspaceController } from "../controllers/workspace/interface/IWorksp
 import { container } from "tsyringe";
 import { auth } from "../middlewares/auth";
 
+const router = Router();
 
-const router = Router()
+const workspaceController = container.resolve<IWorkspaceController>(
+  Token.WorkspaceController
+);
 
+router.get("/context", auth, (req, res, next) => {
+  void workspaceController.handleWorkspaceContext(req, res, next);
+});
 
-const workspaceController = container.resolve<IWorkspaceController>(Token.WorkspaceController)
-
-router.get("/context",auth,(req,res,next)=>{
-    void workspaceController.handleWorkspaceContext(req,res,next)
-})
-
-export default router
+export default router;

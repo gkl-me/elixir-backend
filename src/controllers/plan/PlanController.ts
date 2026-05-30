@@ -15,7 +15,7 @@ export class PlanController implements IPlanController {
   async handleCreatePlan(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const data = req.body;
@@ -35,7 +35,7 @@ export class PlanController implements IPlanController {
   async handleFindAllPlans(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const params = extractStringQueryParams(req.query, ["page", "limit"]);
@@ -59,7 +59,7 @@ export class PlanController implements IPlanController {
   async handleTogglePlanStatus(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const params = extractStringQueryParams(req.params, ["id"]);

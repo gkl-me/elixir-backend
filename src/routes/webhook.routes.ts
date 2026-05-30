@@ -6,7 +6,7 @@ import { IStripeWebhookController } from "../controllers/webhook/interface/IStri
 const router = express.Router();
 
 const stripeWebhookController = container.resolve<IStripeWebhookController>(
-  Token.StripeWebhookController,
+  Token.StripeWebhookController
 );
 
 router.post(
@@ -14,7 +14,7 @@ router.post(
   express.raw({ type: "application/json" }),
   (req, res, next) => {
     void stripeWebhookController.handle(req, res, next);
-  },
+  }
 );
 
 export default router;

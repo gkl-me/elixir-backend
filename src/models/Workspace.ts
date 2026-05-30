@@ -36,7 +36,7 @@ const WorkspaceSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const Workspace = model<IWorkspace>("Workspace", WorkspaceSchema);

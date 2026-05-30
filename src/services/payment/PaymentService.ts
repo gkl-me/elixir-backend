@@ -24,7 +24,7 @@ export class PaymentService implements IPaymentService {
     @inject(Token.UserRepository)
     private readonly _userRepository: IUserRepository,
     @inject(Token.PlanRepository)
-    private readonly _planRepository: IPlanRepository,
+    private readonly _planRepository: IPlanRepository
   ) {}
 
   async startCheckout(data: ICheckoutDto): Promise<ICheckoutResponseDto> {
@@ -35,26 +35,26 @@ export class PaymentService implements IPaymentService {
       if (!user)
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       const plan = await this._planRepository.findById(planId);
       if (!plan || !plan.stripePriceId)
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       if (!user.stripeCustomerId) {
         const customerId = await this._stripeService.createCustomer(
           user.email,
           user.name,
-          userId,
+          userId
         );
         if (!customerId)
           throw new CustomError(
             CONSTANT_MESSAGES.BAD_REQUEST,
-            STATUS_CODES.BAD_REQUEST,
+            STATUS_CODES.BAD_REQUEST
           );
         user.stripeCustomerId = customerId;
         await user.save();
@@ -67,7 +67,7 @@ export class PaymentService implements IPaymentService {
 
       //failed payment change plan , cancels the existing subscription
       const existingSubscription = await this._stripeService.getSubscription(
-        user.stripeCustomerId,
+        user.stripeCustomerId
       );
       console.log("subscription id", existingSubscription);
       if (existingSubscription) {
@@ -79,7 +79,7 @@ export class PaymentService implements IPaymentService {
         user.stripeCustomerId,
         plan.stripePriceId,
         userId,
-        planId,
+        planId
       );
 
       return session;
@@ -88,7 +88,7 @@ export class PaymentService implements IPaymentService {
       logger.error("Checkout service error", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -106,13 +106,13 @@ export class PaymentService implements IPaymentService {
       logger.error("Payment Verify Error", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async retryPayment(
-    data: IRetryPaymentDto,
+    data: IRetryPaymentDto
   ): Promise<IRetryPaymentResponseDto> {
     try {
       const { userId } = data;
@@ -121,17 +121,17 @@ export class PaymentService implements IPaymentService {
       if (!user || !user.stripeCustomerId)
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       const invoice = await this._stripeService.getOpenInvoice(
-        user.stripeCustomerId,
+        user.stripeCustomerId
       );
 
       if (!invoice || !invoice.hosted_invoice_url) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -142,7 +142,7 @@ export class PaymentService implements IPaymentService {
       logger.error("Retry Payment Error", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

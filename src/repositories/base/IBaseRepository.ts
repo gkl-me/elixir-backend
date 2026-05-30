@@ -7,7 +7,7 @@ export interface IBaseRepository<T> {
       sort?: Record<string, 1 | -1>;
       limit?: number;
       skip?: number;
-    },
+    }
   ): Promise<T[] | null>;
   findById(id: string): Promise<T | null>;
   findOne(data: Partial<T>): Promise<T | null>;

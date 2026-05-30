@@ -38,10 +38,10 @@ const WorkspaceMemberSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const WorkspaceMember = model<IWorkspaceMember>(
   "WorkspaceMember",
-  WorkspaceMemberSchema,
+  WorkspaceMemberSchema
 );

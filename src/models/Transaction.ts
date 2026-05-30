@@ -1,54 +1,56 @@
-import { model, Schema, Document  } from "mongoose";
+import { model, Schema, Document } from "mongoose";
 
+export interface ITransaction extends Document {
+  userId: string;
+  workspaceId: string;
+  subscriptionId: string;
 
+  stripeInvoiceId: string;
 
-export interface ITransaction extends Document{
-    userId:string,
-    workspaceId:string,
-    subscriptionId:string
+  amount: number;
 
-    stripeInvoiceId:string,
+  status: "paid" | "failed" | "pending";
+  paymentMethod?: string;
 
-    amount:number,
-
-    status:"paid"|"failed"|"pending",
-    paymentMethod?:string,
-
-    paidAt?:Date,
-    createAt?:Date,
-    updatedAt?:Date
+  paidAt?: Date;
+  createAt?: Date;
+  updatedAt?: Date;
 }
 
+const TransactionSchema = new Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+    },
+    workspaceId: {
+      type: String,
+      required: true,
+    },
+    stripeInvoiceId: {
+      type: String,
+    },
+    amount: {
+      type: Number,
+    },
+    status: {
+      type: String,
+      enum: ["paid", "failed", "pending"],
+      default: "pending",
+    },
+    paidAt: {
+      type: Date,
+    },
+    paymentMethod: {
+      type: String,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const TransactionSchema = new Schema({
-    userId:{
-        type:String,
-        required:true
-    },
-    workspaceId:{
-        type:String,
-        required:true
-    },
-    stripeInvoiceId:{
-        type:String,
-    },
-    amount:{
-        type:Number
-    },
-    status:{
-        type:String,
-        enum:['paid','failed','pending'],
-        default:'pending'
-    },
-    paidAt:{
-        type:Date
-    },
-    paymentMethod:{
-        type:String
-    }
-},{
-    timestamps:true
-})
-
-export const Transaction = model<ITransaction>('Transaction',TransactionSchema)
-
+export const Transaction = model<ITransaction>(
+  "Transaction",
+  TransactionSchema
+);

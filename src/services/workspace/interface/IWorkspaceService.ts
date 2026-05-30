@@ -20,11 +20,11 @@ export interface IWorkspaceService {
     stripePriceId?: string;
     stripeSubscriptionId?: string;
   }): Promise<void>;
-  workspaceContext(data:{}):Promise<{
-  workspaceId: string;
-  memberId:string,
-  roleId:string
-  name: string;
-  email: string;
-  }>
+  workspaceContext(data: {}): Promise<{
+    workspaceId: string;
+    memberId: string;
+    roleId: string;
+    name: string;
+    email: string;
+  }>;
 }

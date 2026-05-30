@@ -16,11 +16,11 @@ export class CompanyRepository
 
   async searchCompanies(
     search?: string,
-    options?: { skip?: number; limit?: number },
+    options?: { skip?: number; limit?: number }
   ): Promise<ICompany[]> {
     try {
       let query = this._model.find(
-        search ? { name: { $regex: search, $options: "i" } } : {},
+        search ? { name: { $regex: search, $options: "i" } } : {}
       );
 
       if (options?.limit !== undefined) {
@@ -38,7 +38,7 @@ export class CompanyRepository
       });
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

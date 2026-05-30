@@ -69,10 +69,10 @@ const WorkspaceInviteSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const WorkspaceInvite = model<IWorkspaceInvite>(
   "WorkspaceInvite",
-  WorkspaceInviteSchema,
+  WorkspaceInviteSchema
 );

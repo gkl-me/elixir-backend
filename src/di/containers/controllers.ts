@@ -50,10 +50,9 @@ container.register(Token.StripeWebhookController, {
 container.register(Token.CompanyController, {
   useClass: CompanyController,
 });
-container.register(Token.WorkspaceController,{
-    useClass:WorkspaceController
-})
-
+container.register(Token.WorkspaceController, {
+  useClass: WorkspaceController,
+});
 
 // container.register(Token.SubscriptionController,{
 //     useClass:SubscriptionController

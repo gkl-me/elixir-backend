@@ -16,7 +16,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Unable to create new ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -31,7 +31,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Unable to create many entires ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -42,7 +42,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       sort?: Record<string, 1 | -1>;
       limit?: number;
       skip?: number;
-    },
+    }
   ): Promise<T[] | null> {
     try {
       let query = this._model.find(data);
@@ -66,7 +66,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Failed to get all ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -79,7 +79,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Failed to get ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -92,7 +92,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Failed to find ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -107,7 +107,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Failed to update ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -122,7 +122,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Failed to delete ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -135,7 +135,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
       logger.error(error);
       throw new CustomError(
         `Failed to count ${this._model.modelName}`,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

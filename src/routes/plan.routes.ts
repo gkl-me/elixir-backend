@@ -20,7 +20,7 @@ router.post(
   authorize(APP_ROLES.SUPER_ADMIN),
   (req, res, next) => {
     void planController.handleCreatePlan(req, res, next);
-  },
+  }
 );
 
 router.patch(
@@ -29,7 +29,7 @@ router.patch(
   authorize(APP_ROLES.SUPER_ADMIN),
   (req, res, next) => {
     void planController.handleTogglePlanStatus(req, res, next);
-  },
+  }
 );
 
 export default router;

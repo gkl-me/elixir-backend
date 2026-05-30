@@ -5,7 +5,7 @@ export const successResponse = <T>(
   res: Response,
   message: string,
   statusCode: STATUS_CODES,
-  data: T,
+  data: T
 ): void => {
   res.status(statusCode).json({
     success: true,
@@ -18,7 +18,7 @@ export const errorResponse = (
   res: Response,
   errorMessage: string,
   statusCode: STATUS_CODES,
-  errorCode?: string,
+  errorCode?: string
 ): void => {
   res.status(statusCode).json({
     success: false,

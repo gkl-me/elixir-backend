@@ -26,11 +26,11 @@ export class PasswordService implements IPasswordService {
     @inject(Token.TokenManager) private readonly _tokenManager: ITokenManager,
     @inject(Token.UserService) private readonly _userService: IUserService,
     @inject(Token.UserRepository)
-    private readonly _userRepository: IUserRepository,
+    private readonly _userRepository: IUserRepository
   ) {}
 
   async forgotPassword(
-    data: IForgotPasswordDto,
+    data: IForgotPasswordDto
   ): Promise<IForgotPasswordResponseDto> {
     try {
       const { email } = data;
@@ -65,7 +65,7 @@ export class PasswordService implements IPasswordService {
       if (!resetPasswordToken)
         throw new CustomError(
           AUTH_MESSAGES.RESET_TOKEN_EXPIRED,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       const storedHash = await this._cacheRepository.get(key);
@@ -73,7 +73,7 @@ export class PasswordService implements IPasswordService {
       if (!storedHash)
         throw new CustomError(
           AUTH_MESSAGES.RESET_TOKEN_EXPIRED,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       const hashToken = this._tokenManager.hashToken(resetPasswordToken);
@@ -81,7 +81,7 @@ export class PasswordService implements IPasswordService {
       if (storedHash !== hashToken) {
         throw new CustomError(
           AUTH_MESSAGES.INVALID_RESET_TOKEN,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 

@@ -38,6 +38,6 @@ container.register(Token.WorkspaceRepository, {
 container.register(Token.WorkspaceRoleRepository, {
   useClass: WorkspaceRoleRepository,
 });
-container.register(Token.WorkspaceMemberRepository,{
-  useClass: WorkspaceMemberRepository
-})
+container.register(Token.WorkspaceMemberRepository, {
+  useClass: WorkspaceMemberRepository,
+});

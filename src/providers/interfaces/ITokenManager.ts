@@ -9,11 +9,11 @@ export interface ITokenManager {
     userId: string,
     role: string,
     sessionId: string,
-    tokenVersion: number,
+    tokenVersion: number
   ): string;
   verifyToken(
     token: string,
-    type: "access" | "refresh",
+    type: "access" | "refresh"
   ): IAccessTokenPayload | IRefreshTokenPayload;
   decodeToken(token: string): IAccessTokenPayload | IRefreshTokenPayload;
   generateRandomToken(): string;

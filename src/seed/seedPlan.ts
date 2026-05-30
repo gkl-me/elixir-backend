@@ -84,7 +84,7 @@ export async function seedPlan(): Promise<void> {
         },
         {
           upsert: true,
-        },
+        }
       );
     }
 
@@ -96,7 +96,7 @@ export async function seedPlan(): Promise<void> {
 
 async function stripeListing(
   planType: string,
-  planPrice: number,
+  planPrice: number
 ): Promise<{
   stripeProductId: string;
   stripePriceId: string;
@@ -115,7 +115,7 @@ async function stripeListing(
     if (!latestPriceId) {
       const newPriceId = await stripeServie.createPrice(
         stripeProductId,
-        planPrice,
+        planPrice
       );
       return { stripeProductId, stripePriceId: newPriceId };
     }
@@ -125,7 +125,7 @@ async function stripeListing(
     if (latestPrice?.unit_amount !== planPrice) {
       const newPriceId = await stripeServie.createPrice(
         stripeProductId,
-        planPrice,
+        planPrice
       );
       return { stripeProductId, stripePriceId: newPriceId };
     }

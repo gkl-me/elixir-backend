@@ -13,7 +13,7 @@ import { companyDtoMapper } from "../../interfaces/mapper/companyDtoMapper";
 export class CompanyService implements ICompanyService {
   constructor(
     @inject(Token.CompanyRepository)
-    private readonly _companyRepository: ICompanyRepository,
+    private readonly _companyRepository: ICompanyRepository
   ) {}
 
   async registerCompany(data: IRegisterCompanyDto): Promise<void> {

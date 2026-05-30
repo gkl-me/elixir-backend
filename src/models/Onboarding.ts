@@ -1,93 +1,92 @@
-import { Document, model, Schema } from "mongoose"
+import { Document, model, Schema } from "mongoose";
 
+type PlanType = "Free" | "Pro" | "Enterprice";
 
-type PlanType = 'Free' |'Pro'|'Enterprice'
+export interface IOnboarding extends Document {
+  userId: string;
+  currentStep: number;
+  isCompleted: boolean;
 
-export interface IOnboarding extends Document{
+  paymentStatus: "pending" | "incomplete" | "success" | "failed";
 
-    userId:string,
-    currentStep:number,
-    isCompleted:boolean,
+  planType: PlanType;
+  planId: string;
+  planPrice: number;
 
-    paymentStatus:'pending'|'incomplete'|'success'|'failed',
+  workspaceName?: string;
 
-    planType:PlanType,
-    planId:string,
-    planPrice:number,
+  company?: {
+    name: string;
+    type: string;
+    email: string;
+    phone: string;
+    size: number;
+  };
 
-    workspaceName?:string,
+  sessionId?: string;
 
-    company?:{
-        name:string,
-        type:string,
-        email:string,
-        phone:string,
-        size:number
-    }
-
-    sessionId?:string
-
-    createdAt?:Date,
-    updatedAt?:Date   
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-
-const OnboardingSchema = new Schema({
-    userId:{
-        type:String,
-        required:true,
-        unique:true
+const OnboardingSchema = new Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+      unique: true,
     },
-    currentStep:{
-        type:Number,
-        default:1
+    currentStep: {
+      type: Number,
+      default: 1,
     },
-    isCompleted:{
-        type:Boolean,
-        default:false
+    isCompleted: {
+      type: Boolean,
+      default: false,
     },
-    paymentStatus:{
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "incomplete", "success", "failed"],
+      default: "pending",
+    },
+    planType: {
+      type: String,
+      enum: ["Free", "Pro", "Enterprice"],
+      default: "Free",
+    },
+    planId: {
+      type: String,
+    },
+    planPrice: {
+      type: Number,
+    },
+    workspaceName: {
+      type: String,
+    },
+    sessionId: {
+      type: String,
+    },
+    company: {
+      name: {
         type: String,
-        enum: ["pending", "incomplete", "success","failed"],
-        default: "pending",
+      },
+      email: {
+        type: String,
+      },
+      size: {
+        type: Number,
+      },
+      type: {
+        type: String,
+      },
+      phone: {
+        type: String,
+      },
     },
-    planType:{
-        type:String,
-        enum:['Free','Pro','Enterprice'],
-        default:'Free'
-    },
-    planId:{
-        type:String,
-    },
-    planPrice:{
-        type:Number
-    },
-    workspaceName:{
-        type:String,
-    },
-    sessionId:{
-        type:String
-    },
-    company:{
-        name:{
-            type:String,
-        },
-        email:{
-            type:String
-        },
-        size:{
-            type:Number
-        },
-        type:{
-            type:String,
-        },
-        phone:{
-            type:String
-        }
-    }
-},{
-    timestamps:true
-})
+  },
+  {
+    timestamps: true,
+  }
+);
 
-
-export const Onboarding = model<IOnboarding>('Onboarding',OnboardingSchema)
+export const Onboarding = model<IOnboarding>("Onboarding", OnboardingSchema);

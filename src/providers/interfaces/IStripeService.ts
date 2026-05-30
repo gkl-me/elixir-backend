@@ -9,25 +9,25 @@ export interface IStripeService {
   createCustomer(
     email: string,
     name: string,
-    userId: string,
+    userId: string
   ): Promise<string | null>;
   createCheckoutSession(
     customerId: string,
     priceId: string,
     userId: string,
-    planId: string,
+    planId: string
   ): Promise<{ sessionId: string; payment_url: string }>;
   retriveSession(
-    sessionId: string,
+    sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session>>;
   expireSession(
-    sessionId: string,
+    sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session> | null>;
   getSubscription(customerId: string): Promise<Stripe.Subscription | null>;
   cancelSubscription(subscriptionId: string): Promise<void>;
   getOpenInvoice(customerId: string): Promise<Stripe.Invoice | null>;
   constructEvent(payload: Buffer, signature: string): Promise<Stripe.Event>;
   getSubscriptionFromInvoice(
-    invoice: Stripe.Invoice,
+    invoice: Stripe.Invoice
   ): Promise<Stripe.Invoice.Parent.SubscriptionDetails | null>;
 }

@@ -11,13 +11,13 @@ import { STATUS_CODES } from "../../constants/statusCodes";
 export class PasswordController implements IPasswordController {
   constructor(
     @inject(Token.PasswordService)
-    private readonly _passwordService: IPasswordService,
+    private readonly _passwordService: IPasswordService
   ) {}
 
   async handleForgotPassword(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { email } = req.body;
@@ -38,7 +38,7 @@ export class PasswordController implements IPasswordController {
   async handleResetPasswrod(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { email, newPassword, resetPasswordToken } = req.body;
@@ -55,7 +55,7 @@ export class PasswordController implements IPasswordController {
         res,
         USER_MESSAGES.UPDATE_PASSWORD_SUCCESS,
         STATUS_CODES.ACCEPTED,
-        {},
+        {}
       );
     } catch (error) {
       next(error);

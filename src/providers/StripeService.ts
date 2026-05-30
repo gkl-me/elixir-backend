@@ -17,7 +17,7 @@ export class StripeService implements IStripeService {
       logger.error("Stripe key env is empty");
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
 
@@ -39,7 +39,7 @@ export class StripeService implements IStripeService {
       logger.error(error);
       throw new CustomError(
         PLAN_MESSAGES.STRIPE_PRODUCT_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -59,7 +59,7 @@ export class StripeService implements IStripeService {
       logger.error(error);
       throw new CustomError(
         PLAN_MESSAGES.STRIPE_PRICE_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -75,7 +75,7 @@ export class StripeService implements IStripeService {
       logger.error(error);
       throw new CustomError(
         PLAN_MESSAGES.STRIPE_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -97,7 +97,7 @@ export class StripeService implements IStripeService {
       logger.error(error);
       throw new CustomError(
         PLAN_MESSAGES.STRIPE_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -109,7 +109,7 @@ export class StripeService implements IStripeService {
       logger.error(error);
       throw new CustomError(
         PLAN_MESSAGES.STRIPE_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -117,7 +117,7 @@ export class StripeService implements IStripeService {
   async createCustomer(
     email: string,
     name: string,
-    userId: string,
+    userId: string
   ): Promise<string | null> {
     try {
       const customer = await this._stripe.customers.create({
@@ -133,7 +133,7 @@ export class StripeService implements IStripeService {
       logger.error(error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -142,7 +142,7 @@ export class StripeService implements IStripeService {
     customerId: string,
     priceId: string,
     userId: string,
-    planId: string,
+    planId: string
   ): Promise<{ sessionId: string; payment_url: string }> {
     try {
       const session = await this._stripe.checkout.sessions.create({
@@ -175,13 +175,13 @@ export class StripeService implements IStripeService {
       logger.error("Failed to create checkout session", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async retriveSession(
-    sessionId: string,
+    sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
     try {
       return await this._stripe.checkout.sessions.retrieve(sessionId);
@@ -189,13 +189,13 @@ export class StripeService implements IStripeService {
       logger.error("Failed to retriver checkout session", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async expireSession(
-    sessionId: string,
+    sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session> | null> {
     try {
       const seession = await this._stripe.checkout.sessions.retrieve(sessionId);
@@ -208,13 +208,13 @@ export class StripeService implements IStripeService {
       logger.error("Failed to expires checkout session", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async getSubscription(
-    customerId: string,
+    customerId: string
   ): Promise<Stripe.Subscription | null> {
     try {
       const subs = await this._stripe.subscriptions.list({
@@ -227,14 +227,14 @@ export class StripeService implements IStripeService {
 
       return (
         subs.data.find((s) =>
-          ["active", "trialing", "past_due", "incomplete"].includes(s.status),
+          ["active", "trialing", "past_due", "incomplete"].includes(s.status)
         ) ?? null
       );
     } catch (error) {
       logger.error("Failed to get open invoices", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -246,7 +246,7 @@ export class StripeService implements IStripeService {
       logger.error("Cancel Subscription failed", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -264,32 +264,32 @@ export class StripeService implements IStripeService {
       logger.error("Failed to get open invoices", error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async constructEvent(
     payload: Buffer,
-    signature: string,
+    signature: string
   ): Promise<Stripe.Event> {
     try {
       return this._stripe.webhooks.constructEvent(
         payload,
         signature,
-        ENV.STRIPE_WEBHOOK_SECRET,
+        ENV.STRIPE_WEBHOOK_SECRET
       );
     } catch (error) {
       logger.error(error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async getSubscriptionFromInvoice(
-    invoice: Stripe.Invoice,
+    invoice: Stripe.Invoice
   ): Promise<Stripe.Invoice.Parent.SubscriptionDetails | null> {
     try {
       const subscription = invoice.parent?.subscription_details;
@@ -297,7 +297,7 @@ export class StripeService implements IStripeService {
       if (typeof subscription === "string")
         throw new CustomError(
           CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-          STATUS_CODES.INTERNAL_SERVER_ERROR,
+          STATUS_CODES.INTERNAL_SERVER_ERROR
         );
 
       return subscription ?? null;
@@ -305,7 +305,7 @@ export class StripeService implements IStripeService {
       logger.error(error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

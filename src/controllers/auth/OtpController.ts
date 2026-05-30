@@ -13,13 +13,13 @@ export class OtpController implements IOtpController {
   constructor(
     @inject(Token.OtpService) private readonly _otpService: IOtpService,
     @inject(Token.PasswordService)
-    private readonly _passwordService: IPasswordService,
+    private readonly _passwordService: IPasswordService
   ) {}
 
   async handleVerifyOtp(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { otp, email } = req.body;
@@ -35,7 +35,7 @@ export class OtpController implements IOtpController {
         STATUS_CODES.ACCEPTED,
         {
           resetPasswordToken,
-        },
+        }
       );
     } catch (error) {
       next(error);
@@ -45,7 +45,7 @@ export class OtpController implements IOtpController {
   async handleResendOtp(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { email } = req.body;

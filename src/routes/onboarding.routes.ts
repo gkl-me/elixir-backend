@@ -6,7 +6,7 @@ import { auth } from "../middlewares/auth";
 
 const router = express.Router();
 const onboardingController = container.resolve<IOnboardingController>(
-  Token.OnboardingController,
+  Token.OnboardingController
 );
 
 router.get("/", auth, (req, res, next) => {

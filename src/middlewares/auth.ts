@@ -13,15 +13,15 @@ import { AUTH_ERROR_CODE } from "../constants/errorCode";
 export const auth = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const tokenManager = container.resolve<ITokenManager>(Token.TokenManager);
     const userRepository = container.resolve<IUserRepository>(
-      Token.UserRepository,
+      Token.UserRepository
     );
     const cacheRepository = container.resolve<ICacheRepository<string>>(
-      Token.CacheRepository,
+      Token.CacheRepository
     );
 
     const authHeader = req.headers.authorization;
@@ -29,7 +29,7 @@ export const auth = async (
     if (!authHeader?.startsWith("Bearer "))
       throw new CustomError(
         CONSTANT_MESSAGES.UNAUTHORIZED,
-        STATUS_CODES.UNAUTHORIZED,
+        STATUS_CODES.UNAUTHORIZED
       );
 
     const accessToken = authHeader.split(" ")[1];
@@ -37,7 +37,7 @@ export const auth = async (
     if (!accessToken) {
       throw new CustomError(
         CONSTANT_MESSAGES.UNAUTHORIZED,
-        STATUS_CODES.UNAUTHORIZED,
+        STATUS_CODES.UNAUTHORIZED
       );
     }
 
@@ -50,7 +50,7 @@ export const auth = async (
     if (!session)
       throw new CustomError(
         AUTH_MESSAGES.SESSION_EXPIRED,
-        STATUS_CODES.UNAUTHORIZED,
+        STATUS_CODES.UNAUTHORIZED
       );
 
     //check if the user is blocked or not
@@ -60,7 +60,7 @@ export const auth = async (
       throw new CustomError(
         AUTH_MESSAGES.BLOCKED,
         STATUS_CODES.FORBIDDEN,
-        AUTH_ERROR_CODE.BLOCKED,
+        AUTH_ERROR_CODE.BLOCKED
       );
     }
 
@@ -71,10 +71,7 @@ export const auth = async (
       return next(error);
     }
     return next(
-      new CustomError(
-        CONSTANT_MESSAGES.UNAUTHORIZED,
-        STATUS_CODES.UNAUTHORIZED,
-      ),
+      new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED, STATUS_CODES.UNAUTHORIZED)
     );
   }
 };

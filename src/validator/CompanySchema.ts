@@ -1,16 +1,9 @@
 import { z } from "zod";
 
 export const CompanySchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Company name is required")
-    .max(150),
+  name: z.string().trim().min(2, "Company name is required").max(150),
 
-  type: z
-    .string()
-    .trim()
-    .min(1, "Please select company type"),
+  type: z.string().trim().min(1, "Please select company type"),
 
   size: z
     .number({
@@ -18,10 +11,7 @@ export const CompanySchema = z.object({
     })
     .min(1, "Company size must be greater than 0"),
 
-  email: z
-    .string()
-    .trim()
-    .email("Invalid company email"),
+  email: z.string().trim().email("Invalid company email"),
 
   phone: z
     .string()
@@ -31,5 +21,6 @@ export const CompanySchema = z.object({
   workspaceName: z
     .string()
     .trim()
-    .min(2, "Workspace name must be at least 2 characters").optional(),
+    .min(2, "Workspace name must be at least 2 characters")
+    .optional(),
 });

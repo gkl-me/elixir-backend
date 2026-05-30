@@ -13,13 +13,13 @@ import { extractStringParams } from "../../helper/stringParamUtils";
 export class VerifyController implements IVerifyController {
   constructor(
     @inject(Token.VerifyService)
-    private readonly _verifyService: IVerifyService,
+    private readonly _verifyService: IVerifyService
   ) {}
 
   async handleVerifyEmail(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const param = extractStringParams(req.params, ["token"]);
@@ -30,7 +30,7 @@ export class VerifyController implements IVerifyController {
         res,
         USER_MESSAGES.VERIFY_SUCCESS,
         STATUS_CODES.ACCEPTED,
-        {},
+        {}
       );
     } catch (error) {
       next(error);
@@ -40,7 +40,7 @@ export class VerifyController implements IVerifyController {
   async handleResendVerifyEmail(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { email } = req.body;
@@ -52,7 +52,7 @@ export class VerifyController implements IVerifyController {
         res,
         USER_MESSAGES.RESEND_VERIFY,
         STATUS_CODES.ACCEPTED,
-        {},
+        {}
       );
     } catch (error) {
       next(error);

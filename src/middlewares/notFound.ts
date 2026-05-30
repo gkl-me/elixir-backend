@@ -7,6 +7,6 @@ export const notFound = (req: Request, res: Response): void => {
   return errorResponse(
     res,
     CONSTANT_MESSAGES.NOT_FOUND,
-    STATUS_CODES.NOT_FOUND,
+    STATUS_CODES.NOT_FOUND
   );
 };

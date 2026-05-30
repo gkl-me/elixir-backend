@@ -10,13 +10,13 @@ import { extractStringQueryParams } from "../../helper/queryParamUtils";
 @injectable()
 export class CompanyController implements ICompanyController {
   constructor(
-    @inject(Token.CompanyService) private _companyService: ICompanyService,
+    @inject(Token.CompanyService) private _companyService: ICompanyService
   ) {}
 
   async handleGetAllCompany(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const params = extractStringQueryParams(req.query, [
@@ -41,7 +41,7 @@ export class CompanyController implements ICompanyController {
         {
           companies,
           totalCount,
-        },
+        }
       );
     } catch (error) {
       next(error);

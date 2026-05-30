@@ -5,6 +5,8 @@ import js from "@eslint/js";
 import nodePlugin from "eslint-plugin-n";
 import importX from "eslint-plugin-import-x";
 import security from "eslint-plugin-security";
+import unusedImports from "eslint-plugin-unused-imports";
+import prettier from "eslint-config-prettier";
 
 export default defineConfig([
   // ── Ignore patterns (replaces .eslintignore) ─────────────────────
@@ -20,9 +22,11 @@ export default defineConfig([
         ...globals.node,
       },
     },
-    rules:{
+    rules: {
       "no-useless-catch": "off",
-    }
+      "no-console": "off", // allow console.log in backend code
+      eqeqeq: ["error", "always"], // enforce strict equality
+    },
   },
 
   // ── TypeScript rules ──────────────────────────────────────────────
@@ -33,10 +37,10 @@ export default defineConfig([
     files: ["**/*.{js,ts}"],
     plugins: { n: nodePlugin },
     rules: {
-      // "n/no-process-exit": "error",           // use throw/next(err) instead
-      "n/no-deprecated-api": "error",         // catch deprecated Node APIs
-      "n/prefer-promises/fs": "warn",         // prefer fs.promises over callbacks
-      "n/no-sync": "warn",                    // avoid sync methods (blocks event loop)
+      "n/no-process-exit": "error", // use throw/next(err) instead
+      "n/no-deprecated-api": "error", // catch deprecated Node APIs
+      "n/prefer-promises/fs": "warn", // prefer fs.promises over callbacks
+      "n/no-sync": "warn", // avoid sync methods (blocks event loop)
     },
   },
 
@@ -45,9 +49,9 @@ export default defineConfig([
     files: ["**/*.{js,ts}"],
     plugins: { "import-x": importX },
     rules: {
-      "import-x/no-duplicates": "error",      // no duplicate imports
-      "import-x/no-self-import": "error",     // no file importing itself
-      "import-x/no-cycle": "warn",            // warn on circular dependencies
+      "import-x/no-duplicates": "error", // no duplicate imports
+      "import-x/no-self-import": "error", // no file importing itself
+      "import-x/no-cycle": "warn", // warn on circular dependencies
       "import-x/no-useless-path-segments": "warn",
     },
   },
@@ -57,11 +61,11 @@ export default defineConfig([
     files: ["**/*.{js,ts}"],
     plugins: { security },
     rules: {
-      // "security/detect-object-injection": "warn",   // obj[userInput] vulnerabilities
+      "security/detect-object-injection": "warn", // obj[userInput] vulnerabilities
       "security/detect-non-literal-regexp": "warn", // ReDoS vulnerabilities
       "security/detect-non-literal-fs-filename": "warn", // path traversal
       "security/detect-possible-timing-attacks": "warn", // timing attacks in auth
-      "security/detect-eval-with-expression": "error",   // no eval()
+      "security/detect-eval-with-expression": "error", // no eval()
     },
   },
 
@@ -70,35 +74,44 @@ export default defineConfig([
     files: ["**/*.ts"],
     languageOptions: {
       parserOptions: {
-        project: "./tsconfig.json",           // enables type-aware rules
+        project: "./tsconfig.json", // enables type-aware rules
       },
     },
     rules: {
       "@typescript-eslint/no-empty-object-type": "off",
       // Unused vars — allow underscore-prefixed and Express next()
-      "@typescript-eslint/no-unused-vars": ["warn", {
-        argsIgnorePattern: "^_|^next",
-        varsIgnorePattern: "^_",
-      }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_|^next",
+          varsIgnorePattern: "^_",
+        },
+      ],
 
       // Express error handlers need explicit any sometimes
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
 
       // Async Express handlers must be awaited or caught
       "@typescript-eslint/no-floating-promises": "error",
 
       // Safer type assertions
-      "@typescript-eslint/consistent-type-assertions": ["error", {
-        assertionStyle: "as",
-      }],
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        {
+          assertionStyle: "as",
+        },
+      ],
 
       // Enforce explicit return types on route handlers
-      "@typescript-eslint/explicit-function-return-type": ["warn", {
-        allowExpressions: true,               // allows inline arrow functions
-      }],
+      "@typescript-eslint/explicit-function-return-type": [
+        "warn",
+        {
+          allowExpressions: true, // allows inline arrow functions
+        },
+      ],
 
-      "no-console": "off",                   // console.log is fine in backend
-      "eqeqeq": ["error", "always"],
+      "no-console": "off", // console.log is fine in backend
+      eqeqeq: ["error", "always"],
     },
   },
 
@@ -111,4 +124,6 @@ export default defineConfig([
       "n/no-sync": "off",
     },
   },
+
+  prettier,
 ]);

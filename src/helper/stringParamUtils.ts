@@ -4,7 +4,7 @@ import { logError } from "../middlewares/loggerHelper";
 
 export function extractStringParams<T extends string>(
   params: Partial<Record<string, string | string[]>>,
-  keys: T[],
+  keys: T[]
 ): Record<T, string> {
   const result = {} as Record<T, string>;
 
@@ -21,7 +21,7 @@ export function extractStringParams<T extends string>(
       });
       throw new CustomError(
         "Key is required , params dont match ",
-        STATUS_CODES.BAD_REQUEST,
+        STATUS_CODES.BAD_REQUEST
       );
     }
   }

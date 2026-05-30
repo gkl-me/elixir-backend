@@ -19,7 +19,7 @@ import logger from "../../middlewares/logger";
 export class PlanService implements IPlanService {
   constructor(
     @inject(Token.PlanRepository) private _planRepository: IPlanRepository,
-    @inject(Token.StripeService) private _stripeService: IStripeService,
+    @inject(Token.StripeService) private _stripeService: IStripeService
   ) {}
 
   async createPlan(data: ICreatePlanDTo): Promise<PlanResponseDto | null> {
@@ -27,7 +27,7 @@ export class PlanService implements IPlanService {
       //disable all exiting plan with same type
       await this._planRepository.updateMany(
         { type: data.type },
-        { $set: { isActive: false } },
+        { $set: { isActive: false } }
       );
 
       let stripeProductId;
@@ -40,7 +40,7 @@ export class PlanService implements IPlanService {
         }
         stripePriceId = await this._stripeService.createPrice(
           stripeProductId,
-          data.price,
+          data.price
         );
       }
 
@@ -57,9 +57,7 @@ export class PlanService implements IPlanService {
     }
   }
 
-  async findAllPlans(
-    data: IGetPlanDto,
-  ): Promise<{
+  async findAllPlans(data: IGetPlanDto): Promise<{
     plans: PlanResponseDto[] | null;
     totalPage: number;
     currentPage: number;
@@ -74,7 +72,7 @@ export class PlanService implements IPlanService {
           sort: { isActive: -1, createdAt: 1 },
           skip,
           limit,
-        },
+        }
       );
       const totalPage = Math.ceil((allPlans?.length || 6) / 6);
       let plans = null;
@@ -90,7 +88,7 @@ export class PlanService implements IPlanService {
       }
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -103,7 +101,7 @@ export class PlanService implements IPlanService {
       if (!plan)
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       if (!plan.isActive) {
@@ -114,7 +112,7 @@ export class PlanService implements IPlanService {
           },
           {
             $set: { isActive: false },
-          },
+          }
         );
       }
 

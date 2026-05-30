@@ -27,7 +27,7 @@ export class CacheRepository<T> implements ICacheRepository<T> {
       logger.error(error);
       throw new CustomError(
         "Redis set error",
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -41,7 +41,7 @@ export class CacheRepository<T> implements ICacheRepository<T> {
       logger.error(error);
       throw new CustomError(
         "Redis get error",
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -53,7 +53,7 @@ export class CacheRepository<T> implements ICacheRepository<T> {
       logger.error(error);
       throw new CustomError(
         "Redis delete error",
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -65,7 +65,7 @@ export class CacheRepository<T> implements ICacheRepository<T> {
       logger.error(error);
       throw new CustomError(
         "Redis exists error",
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -78,7 +78,7 @@ export class CacheRepository<T> implements ICacheRepository<T> {
       logger.error(error);
       throw new CustomError(
         "Redis add to set error",
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -90,7 +90,7 @@ export class CacheRepository<T> implements ICacheRepository<T> {
       logger.error(error);
       throw new CustomError(
         "Redis remove to set error",
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -103,7 +103,7 @@ export class CacheRepository<T> implements ICacheRepository<T> {
       logger.error(error);
       throw new CustomError(
         "Redis remove to set error",
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

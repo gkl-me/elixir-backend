@@ -10,7 +10,7 @@ export async function sendVerificationEmailProccessor(job: Job): Promise<void> {
     const { email } = job.data;
 
     const verifyService = container.resolve<IVerifyService>(
-      Token.VerifyService,
+      Token.VerifyService
     );
     await verifyService.sendVerificationEmail({
       email,

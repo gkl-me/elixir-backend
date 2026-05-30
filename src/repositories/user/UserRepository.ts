@@ -27,7 +27,7 @@ export class UserRepository
       });
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -44,7 +44,7 @@ export class UserRepository
       sort?: Record<string, 1 | -1>;
       limit?: number;
       skip?: number;
-    },
+    }
   ): Promise<IUser[] | null> {
     try {
       const searchFilter = search
@@ -68,7 +68,7 @@ export class UserRepository
       logger.error(error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -89,7 +89,7 @@ export class UserRepository
       logger.error(error);
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

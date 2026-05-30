@@ -57,10 +57,10 @@ const SubscriptionSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const Subscription = model<ISubscription>(
   "Subscription",
-  SubscriptionSchema,
+  SubscriptionSchema
 );

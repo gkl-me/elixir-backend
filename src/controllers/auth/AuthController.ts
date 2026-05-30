@@ -17,7 +17,7 @@ export class AuthController implements IAuthController {
   async handleRegister(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const data = req.body;
@@ -37,7 +37,7 @@ export class AuthController implements IAuthController {
         res,
         USER_MESSAGES.REGISTER_USER,
         STATUS_CODES.CREATED,
-        user,
+        user
       );
     } catch (error) {
       next(error);
@@ -47,7 +47,7 @@ export class AuthController implements IAuthController {
   async handleLogin(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const data = req.body;
@@ -65,7 +65,7 @@ export class AuthController implements IAuthController {
 
       const authUser = await this._authService.login(
         { email, password },
-        { ip, userAgent },
+        { ip, userAgent }
       );
 
       const { accessToken, refreshToken, ...user } = authUser;
@@ -76,7 +76,7 @@ export class AuthController implements IAuthController {
         res,
         USER_MESSAGES.LOGIN_SUCCESS,
         STATUS_CODES.OK,
-        { user, accessToken, refreshToken },
+        { user, accessToken, refreshToken }
       );
     } catch (error) {
       next(error);
@@ -86,7 +86,7 @@ export class AuthController implements IAuthController {
   async handleGoogleAuth(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { idToken } = req.body;
@@ -109,7 +109,7 @@ export class AuthController implements IAuthController {
   async handleGithubAuth(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const data = req.body;
@@ -132,7 +132,7 @@ export class AuthController implements IAuthController {
   async handleRefresh(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { refreshToken } = req.body;
@@ -154,7 +154,7 @@ export class AuthController implements IAuthController {
   async handleLogout(
     req: Request,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ): Promise<void> {
     try {
       const { refreshToken } = req.body;

@@ -9,7 +9,7 @@ export const errorHandler = (
   err: unknown,
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): void => {
   if (err) {
     if (err instanceof CustomError) {
@@ -36,7 +36,7 @@ export const errorHandler = (
     return errorResponse(
       res,
       CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      STATUS_CODES.INTERNAL_SERVER_ERROR
     );
   } else {
     return next();

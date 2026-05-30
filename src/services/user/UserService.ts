@@ -31,11 +31,11 @@ export class UserService implements IUserService {
     @inject(Token.PasswordHasher) private _passwordHasher: IPasswordHasher,
     @inject(Token.CacheRepository)
     private readonly _cacheRepository: ICacheRepository<IAuthSession>,
-    @inject(Token.TokenManager) private _tokenManager: ITokenManager,
+    @inject(Token.TokenManager) private _tokenManager: ITokenManager
   ) {}
 
   async getAllUsers(
-    data: IUserQueryDto,
+    data: IUserQueryDto
   ): Promise<{ users: IUserListDto[]; totalCount: number }> {
     try {
       const { search, page, limit, sortBy, sortOrder, status } = data;
@@ -55,7 +55,7 @@ export class UserService implements IUserService {
           sort,
           skip,
           limit,
-        },
+        }
       );
 
       const totalCount = await this._userRepository.findUsersCount();
@@ -81,7 +81,7 @@ export class UserService implements IUserService {
       if (!userFound)
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       //delete add exiting session for the user
@@ -128,13 +128,12 @@ export class UserService implements IUserService {
 
   async changePassword(data: IChangePasswordDto): Promise<void> {
     try {
+      const { newPassword, currentPassword, userId } = data;
 
-      const {newPassword,currentPassword,userId} = data
+      const user = await this._userRepository.findById(userId);
 
-      const user = await this._userRepository.findById(userId)
-
-      if(!user){
-        throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND)
+      if (!user) {
+        throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND);
       }
 
       // const verifyPassword = await this._passwordHasher.comparePasswords(currentPassword,user.password)
@@ -144,76 +143,74 @@ export class UserService implements IUserService {
       // }
 
       const hashPassword = await this._passwordHasher.hashPassword(newPassword);
-      user.password = hashPassword
-      await user.save()
-      
-
+      user.password = hashPassword;
+      await user.save();
     } catch (error) {
-      logError(error,{
-        service:"UserService.changePassword",
-      })
-      throw error
+      logError(error, {
+        service: "UserService.changePassword",
+      });
+      throw error;
     }
   }
 
-  async listActiveSessions(data:IListActiveSessionsDto): Promise<IListActiveSessionsResponseDto[]> {
+  async listActiveSessions(
+    data: IListActiveSessionsDto
+  ): Promise<IListActiveSessionsResponseDto[]> {
     try {
+      const { userId, accessToken } = data;
 
-      const {userId,accessToken} = data
+      const decodedToken = this._tokenManager.decodeToken(accessToken);
 
-      const decodedToken = this._tokenManager.decodeToken(accessToken)
+      const currentSession = await this._cacheRepository.get(
+        REDIS_STORE.SESSION + decodedToken.sessionId
+      );
 
-      const currentSession = await this._cacheRepository.get(REDIS_STORE.SESSION + decodedToken.sessionId)
-      
       const sessionKey = REDIS_STORE.USER_SESSION + String(userId);
 
       const sessionIds = await this._cacheRepository.getMembers(sessionKey);
 
       // Fetch details for each session ID
-      const activeSessions:IListActiveSessionsResponseDto[] = [];
+      const activeSessions: IListActiveSessionsResponseDto[] = [];
       for (const id of sessionIds) {
-        const session = await this._cacheRepository.get(REDIS_STORE.SESSION + id);
+        const session = await this._cacheRepository.get(
+          REDIS_STORE.SESSION + id
+        );
         if (session && id !== decodedToken.sessionId) {
           activeSessions.push({
             ...session,
-            isCurrentSession: false
+            isCurrentSession: false,
           });
-        }else if(session && id === decodedToken.sessionId){
+        } else if (session && id === decodedToken.sessionId) {
           activeSessions.push({
             ...session,
-            isCurrentSession: true
-          })
+            isCurrentSession: true,
+          });
         }
       }
 
-
-      return activeSessions
-
+      return activeSessions;
     } catch (error) {
-      logError(error,{
-        service:"UserService.listActiveSessions",
-      })
-      throw error
+      logError(error, {
+        service: "UserService.listActiveSessions",
+      });
+      throw error;
     }
   }
 
-
   async updateProfile(data: IUpdateUserProfileDto): Promise<void> {
     try {
+      const { name, bio, jobTitle, userId } = data;
 
-      const {name,bio,jobTitle,userId}  = data
-
-      const user = await this._userRepository.update(userId,{
+      const user = await this._userRepository.update(userId, {
         name,
         bio,
-        jobTitle
-      })
-      
+        jobTitle,
+      });
     } catch (error) {
-      logError(error,{
-        service:"UserService.updateProfile",
-      })
-      throw error
+      logError(error, {
+        service: "UserService.updateProfile",
+      });
+      throw error;
     }
   }
 }

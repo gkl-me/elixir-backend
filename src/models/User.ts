@@ -3,8 +3,8 @@ import { Document, model, Schema } from "mongoose";
 export interface IUser extends Document {
   name: string;
   email: string;
-  bio:string
-  jobTitle:string
+  bio: string;
+  jobTitle: string;
   password?: string;
   isVerified: boolean;
   isBlocked: boolean;
@@ -67,7 +67,7 @@ const UserSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const User = model<IUser>("User", UserSchema);

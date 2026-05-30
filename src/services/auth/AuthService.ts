@@ -40,7 +40,7 @@ export class AuthService implements IAuthService {
     @inject(Token.CacheRepository)
     private _cacheRepository: ICacheRepository<string | IAuthSession>,
     @inject(Token.GithubAuthService)
-    private readonly _githubAuthService: IGithubAuthService,
+    private readonly _githubAuthService: IGithubAuthService
   ) {
     this._oAuthClient = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
   }
@@ -56,7 +56,7 @@ export class AuthService implements IAuthService {
       if (existingUser?.isVerified)
         throw new CustomError(
           AUTH_MESSAGES.ALREADY_EXITS,
-          STATUS_CODES.CONFLICT,
+          STATUS_CODES.CONFLICT
         );
 
       // let userToVerify;
@@ -102,7 +102,7 @@ export class AuthService implements IAuthService {
         throw new CustomError(
           AUTH_MESSAGES.VERIFY_ERROR,
           STATUS_CODES.BAD_REQUEST,
-          AUTH_ERROR_CODE.NOT_VERIFIED,
+          AUTH_ERROR_CODE.NOT_VERIFIED
         );
       }
 
@@ -112,41 +112,41 @@ export class AuthService implements IAuthService {
         throw new CustomError(
           AUTH_MESSAGES.BLOCKED,
           STATUS_CODES.FORBIDDEN,
-          AUTH_ERROR_CODE.BLOCKED,
+          AUTH_ERROR_CODE.BLOCKED
         );
       }
 
       if (!userFound.password && userFound?.githubId) {
         throw new CustomError(
           AUTH_MESSAGES.GITHUB_AUTH,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
       if (!userFound.password && userFound?.googleId) {
         throw new CustomError(
           AUTH_MESSAGES.GOOGLE_AUTH,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
       if (!userFound.password) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
       //check if the password is correct
       const isMatch = await this._passwordHasher.comparePasswords(
         password,
-        userFound?.password,
+        userFound?.password
       );
 
       if (!isMatch)
         throw new CustomError(
           CONSTANT_MESSAGES.INVALID_CREDENTIALS,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
 
       //session and token manangement
@@ -157,13 +157,13 @@ export class AuthService implements IAuthService {
       const accessToken = await this._tokenManager.generateAccessToken(
         String(userFound._id),
         userFound.role,
-        sessionId,
+        sessionId
       );
       const refreshToken = await this._tokenManager.generateRefreshToken(
         String(userFound._id),
         userFound.role,
         sessionId,
-        tokenVersion,
+        tokenVersion
       );
 
       const refreshTokenHash = await this._tokenManager.hashToken(refreshToken);
@@ -188,19 +188,19 @@ export class AuthService implements IAuthService {
       await this._cacheRepository.set(
         REDIS_STORE.SESSION + sessionId,
         session,
-        ENV.REFRESH_TOKEN_TTL,
+        ENV.REFRESH_TOKEN_TTL
       );
 
       //add user sessions into redis user session list
       await this._cacheRepository.addSet(
         REDIS_STORE.USER_SESSION + String(userFound._id),
-        sessionId,
+        sessionId
       );
 
       const resDto = authDtoMapper.toAuthResponse(
         userFound,
         accessToken,
-        refreshToken,
+        refreshToken
       );
 
       return {
@@ -215,7 +215,7 @@ export class AuthService implements IAuthService {
       }
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -223,7 +223,7 @@ export class AuthService implements IAuthService {
   //need to update google auth
   async googleAuth(
     data: IGoogleAuthDto,
-    meta: ILoginMetaDto,
+    meta: ILoginMetaDto
   ): Promise<IAuthResponseDto> {
     try {
       const { idToken } = data;
@@ -231,7 +231,7 @@ export class AuthService implements IAuthService {
       if (!idToken) {
         throw new CustomError(
           AUTH_MESSAGES.GOOGLE_TOKEN_ERROR,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -245,7 +245,7 @@ export class AuthService implements IAuthService {
       if (!payload?.email) {
         throw new CustomError(
           AUTH_MESSAGES.INVALID_GOOGLE_ACC,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -256,7 +256,7 @@ export class AuthService implements IAuthService {
         throw new CustomError(
           AUTH_MESSAGES.BLOCKED,
           STATUS_CODES.FORBIDDEN,
-          AUTH_ERROR_CODE.BLOCKED,
+          AUTH_ERROR_CODE.BLOCKED
         );
       }
 
@@ -281,7 +281,7 @@ export class AuthService implements IAuthService {
       if (!user) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -293,13 +293,13 @@ export class AuthService implements IAuthService {
       const accessToken = await this._tokenManager.generateAccessToken(
         String(user._id),
         user.role,
-        sessionId,
+        sessionId
       );
       const refreshToken = await this._tokenManager.generateRefreshToken(
         String(user._id),
         user.role,
         sessionId,
-        tokenVersion,
+        tokenVersion
       );
 
       const refreshTokenHash = await this._tokenManager.hashToken(refreshToken);
@@ -324,13 +324,13 @@ export class AuthService implements IAuthService {
       await this._cacheRepository.set(
         REDIS_STORE.SESSION + sessionId,
         session,
-        ENV.REFRESH_TOKEN_TTL,
+        ENV.REFRESH_TOKEN_TTL
       );
 
       //add user sessions into redis user session list
       await this._cacheRepository.addSet(
         REDIS_STORE.USER_SESSION + String(user._id),
-        sessionId,
+        sessionId
       );
 
       if (user)
@@ -338,20 +338,20 @@ export class AuthService implements IAuthService {
 
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async githubAuth(
     data: IGithubAuthDto,
-    meta: ILoginMetaDto,
+    meta: ILoginMetaDto
   ): Promise<IAuthResponseDto> {
     try {
       const { githubId, name, email, image, githubUsername, access_token } =
@@ -361,13 +361,13 @@ export class AuthService implements IAuthService {
         await this._githubAuthService.verifyGithubUser(access_token);
 
       const emailVerified = gitubEmails.find(
-        (e) => e.primary && e.verified && e.email === email,
+        (e) => e.primary && e.verified && e.email === email
       );
 
       if (!emailVerified) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -378,7 +378,7 @@ export class AuthService implements IAuthService {
         throw new CustomError(
           AUTH_MESSAGES.BLOCKED,
           STATUS_CODES.FORBIDDEN,
-          AUTH_ERROR_CODE.BLOCKED,
+          AUTH_ERROR_CODE.BLOCKED
         );
       }
 
@@ -406,7 +406,7 @@ export class AuthService implements IAuthService {
       if (!user) {
         throw new CustomError(
           CONSTANT_MESSAGES.BAD_REQUEST,
-          STATUS_CODES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
         );
       }
 
@@ -417,13 +417,13 @@ export class AuthService implements IAuthService {
       const accessToken = await this._tokenManager.generateAccessToken(
         String(user._id),
         user.role,
-        sessionId,
+        sessionId
       );
       const refreshToken = await this._tokenManager.generateRefreshToken(
         String(user._id),
         user.role,
         sessionId,
-        tokenVersion,
+        tokenVersion
       );
 
       const refreshTokenHash = await this._tokenManager.hashToken(refreshToken);
@@ -447,19 +447,19 @@ export class AuthService implements IAuthService {
       await this._cacheRepository.set(
         REDIS_STORE.SESSION + sessionId,
         session,
-        ENV.REFRESH_TOKEN_TTL,
+        ENV.REFRESH_TOKEN_TTL
       );
 
       //add user sessions into redis user session list
       await this._cacheRepository.addSet(
         REDIS_STORE.USER_SESSION + String(user._id),
-        sessionId,
+        sessionId
       );
 
       const resDto = authDtoMapper.toAuthResponse(
         user,
         accessToken,
-        refreshToken,
+        refreshToken
       );
 
       return {
@@ -471,25 +471,25 @@ export class AuthService implements IAuthService {
   }
 
   async refreshToken(
-    data: IRefreshTokenDto,
+    data: IRefreshTokenDto
   ): Promise<IRefreshTokenResponseDto> {
     try {
       const { refreshToken } = data;
       if (!refreshToken)
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED
         );
 
       //verify token payload
       const payload = await this._tokenManager.verifyToken(
         refreshToken,
-        "refresh",
+        "refresh"
       );
       if (!payload)
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED
         );
 
       //check if user is blocked or not
@@ -498,18 +498,18 @@ export class AuthService implements IAuthService {
         throw new CustomError(
           CONSTANT_MESSAGES.FORBIDDEN,
           STATUS_CODES.FORBIDDEN,
-          AUTH_ERROR_CODE.BLOCKED,
+          AUTH_ERROR_CODE.BLOCKED
         );
 
       //session check
       const session = await this._cacheRepository.get(
-        REDIS_STORE.SESSION + payload.sessionId,
+        REDIS_STORE.SESSION + payload.sessionId
       );
 
       if (!session || typeof session === "string")
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED
         );
 
       const tokenHash = await this._tokenManager.hashToken(refreshToken);
@@ -520,11 +520,11 @@ export class AuthService implements IAuthService {
         payload.tokenVersion !== session.tokenVersion
       ) {
         await this._cacheRepository.delete(
-          REDIS_STORE.SESSION + payload.sessionId,
+          REDIS_STORE.SESSION + payload.sessionId
         );
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED
         );
       }
 
@@ -535,14 +535,14 @@ export class AuthService implements IAuthService {
       const newAccessToken = this._tokenManager.generateAccessToken(
         payload.userId,
         payload.role,
-        payload.sessionId,
+        payload.sessionId
       );
 
       const newRefreshToken = this._tokenManager.generateRefreshToken(
         payload.userId,
         payload.role,
         payload.sessionId,
-        newVersion,
+        newVersion
       );
 
       session.tokenVersion = newVersion;
@@ -553,7 +553,7 @@ export class AuthService implements IAuthService {
       await this._cacheRepository.set(
         REDIS_STORE.SESSION + payload.sessionId,
         session,
-        ttl,
+        ttl
       );
 
       return {
@@ -566,7 +566,7 @@ export class AuthService implements IAuthService {
       }
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -587,7 +587,7 @@ export class AuthService implements IAuthService {
       //delete from user set in redis
       await this._cacheRepository.remSet(
         REDIS_STORE.USER_SESSION + payload.userId,
-        payload.sessionId,
+        payload.sessionId
       );
     } catch (error) {
       if (error instanceof CustomError) {
@@ -595,7 +595,7 @@ export class AuthService implements IAuthService {
       }
       throw new CustomError(
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
-        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
   }

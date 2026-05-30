@@ -7,6 +7,6 @@ export interface ICompanyRepository extends IBaseRepository<ICompany> {
     options?: {
       skip?: number;
       limit?: number;
-    },
+    }
   ): Promise<ICompany[]>;
 }

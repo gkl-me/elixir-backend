@@ -45,10 +45,10 @@ const WorkspaceRoleSchema = new Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const WorkspaceRole = model<IWorkspaceRole>(
   "WorkspaceRole",
-  WorkspaceRoleSchema,
+  WorkspaceRoleSchema
 );

@@ -6,7 +6,7 @@ import { auth } from "../middlewares/auth";
 
 const router = express.Router();
 const paymentController = container.resolve<IPaymentController>(
-  Token.PaymentController,
+  Token.PaymentController
 );
 
 router.post("/verify", auth, (req, res, next) => {
