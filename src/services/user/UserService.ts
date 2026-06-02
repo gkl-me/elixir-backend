@@ -17,12 +17,11 @@ import {
 } from "../../interfaces/dtos/UserDTo";
 import { IPasswordHasher } from "../../providers/interfaces/IPasswordHasher";
 import logger from "../../middlewares/logger";
-import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
+import { ICacheRepository } from "../../repositories/cache/interface/ICacheRepository";
 import { IAuthSession } from "../../interfaces/types/session.types";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { logError } from "../../middlewares/loggerHelper";
 import { ITokenManager } from "../../providers/interfaces/ITokenManager";
-import { de } from "zod/v4/locales";
 
 @injectable()
 export class UserService implements IUserService {
@@ -128,7 +127,7 @@ export class UserService implements IUserService {
 
   async changePassword(data: IChangePasswordDto): Promise<void> {
     try {
-      const { newPassword, currentPassword, userId } = data;
+      const { newPassword, userId } = data;
 
       const user = await this._userRepository.findById(userId);
 
@@ -160,10 +159,6 @@ export class UserService implements IUserService {
       const { userId, accessToken } = data;
 
       const decodedToken = this._tokenManager.decodeToken(accessToken);
-
-      const currentSession = await this._cacheRepository.get(
-        REDIS_STORE.SESSION + decodedToken.sessionId
-      );
 
       const sessionKey = REDIS_STORE.USER_SESSION + String(userId);
 
@@ -201,7 +196,7 @@ export class UserService implements IUserService {
     try {
       const { name, bio, jobTitle, userId } = data;
 
-      const user = await this._userRepository.update(userId, {
+      await this._userRepository.update(userId, {
         name,
         bio,
         jobTitle,

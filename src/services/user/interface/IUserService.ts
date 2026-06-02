@@ -7,7 +7,6 @@ import {
   IUserListDto,
   IUserQueryDto,
 } from "../../../interfaces/dtos/UserDTo";
-import { IAuthSession } from "../../../interfaces/types/session.types";
 
 export interface IUserService {
   getAllUsers(

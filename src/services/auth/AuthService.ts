@@ -19,7 +19,7 @@ import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../../constants/messages";
 import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
 import { ENV } from "../../constants/env";
-import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
+import { ICacheRepository } from "../../repositories/cache/interface/ICacheRepository";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { AUTH_ERROR_CODE } from "../../constants/errorCode";
 import { sendVerificationEmailJob } from "../../queues/email/email.producer";

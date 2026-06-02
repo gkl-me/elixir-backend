@@ -1,6 +1,3 @@
-import { int } from "zod/v4";
-import { IAuthSession } from "../types/session.types";
-
 export interface IUserListDto {
   id: string;
   name: string;

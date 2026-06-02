@@ -1,6 +1,6 @@
 import type IORedis from "ioredis";
 import { redisConnection } from "../../config/redis";
-import { ICacheRepository } from "./ICacheRepository";
+import { ICacheRepository } from "./interface/ICacheRepository";
 import { injectable } from "tsyringe";
 import { CustomError } from "../../errors/CustomError";
 import { STATUS_CODES } from "../../constants/statusCodes";

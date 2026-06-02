@@ -6,7 +6,7 @@ import { CustomError } from "../errors/CustomError";
 import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../constants/messages";
 import { STATUS_CODES } from "../constants/statusCodes";
 import { IUserRepository } from "../repositories/user/interfaces/IUserRepository";
-import { ICacheRepository } from "../repositories/cache/ICacheRepository";
+import { ICacheRepository } from "../repositories/cache/interface/ICacheRepository";
 import { REDIS_STORE } from "../constants/redis/redisStore";
 import { AUTH_ERROR_CODE } from "../constants/errorCode";
 

@@ -1,6 +1,19 @@
-import { BUILTIN_ROLES, WORKSPACE_PERMISSIONS } from "./workspacePermissions";
+import { BUILTIN_ROLES } from "./workspacePermissions";
 
-export const builtInRoles = (workspaceId: string, ownerId: string) => {
+type IBuiltInRole = {
+  workspaceId: string;
+  key: string;
+  name: string;
+  permissions: string[];
+  createdByUserId: string;
+  isEditable: boolean;
+  isDeletable: boolean;
+};
+
+export const builtInRoles = (
+  workspaceId: string,
+  ownerId: string
+): IBuiltInRole[] => {
   return [
     {
       workspaceId,

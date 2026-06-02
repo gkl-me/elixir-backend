@@ -11,7 +11,7 @@ import { CustomError } from "../../errors/CustomError";
 import { AUTH_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { ITokenManager } from "../../providers/interfaces/ITokenManager";
-import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
+import { ICacheRepository } from "../../repositories/cache/interface/ICacheRepository";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { RESET_PASSWORD_OTP_TEMPLATE } from "../../templates/otpEmailTemplate";
 import { IOtpType } from "../../interfaces/types/otp.types";

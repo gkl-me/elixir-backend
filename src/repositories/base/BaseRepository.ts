@@ -1,8 +1,15 @@
-import { Document, FilterQuery, Model, UpdateQuery } from "mongoose";
-import { IBaseRepository } from "./IBaseRepository";
+import {
+  Document,
+  FilterQuery,
+  Model,
+  UpdateQuery,
+  UpdateResult,
+} from "mongoose";
+import { IBaseRepository } from "./interface/IBaseRepository";
 import { CustomError } from "../../errors/CustomError";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import logger from "../../middlewares/logger";
+import { logError } from "../../middlewares/loggerHelper";
 
 export class BaseRepository<T extends Document> implements IBaseRepository<T> {
   constructor(protected _model: Model<T>) {}
@@ -112,6 +119,40 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
     }
   }
 
+  async updateOne(
+    filter: FilterQuery<T>,
+    data: UpdateQuery<T>
+  ): Promise<T | null> {
+    try {
+      const updatedData = await this._model.findOneAndUpdate(filter, data, {
+        new: true,
+      });
+      return updatedData;
+    } catch (error) {
+      logError(error);
+      throw new CustomError(
+        `Failed to update ${this._model.modelName}`,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async updateMany(
+    filter: FilterQuery<T>,
+    data: UpdateQuery<T>
+  ): Promise<UpdateResult> {
+    try {
+      const result = await this._model.updateMany(filter, data);
+      return result;
+    } catch (error) {
+      logError(error);
+      throw new CustomError(
+        `Failed to update many ${this._model.modelName}`,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   async delete(id: string, data: UpdateQuery<T>): Promise<T | null> {
     try {
       const deletedCount = await this._model.findByIdAndUpdate(id, data, {
@@ -127,9 +168,9 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
     }
   }
 
-  async count(): Promise<number> {
+  async count(filter: FilterQuery<T> = {}): Promise<number> {
     try {
-      const count = await this._model.countDocuments();
+      const count = await this._model.countDocuments(filter);
       return count;
     } catch (error) {
       logger.error(error);

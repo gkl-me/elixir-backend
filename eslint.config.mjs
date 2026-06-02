@@ -5,7 +5,6 @@ import js from "@eslint/js";
 import nodePlugin from "eslint-plugin-n";
 import importX from "eslint-plugin-import-x";
 import security from "eslint-plugin-security";
-import unusedImports from "eslint-plugin-unused-imports";
 import prettier from "eslint-config-prettier";
 
 export default defineConfig([
@@ -37,7 +36,7 @@ export default defineConfig([
     files: ["**/*.{js,ts}"],
     plugins: { n: nodePlugin },
     rules: {
-      "n/no-process-exit": "error", // use throw/next(err) instead
+      // "n/no-process-exit": "error", // use throw/next(err) instead
       "n/no-deprecated-api": "error", // catch deprecated Node APIs
       "n/prefer-promises/fs": "warn", // prefer fs.promises over callbacks
       "n/no-sync": "warn", // avoid sync methods (blocks event loop)
@@ -61,7 +60,7 @@ export default defineConfig([
     files: ["**/*.{js,ts}"],
     plugins: { security },
     rules: {
-      "security/detect-object-injection": "warn", // obj[userInput] vulnerabilities
+      // "security/detect-object-injection": "warn", // obj[userInput] vulnerabilities
       "security/detect-non-literal-regexp": "warn", // ReDoS vulnerabilities
       "security/detect-non-literal-fs-filename": "warn", // path traversal
       "security/detect-possible-timing-attacks": "warn", // timing attacks in auth

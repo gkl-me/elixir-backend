@@ -1,5 +1,3 @@
-import { INVALID } from "zod";
-
 export const CONSTANT_MESSAGES = {
   SUCCESS: "Request completed successfully.",
   CREATED: "Resource created successfully.",

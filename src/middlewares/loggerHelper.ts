@@ -24,10 +24,18 @@ export const logError = (error: unknown, ctx?: LogContext): winston.Logger => {
       errorCode: error.errorCode,
       ...ctx,
     });
-  } else {
+  }
+
+  if (error instanceof Error) {
     return logger.error({
-      message: String(error),
+      message: error.message,
+      stack: error.stack,
       ...ctx,
     });
   }
+
+  return logger.error({
+    message: String(error),
+    ...ctx,
+  });
 };

@@ -1,5 +1,5 @@
 import { ICompany } from "../../../models/Company";
-import { IBaseRepository } from "../../base/IBaseRepository";
+import { IBaseRepository } from "../../base/interface/IBaseRepository";
 
 export interface ICompanyRepository extends IBaseRepository<ICompany> {
   searchCompanies(

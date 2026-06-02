@@ -52,6 +52,13 @@ export const requirePermission = (...required: WORKSPACE_PERMISSION[]) => {
         return permissions.includes(perm) || permissions.includes("*");
       });
 
+      if (!allowed) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.FORBIDDEN,
+          STATUS_CODES.FORBIDDEN
+        );
+      }
+
       req.workspaceMember = {
         workspaceMemberId: memberRepo._id.toString(),
         workspaceRoleId: roleRepo._id.toString(),

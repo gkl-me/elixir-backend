@@ -100,6 +100,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       planId: onboarding.planId,
       stripePriceId: plan.stripePriceId,
       stripeSubscriptionId: sub?.subscription as string,
+      companyId,
     });
 
     onboarding.paymentStatus = "success";

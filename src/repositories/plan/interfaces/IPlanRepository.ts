@@ -1,6 +1,6 @@
 import { FilterQuery, UpdateQuery, UpdateWriteOpResult } from "mongoose";
 import { IPlan } from "../../../models/Plan";
-import { IBaseRepository } from "../../base/IBaseRepository";
+import { IBaseRepository } from "../../base/interface/IBaseRepository";
 
 export interface IPlanRepository extends IBaseRepository<IPlan> {
   updateMany(

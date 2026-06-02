@@ -9,6 +9,7 @@ import { clearCookie, setCookie } from "../../helper/cookiesHelper";
 import { AUTH_MESSAGES, USER_MESSAGES } from "../../constants/messages";
 import { LoginSchema, RegisterSchema } from "../../validator/AuthSchema";
 import { CustomError } from "../../errors/CustomError";
+import { logInfo } from "../../middlewares/loggerHelper";
 
 @injectable()
 export class AuthController implements IAuthController {
@@ -32,6 +33,10 @@ export class AuthController implements IAuthController {
       const { email, password, name } = validate.data;
 
       const user = await this._authService.register({ email, password, name });
+
+      logInfo("User successfully registered", {
+        requestId: req.requestId,
+      });
 
       return successResponse(
         res,

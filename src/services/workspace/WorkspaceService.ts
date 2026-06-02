@@ -60,7 +60,7 @@ export class WorkspaceService implements IWorkspaceService {
     companyId?: string;
     stripePriceId?: string;
     stripeSubscriptionId?: string;
-  }) {
+  }): Promise<void> {
     try {
       const workspace = await this.createWorkspace({
         name: data.workspaceName,
@@ -85,7 +85,7 @@ export class WorkspaceService implements IWorkspaceService {
 
       const roleId = workspaceRoles.find((role) => role.name === "Owner")?._id;
 
-      const workspaceMember = await this._workspaceMemberRepository.create({
+      await this._workspaceMemberRepository.create({
         workspaceId: String(workspace._id),
         userId: data.ownerId,
         roleId: String(roleId),
@@ -101,9 +101,7 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  async workspaceContext(data: {
-    userId: string;
-  }): Promise<{
+  async workspaceContext(data: { userId: string }): Promise<{
     workspaceId: string;
     memberId: string;
     roleId: string;

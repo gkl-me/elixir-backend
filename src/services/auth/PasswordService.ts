@@ -9,7 +9,7 @@ import { Token } from "../../di/token";
 import { CustomError } from "../../errors/CustomError";
 import { AUTH_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
-import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
+import { ICacheRepository } from "../../repositories/cache/interface/ICacheRepository";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { ITokenManager } from "../../providers/interfaces/ITokenManager";
 import { IUserService } from "../user/interface/IUserService";

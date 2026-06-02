@@ -1,3 +1,5 @@
+import { FilterQuery, UpdateResult } from "mongoose";
+
 export interface IBaseRepository<T> {
   create(data: Partial<T>): Promise<T>;
   createMany(data: Partial<T>[]): Promise<T[]>;
@@ -12,6 +14,8 @@ export interface IBaseRepository<T> {
   findById(id: string): Promise<T | null>;
   findOne(data: Partial<T>): Promise<T | null>;
   update(id: string, data: Partial<T>): Promise<T | null>;
+  updateOne(filter: Partial<T>, data: Partial<T>): Promise<T | null>;
+  updateMany(filter: Partial<T>, data: Partial<T>): Promise<UpdateResult>;
   delete(id: string, data: Partial<T>): Promise<T | null>;
-  count(): Promise<number>;
+  count(filter?: FilterQuery<T>): Promise<number>;
 }
