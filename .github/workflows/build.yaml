@@ -3,20 +3,44 @@ name: Build on PR
 on:
   pull_request:
     branches:
-      - dev
+      - main
 
 jobs:
-  build:
+  lint-and-format:
+    name: Lint and Format Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 26
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check Format
+        run: npm run format:check
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Check Lint
+        run: npm run lint
+  
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run Build
-        run: npm run build
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run Type Check
+        run: npm run typecheck
