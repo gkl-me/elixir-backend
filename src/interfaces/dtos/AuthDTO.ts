@@ -10,12 +10,23 @@ export interface ILoginDto {
 }
 
 export interface IAuthResponseDto {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  accessToken: string;
-  refreshToken: string;
+  user: {
+    id: string,
+    name: string,
+    email: string,
+    avatarUrl: string | null,
+    role: 'user' | 'superAdmin'
+  },
+  workspace: {
+    id: string,
+    name: string,
+    slug: string,
+    memberId: string | null,
+    roleId: string | null,
+    isOwner: boolean
+  } | null
+  accessToken: string,
+  refreshToken: string
 }
 
 export interface ISendVerificationEmailDto {

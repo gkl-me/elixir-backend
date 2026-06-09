@@ -10,7 +10,7 @@ const workspaceController = container.resolve<IWorkspaceController>(
   Token.WorkspaceController
 );
 
-router.get("/context", auth, (req, res, next) => {
+router.get("/context/:slug", auth, (req, res, next) => {
   void workspaceController.handleWorkspaceContext(req, res, next);
 });
 
