@@ -8,6 +8,7 @@ import { checkPlanLimit } from "../middlewares/planLimitGuard";
 import { requirePermission } from "../middlewares/workspacePermission";
 import { WORKSPACE_PERMISSIONS } from "../constants/workspacePermissions";
 import { IWorkspaceInviteController } from "../controllers/workspace/interface/IWorkspaceInviteController";
+import { IWorkspaceMemberController } from "../controllers/workspace/interface/IWorkspaceMemberController";
 
 const router = Router();
 
@@ -16,6 +17,7 @@ const workspaceController = container.resolve<IWorkspaceController>(
 );
 const workspaceRoleController = container.resolve<IWorkspaceRoleController>(Token.WorkspaceRoleController)
 const workspaceInviteController = container.resolve<IWorkspaceInviteController>(Token.WorkspaceInviteController)
+const workspaceMemberController = container.resolve<IWorkspaceMemberController>(Token.WorkspaceMemberController)
 
 router.get("/context/:slug", auth, (req, res, next) => {
   void workspaceController.handleWorkspaceContext(req, res, next);
@@ -60,5 +62,19 @@ router.post("/invites/accept", auth, (req, res, next) => {
   void workspaceInviteController.handleAcceptInvite(req, res, next)
 })
 
+
+
+
+//members 
+
+router.get("/:workspaceId/members", auth, (req, res, next) => {
+  void workspaceMemberController.handleListMembers(req, res, next)
+})
+router.patch("/:workspaceId/members/:memberId", auth, (req, res, next) => {
+  void workspaceMemberController.handleUpdateMemberRole(req, res, next)
+})
+router.delete("/:workspaceId/members/:memberId", auth, (req, res, next) => {
+  void workspaceMemberController.handleRemoveMember(req, res, next)
+})
 
 export default router;

@@ -1,6 +1,8 @@
 import { IWorkspaceInvite } from "../../models/WorkspaceInvite";
 import { IWorkspaceRole } from "../../models/WorkspaceRole";
+import { IWorkspaceMemberWithUser } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 import { IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
+import { IListMemberResDto } from "../dtos/WorkspaceMemberDto";
 import { ICreateRoleResDto, IGetRolesResDto, IUpdateRoleResDto } from "../dtos/WorkspaceRoleDto";
 
 
@@ -71,6 +73,21 @@ export class workspaceInviteDtoMapper {
             revokedAt: invite?.revokedAt,
             createdAt: invite?.createdAt,
             updatedAt: invite?.updatedAt,
+        }
+    }
+}
+
+
+export class workspaceMemberDtoMapper {
+    static toListMembers(member: IWorkspaceMemberWithUser): IListMemberResDto {
+        return {
+            memberId: member?._id,
+            name: member?.user?.name,
+            email: member?.user?.email,
+            avatarUrl: member?.user?.avatarUrl,
+            roleId: member?.roleId,
+            roleKey: member?.role?.key,
+            joinedAt: member?.joinedAt || new Date(),
         }
     }
 }
