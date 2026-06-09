@@ -13,6 +13,8 @@ export const ENV = {
   ACCESS_TOKEN_TTL: 15 * 60,
   REFRESH_TOKEN_TTL: 7 * 24 * 60 * 60,
 
+  INVITE_TTL: 7 * 24 * 60 * 60 * 1000,
+
   OTP_TTL: 5 * 60,
 
   STRIPE_KEY: process.env.STRIPE_KEY || "",

@@ -1,5 +1,7 @@
 import { Worker } from "bullmq";
 import {
+  resendInviteEmailProccessor,
+  sendInviteEmailProccessor,
   sendOtpEmailJobProccessor,
   sendVerificationEmailProccessor,
 } from "./email.processor";
@@ -16,6 +18,12 @@ export const emailWorker = new Worker(
         break;
       case EMAIL_JOBS.SEND_OTP_EMAIL:
         await sendOtpEmailJobProccessor(job);
+        break;
+      case EMAIL_JOBS.SEND_INVITE_EMAIL:
+        await sendInviteEmailProccessor(job);
+        break;
+      case EMAIL_JOBS.RESEND_INVITE_EMAIL:
+        await resendInviteEmailProccessor(job);
         break;
       default:
         break;

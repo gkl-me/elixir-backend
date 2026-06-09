@@ -1,3 +1,4 @@
+import { injectable } from "tsyringe";
 import {
   IWorkspaceMember,
   WorkspaceMember,
@@ -5,10 +6,10 @@ import {
 import { BaseRepository } from "../base/BaseRepository";
 import { IWorkspaceMemberRepository } from "./interface/IWorkspaceMemberRepository";
 
+@injectable()
 export class WorkspaceMemberRepository
   extends BaseRepository<IWorkspaceMember>
-  implements IWorkspaceMemberRepository
-{
+  implements IWorkspaceMemberRepository {
   constructor() {
     super(WorkspaceMember);
   }

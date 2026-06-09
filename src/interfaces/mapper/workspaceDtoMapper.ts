@@ -1,4 +1,6 @@
+import { IWorkspaceInvite } from "../../models/WorkspaceInvite";
 import { IWorkspaceRole } from "../../models/WorkspaceRole";
+import { IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
 import { ICreateRoleResDto, IGetRolesResDto, IUpdateRoleResDto } from "../dtos/WorkspaceRoleDto";
 
 
@@ -51,4 +53,24 @@ export class workspaceRoleDtoMapper {
 
 
 
+}
+
+
+
+export class workspaceInviteDtoMapper {
+    static toListInvites(invite: IWorkspaceInvite): IListInvitesResDto {
+        return {
+            workspaceId: invite?.workspaceId,
+            email: invite?.email,
+            roleId: invite?.roleId,
+            invitedByUserId: invite?.invitedByUserId,
+            status: invite?.status,
+            sentAt: invite?.sentAt,
+            expiresAt: invite?.expiresAt,
+            acceptedAt: invite?.acceptedAt,
+            revokedAt: invite?.revokedAt,
+            createdAt: invite?.createdAt,
+            updatedAt: invite?.updatedAt,
+        }
+    }
 }

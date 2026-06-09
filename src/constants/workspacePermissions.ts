@@ -1,8 +1,11 @@
 export const WORKSPACE_PERMISSIONS = {
+
+
   //members
   MEMBERS_INVITE: "members.invite",
   MEMBERS_REMOVE: "members.remove",
   MEMBERS_ROLE_UPDATE: "members.role.update",
+  MEMBERS_VIEW: "members.view",
 
   //role
   ROLES_CREATE: "roles.create",

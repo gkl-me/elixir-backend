@@ -12,6 +12,8 @@ import { CompanyService } from "../../services/company/CompanyService";
 import { WorkspaceService } from "../../services/workspace/WorkspaceService";
 import { SubscriptionService } from "../../services/subscription/SubscriptionService";
 import { PaymentService } from "../../services/payment/PaymentService";
+import { WorkspaceRoleService } from "../../services/workspace/WorkspaceRoleService";
+import { WorkspaceInviteService } from "../../services/workspace/WorkspaceInviteService";
 // import { SubscriptionService } from "../../services/subscription/SubscriptionService"
 // import { StripeWebhookService } from "../../services/webhook/StripeWebhookService"
 
@@ -49,6 +51,12 @@ container.register(Token.SubscriptionService, {
 container.register(Token.PaymentService, {
   useClass: PaymentService,
 });
+container.register(Token.WorkspaceRoleService, {
+  useClass: WorkspaceRoleService
+})
+container.register(Token.WorkspaceInviteService, {
+  useClass: WorkspaceInviteService
+})
 
 // container.register(Token.PlanService,{
 //     useClass:PlanService

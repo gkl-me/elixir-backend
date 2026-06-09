@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { Document, model, Schema } from "mongoose";
 
 export type WorkspaceInviteStatus =
   | "pending"
@@ -16,7 +16,6 @@ export interface IWorkspaceInvite extends Document {
   sentAt: Date;
   expiresAt: Date;
   acceptedAt?: Date;
-  acceptedByUserId?: string;
   revokedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

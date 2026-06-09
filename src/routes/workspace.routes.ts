@@ -7,6 +7,7 @@ import { IWorkspaceRoleController } from "../controllers/workspace/interface/IWo
 import { checkPlanLimit } from "../middlewares/planLimitGuard";
 import { requirePermission } from "../middlewares/workspacePermission";
 import { WORKSPACE_PERMISSIONS } from "../constants/workspacePermissions";
+import { IWorkspaceInviteController } from "../controllers/workspace/interface/IWorkspaceInviteController";
 
 const router = Router();
 
@@ -14,6 +15,7 @@ const workspaceController = container.resolve<IWorkspaceController>(
   Token.WorkspaceController
 );
 const workspaceRoleController = container.resolve<IWorkspaceRoleController>(Token.WorkspaceRoleController)
+const workspaceInviteController = container.resolve<IWorkspaceInviteController>(Token.WorkspaceInviteController)
 
 router.get("/context/:slug", auth, (req, res, next) => {
   void workspaceController.handleWorkspaceContext(req, res, next);
@@ -33,6 +35,29 @@ router.patch("/:workspaceId/roles/:roleId", auth, requirePermission(WORKSPACE_PE
 })
 router.delete("/:workspaceId/roles/:roleId", auth, requirePermission(WORKSPACE_PERMISSIONS.ROLES_DELETE), (req, res, next) => {
   void workspaceRoleController.handleDeleteRole(req, res, next)
+})
+
+
+
+//workspace invites 
+router.get("/:workspaceId/invites", auth, (req, res, next) => {
+  void workspaceInviteController.handleListInvites(req, res, next)
+})
+router.post("/:workspaceId/invites", auth, (req, res, next) => {
+  void workspaceInviteController.handleSendInvite(req, res, next)
+})
+router.get("/:workspaceId/invites/:inviteId/resend", auth, (req, res, next) => {
+  void workspaceInviteController.handleResendInvite(req, res, next)
+})
+router.patch("/:workspaceId/invites/:inviteId/revoke", auth, (req, res, next) => {
+  void workspaceInviteController.handleRevokeInvite(req, res, next)
+})
+
+router.get("/invites/validate/:token", (req, res, next) => {
+  void workspaceInviteController.handleValidateInvite(req, res, next)
+})
+router.post("/invites/accept", auth, (req, res, next) => {
+  void workspaceInviteController.handleAcceptInvite(req, res, next)
 })
 
 
