@@ -4,6 +4,8 @@ export interface IUserListDto {
   email: string;
   isBlocked: boolean;
   avatarUrl?: string;
+  bio?: string;
+  jobTitle?: string;
 }
 
 export interface IUserQueryDto {
@@ -46,5 +48,9 @@ export interface IUpdateUserProfileDto {
   name: string;
   jobTitle: string;
   bio: string;
+  userId: string;
+}
+
+export interface IGetMeDto {
   userId: string;
 }

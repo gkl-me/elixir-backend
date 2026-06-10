@@ -138,4 +138,20 @@ export class UserController implements IUserController {
       next(error);
     }
   }
+
+  async handleGetMe(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.user.userId;
+
+      const user = await this._userService.getMe({ userId });
+
+      successResponse(res, USER_MESSAGES.FETCH_SUCCESS, STATUS_CODES.OK, user);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

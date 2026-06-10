@@ -1,6 +1,10 @@
 import { IWorkspaceInvite } from "../../models/WorkspaceInvite";
 import { IWorkspaceRole } from "../../models/WorkspaceRole";
 import { IWorkspaceMemberWithUser } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
+import {
+  IWorkspaceTeamWithMember,
+  IWorkspaceTeamWithMemberDetail,
+} from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
 import { IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
 import { IListMemberResDto } from "../dtos/WorkspaceMemberDto";
 import {
@@ -8,6 +12,7 @@ import {
   IGetRolesResDto,
   IUpdateRoleResDto,
 } from "../dtos/WorkspaceRoleDto";
+import { IGetTeamResDto, IListTeamsResDto } from "../dtos/WorkspaceTeamDto";
 
 export class workspaceRoleDtoMapper {
   static toGetRoles(role: IWorkspaceRole): IGetRolesResDto {
@@ -86,6 +91,33 @@ export class workspaceMemberDtoMapper {
       roleId: member?.roleId,
       roleKey: member?.role?.key,
       joinedAt: member?.joinedAt || new Date(),
+      userId: member?.user?._id,
+    };
+  }
+}
+
+export class workspaceTeamDtoMapper {
+  static toListTeams(team: IWorkspaceTeamWithMember): IListTeamsResDto {
+    return {
+      id: String(team?._id),
+      name: team?.name,
+      memberCount: team?.memberCount,
+      memberName: team?.memberName,
+    };
+  }
+
+  static toGetTeam(team: IWorkspaceTeamWithMemberDetail): IGetTeamResDto {
+    return {
+      id: String(team?._id),
+      name: team?.name,
+      description: team?.description,
+      members: team?.members.map((member) => ({
+        id: String(member?._id),
+        name: member?.name,
+        email: member?.email,
+        avatarUrl: member?.avatarUrl,
+        role: member?.role,
+      })),
     };
   }
 }

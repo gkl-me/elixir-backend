@@ -1,3 +1,5 @@
+import { IUserWorkspace } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
+
 export interface ICreateWorkspaceDto {
   name: string;
   ownerId: string;
@@ -26,4 +28,5 @@ export interface IWorkspaceContextResDto {
   allPermissions: string[];
   permissionDependencies: Record<string, string[]>;
   builtinRoles: Record<string, string[]>;
+  workspaces: IUserWorkspace[] | [];
 }

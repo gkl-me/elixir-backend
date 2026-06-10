@@ -64,6 +64,12 @@ const UserSchema = new Schema(
     lastActiveWorkspaceId: {
       type: String,
     },
+    bio: {
+      type: String,
+    },
+    jobTitle: {
+      type: String,
+    },
   },
   {
     timestamps: true,

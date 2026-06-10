@@ -9,6 +9,8 @@ export class userDtoMapper {
       email: user.email,
       isBlocked: user.isBlocked,
       avatarUrl: user?.avatarUrl,
+      bio: user?.bio,
+      jobTitle: user?.jobTitle,
     };
   }
 }

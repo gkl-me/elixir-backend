@@ -1,11 +1,5 @@
 import { inject, injectable } from "tsyringe";
 import { IWorkspaceMemberService } from "./interface/IWorkspaceMemberService";
-import {
-  IListMemberDto,
-  IListMemberResDto,
-  IRemoveMemberDto,
-  IUpdateMemberDto,
-} from "../../interfaces/dtos/WorkspaceMemberDto";
 import { IWorkspaceMemberRepository } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 import { logError } from "../../middlewares/loggerHelper";
 import { workspaceMemberDtoMapper } from "../../interfaces/mapper/workspaceDtoMapper";
@@ -13,6 +7,12 @@ import { STATUS_CODES } from "../../constants/statusCodes";
 import { CustomError } from "../../errors/CustomError";
 import { Token } from "../../di/token";
 import { IWorkspaceRoleRepository } from "../../repositories/workspace/interface/IWorkspaceRoleRepository";
+import {
+  IListMemberDto,
+  IListMemberResDto,
+  IRemoveMemberDto,
+  IUpdateMemberDto,
+} from "../../interfaces/dtos/WorkspaceMemberDto";
 
 @injectable()
 export class WorkspaceMemberService implements IWorkspaceMemberService {

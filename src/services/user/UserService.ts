@@ -8,6 +8,7 @@ import { Token } from "../../di/token";
 import { IUserService } from "./interface/IUserService";
 import {
   IChangePasswordDto,
+  IGetMeDto,
   IListActiveSessionsDto,
   IListActiveSessionsResponseDto,
   IUpdatePasswordDto,
@@ -135,12 +136,6 @@ export class UserService implements IUserService {
         throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND);
       }
 
-      // const verifyPassword = await this._passwordHasher.comparePasswords(currentPassword,user.password)
-
-      // if(!verifyPassword){
-      //   throw new CustomError(AUTH_MESSAGES.INVALID_CREDENTIALS, STATUS_CODES.UNAUTHORIZED)
-      // }
-
       const hashPassword = await this._passwordHasher.hashPassword(newPassword);
       user.password = hashPassword;
       await user.save();
@@ -196,14 +191,38 @@ export class UserService implements IUserService {
     try {
       const { name, bio, jobTitle, userId } = data;
 
-      await this._userRepository.update(userId, {
-        name,
-        bio,
-        jobTitle,
-      });
+      const user = await this._userRepository.findById(userId);
+
+      if (!user) {
+        throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND);
+      }
+
+      user.name = name;
+      user.bio = bio;
+      user.jobTitle = jobTitle;
+      await user.save();
     } catch (error) {
       logError(error, {
         service: "UserService.updateProfile",
+      });
+      throw error;
+    }
+  }
+
+  async getMe(data: IGetMeDto): Promise<IUserListDto> {
+    try {
+      const { userId } = data;
+
+      const user = await this._userRepository.findById(userId);
+
+      if (!user) {
+        throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND);
+      }
+
+      return userDtoMapper.toUserListDto(user);
+    } catch (error) {
+      logError(error, {
+        service: "UserService.getMe",
       });
       throw error;
     }
