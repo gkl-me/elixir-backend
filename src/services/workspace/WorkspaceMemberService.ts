@@ -27,6 +27,8 @@ export class WorkspaceMemberService implements IWorkspaceMemberService {
                 workspaceId
             )
 
+            console.log("ser", members)
+
             return members.length ? members.map((mem) => workspaceMemberDtoMapper.toListMembers(mem)) : []
 
         } catch (error) {
@@ -42,17 +44,17 @@ export class WorkspaceMemberService implements IWorkspaceMemberService {
             const { workspaceId, memberId, roleId } = data
 
             const existingMember = await this._workspaceMemberRepository.findById(memberId)
-            if (!existingMember || existingMember.workspaceId !== workspaceId) {
+            if (!existingMember || existingMember.workspaceId.toString() !== workspaceId) {
                 throw new CustomError("Member not found", STATUS_CODES.NOT_FOUND)
             }
 
-            const existingRole = await this._workspaceRoleRepository.findById(existingMember.roleId)
+            const existingRole = await this._workspaceRoleRepository.findById(String(existingMember.roleId))
             if (!existingRole || existingRole.key === 'owner') {
                 throw new CustomError("You cannot change owner's role", STATUS_CODES.BAD_REQUEST)
             }
 
-            const newRole = await this._workspaceRoleRepository.findById(roleId)
-            if (!newRole || newRole.workspaceId !== workspaceId) {
+            const newRole = await this._workspaceRoleRepository.findById(String(roleId))
+            if (!newRole || newRole.workspaceId.toString() !== workspaceId) {
                 throw new CustomError("Role not found", STATUS_CODES.BAD_REQUEST)
             }
 

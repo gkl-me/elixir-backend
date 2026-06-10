@@ -41,14 +41,14 @@ export class WorkspaceInviteController implements IWorkspaceInviteController {
             const { workspaceId } = extractStringParams(req.params, ['workspaceId'])
 
             //validate request body 
-            const { email, roleId, invitedbyUserId } = req.body
+            const { email, roleId } = req.body
+            const invitedByUserId = req.user.userId
 
             await sendInviteEmail(
                 email,
                 workspaceId,
                 roleId,
-                invitedbyUserId,
-
+                invitedByUserId
             )
 
             successResponse(res, "Invite sent successfully", STATUS_CODES.OK, {})
