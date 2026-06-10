@@ -4,6 +4,7 @@ export interface IListMemberDto {
 
 export interface IListMemberResDto {
   memberId: string;
+  userId: string
   name: string;
   email: string;
   avatarUrl?: string;
@@ -22,3 +23,5 @@ export interface IRemoveMemberDto {
   workspaceId: string;
   memberId: string;
 }
+
+

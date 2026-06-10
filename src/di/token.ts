@@ -15,6 +15,7 @@ export const Token = {
   WorkspaceRoleRepository: "IWorkspaceRoleRepository",
   WorkspaceMemberRepository: "IWorkspaceMemberRepository",
   WorkspaceInviteRepository: "IWorkspaceInviteRepository",
+  WorkspaceTeamRepository: "IWorkspaceTeamRepository",
 
   PlanService: "IPlanService",
   AuthService: "IAuthService",
@@ -31,6 +32,7 @@ export const Token = {
   WorkspaceRoleService: "IWorkspaceRoleService",
   WorkspaceInviteService: "IWorkspaceInviteService",
   WorkspaceMemberService: "IWorkspaceMemberService",
+  WorkspaceTeamService: "IWorkspaceTeamService",
 
   VerifyController: "IVerifyController",
   PasswordController: "IPasswordController",
@@ -47,4 +49,5 @@ export const Token = {
   WorkspaceRoleController: "IWorkspaceRoleController",
   WorkspaceInviteController: "IWorkspaceInviteController",
   WorkspaceMemberController: "IWorkspaceMemberController",
+  WorkspaceTeamController: "IWorkspaceTeamController",
 };

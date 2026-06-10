@@ -9,6 +9,7 @@ import { requirePermission } from "../middlewares/workspacePermission";
 import { WORKSPACE_PERMISSIONS } from "../constants/workspacePermissions";
 import { IWorkspaceInviteController } from "../controllers/workspace/interface/IWorkspaceInviteController";
 import { IWorkspaceMemberController } from "../controllers/workspace/interface/IWorkspaceMemberController";
+import { IWorkspaceTeamController } from "../controllers/workspace/interface/IWorkspaceTeamController";
 
 const router = Router();
 
@@ -24,6 +25,10 @@ const workspaceInviteController = container.resolve<IWorkspaceInviteController>(
 const workspaceMemberController = container.resolve<IWorkspaceMemberController>(
   Token.WorkspaceMemberController
 );
+const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
+  Token.WorkspaceTeamController
+);
+
 
 router.get("/context/:slug", auth, (req, res, next) => {
   void workspaceController.handleWorkspaceContext(req, res, next);
@@ -133,5 +138,24 @@ router.delete(
     void workspaceMemberController.handleRemoveMember(req, res, next);
   }
 );
+
+
+
+//workspace teams
+router.get('/:workspaceId/teams', auth, (req, res, next) => {
+  void workspaceTeamController.handleListTeams(req, res, next);
+})
+router.post('/:workspaceId/teams', auth, (req, res, next) => {
+  void workspaceTeamController.handleCreateTeam(req, res, next);
+})
+router.patch('/:workspaceId/teams/:teamId/members', auth, (req, res, next) => {
+  void workspaceTeamController.handleAddMembers(req, res, next);
+})
+router.delete('/:workspaceId/teams/:teamId/members/:memberId', auth, (req, res, next) => {
+  void workspaceTeamController.handleRemoveMember(req, res, next);
+})
+router.get('/:workspaceId/teams/:teamId', auth, (req, res, next) => {
+  void workspaceTeamController.handleGetTeam(req, res, next);
+})
 
 export default router;
