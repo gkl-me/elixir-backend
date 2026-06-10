@@ -12,17 +12,17 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    
+
     depends_on:
       - redis
 
     restart: unless-stopped
-  
+
   worker:
     build:
       context: .
       target: development
-    
+
     command: npm run worker:dev
 
     env_file:
@@ -36,7 +36,7 @@ services:
       - redis
 
     restart: unless-stopped
-  
+
   redis:
     image: redis:7-alpine
 
@@ -45,7 +45,6 @@ services:
 
     volumes:
       - redis-data:/data
-
 
 volumes:
   redis-data:

@@ -73,15 +73,13 @@ export class AuthController implements IAuthController {
         { ip, userAgent }
       );
 
-      const { accessToken, refreshToken, ...user } = authUser;
-
       // setCookie(res,'refreshToken',refreshToken)
 
       return successResponse(
         res,
         USER_MESSAGES.LOGIN_SUCCESS,
         STATUS_CODES.OK,
-        { user, accessToken, refreshToken }
+        { ...authUser }
       );
     } catch (error) {
       next(error);
@@ -98,13 +96,13 @@ export class AuthController implements IAuthController {
       const userAgent = req.headers["user-agent"];
       const ip = req.ip;
 
-      const { accessToken, refreshToken, ...user } =
-        await this._authService.googleAuth({ idToken }, { userAgent, ip });
+      const authUser = await this._authService.googleAuth(
+        { idToken },
+        { userAgent, ip }
+      );
 
       successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {
-        user,
-        accessToken,
-        refreshToken,
+        ...authUser,
       });
     } catch (error) {
       next(error);
@@ -121,13 +119,13 @@ export class AuthController implements IAuthController {
       const userAgent = req.headers["user-agent"];
       const ip = req.ip;
 
-      const { accessToken, refreshToken, ...user } =
-        await this._authService.githubAuth(data, { userAgent, ip });
+      const authUser = await this._authService.githubAuth(data, {
+        userAgent,
+        ip,
+      });
 
       successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {
-        user,
-        accessToken,
-        refreshToken,
+        ...authUser,
       });
     } catch (error) {
       next(error);

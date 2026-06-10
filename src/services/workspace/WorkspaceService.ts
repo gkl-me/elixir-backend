@@ -7,11 +7,25 @@ import { builtInRoles } from "../../constants/builtInRoles";
 import { IWorkspaceRoleRepository } from "../../repositories/workspace/interface/IWorkspaceRoleRepository";
 import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
 import { logError } from "../../middlewares/loggerHelper";
+import logger from "../../middlewares/logger";
 import { CustomError } from "../../errors/CustomError";
-import { CONSTANT_MESSAGES } from "../../constants/messages";
+import {
+  CONSTANT_MESSAGES,
+  WORKSPACE_MESSAGES,
+} from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { IWorkspaceMemberRepository } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
+import { generateSlug } from "../../helper/generateSlug";
+import {
+  IWorkpsaceContextDto,
+  IWorkspaceContextResDto,
+} from "../../interfaces/dtos/WorkspaceDto";
+import {
+  WORKSPACE_PERMISSIONS,
+  PERMISSION_DEPENDENCIES,
+  BUILTIN_ROLES,
+} from "../../constants/workspacePermissions";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -45,6 +59,8 @@ export class WorkspaceService implements IWorkspaceService {
         ownerId,
         companyId,
         subscriptionId,
+        slug: generateSlug(name),
+        type: companyId ? "company" : "personal",
       });
 
       return workspace;
@@ -60,7 +76,7 @@ export class WorkspaceService implements IWorkspaceService {
     companyId?: string;
     stripePriceId?: string;
     stripeSubscriptionId?: string;
-  }): Promise<void> {
+  }): Promise<IWorkspace> {
     try {
       const workspace = await this.createWorkspace({
         name: data.workspaceName,
@@ -96,41 +112,27 @@ export class WorkspaceService implements IWorkspaceService {
 
       workspace.subscriptionId = String(subscription._id);
       await workspace.save();
+
+      return workspace;
     } catch (error) {
       throw error;
     }
   }
 
-  async workspaceContext(data: { userId: string }): Promise<{
-    workspaceId: string;
-    memberId: string;
-    roleId: string;
-    name: string;
-    email: string;
-  }> {
+  async workspaceContext(
+    data: IWorkpsaceContextDto
+  ): Promise<IWorkspaceContextResDto> {
     try {
-      const { userId } = data;
+      const { userId, slug } = data;
 
-      console.log("User ID in workspaceContext:", userId); // Debug log to check userId
-
-      const workspace = await this._workspaceRepository.findOne({
-        ownerId: userId,
-      });
-      const user = await this._userRepository.findById(userId);
-
-      console.log("Workspace found:", workspace); // Debug log to check workspace
-      console.log("User found:", user); // Debug log to check user
-
-      if (!user) {
-        throw new CustomError(
-          CONSTANT_MESSAGES.NOT_FOUND,
-          STATUS_CODES.NOT_FOUND
-        );
+      let workspace = await this._workspaceRepository.findOne({ slug });
+      if (!workspace && slug && slug.match(/^[0-9a-fA-F]{24}$/)) {
+        workspace = await this._workspaceRepository.findById(slug);
       }
 
       if (!workspace) {
         throw new CustomError(
-          CONSTANT_MESSAGES.NOT_FOUND,
+          WORKSPACE_MESSAGES.NOT_FOUND,
           STATUS_CODES.NOT_FOUND
         );
       }
@@ -140,24 +142,60 @@ export class WorkspaceService implements IWorkspaceService {
         userId,
         isRemoved: false,
       });
-      console.log("Workspace member found:", member); // Debug log to check workspace member
 
       if (!member) {
         throw new CustomError(
-          CONSTANT_MESSAGES.NOT_FOUND,
-          STATUS_CODES.NOT_FOUND
+          CONSTANT_MESSAGES.FORBIDDEN,
+          STATUS_CODES.FORBIDDEN
         );
       }
 
       const role = await this._workspaceRoleRepository.findById(member.roleId);
-      console.log("Workspace role found:", role); // Debug log to check workspace role
+
+      const user = await this._userRepository.findById(userId);
+      if (!user) {
+        logger.warn("WorkspaceService.workspaceContext DEBUG: User not found", {
+          userId,
+          userIdType: typeof userId,
+          slug,
+          workspaceId: String(workspace?._id),
+          memberId: String(member?._id),
+          memberRoleId: String(member?.roleId),
+          memberUserId: String(member?.userId),
+        });
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      const hasOwnWorkspace = await this._workspaceRepository.findOne({
+        ownerId: userId,
+      });
+
+      await this._userRepository.update(userId, {
+        lastActiveWorkspaceId: String(workspace._id),
+      });
 
       return {
+        name: user?.name,
+        email: user?.email,
+        avatarUrl: user?.avatarUrl || "",
         workspaceId: String(workspace._id),
+        workspaceName: workspace.name,
+        workspaceSlug: workspace.slug,
+        isOwner: role?.key === "owner",
+        hasOwnWorkspace: !!hasOwnWorkspace,
         memberId: String(member._id),
         roleId: String(role?._id),
-        name: user.name,
-        email: user.email,
+        roleKey: role?.key || "member",
+        permissions: role?.permissions || [],
+        allPermissions: Object.values(WORKSPACE_PERMISSIONS),
+        permissionDependencies: PERMISSION_DEPENDENCIES as Record<
+          string,
+          string[]
+        >,
+        builtinRoles: BUILTIN_ROLES as Record<string, string[]>,
       };
     } catch (error) {
       logError(error, {

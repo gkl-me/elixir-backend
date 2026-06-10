@@ -25,6 +25,8 @@ export interface IOnboarding extends Document {
 
   sessionId?: string;
 
+  workspaceSlug?: string;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -82,6 +84,9 @@ const OnboardingSchema = new Schema(
       phone: {
         type: String,
       },
+    },
+    workspaceSlug: {
+      type: String,
     },
   },
   {

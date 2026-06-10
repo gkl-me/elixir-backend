@@ -94,7 +94,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     // workspace.subscriptionId = String(subscription._id);
     // await workspace.save();
 
-    await _workspaceService.bootStrapWorkspace({
+    const workspace = await _workspaceService.bootStrapWorkspace({
       ownerId: userId!,
       workspaceName: onboarding.workspaceName || "Personal Workspace",
       planId: onboarding.planId,
@@ -105,6 +105,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
 
     onboarding.paymentStatus = "success";
     onboarding.isCompleted = true;
+    onboarding.workspaceSlug = workspace?.slug;
     await onboarding.save();
   } catch (error) {
     console.log("payment success error", error);

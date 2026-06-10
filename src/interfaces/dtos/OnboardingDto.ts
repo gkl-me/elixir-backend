@@ -68,4 +68,5 @@ export interface IVerifyPaymentStatusDto {
 
 export interface IVerifyPaymentStatusResDto {
   paymentStatus: "pending" | "failed" | "incomplete" | "success";
+  workspaceSlug: string;
 }

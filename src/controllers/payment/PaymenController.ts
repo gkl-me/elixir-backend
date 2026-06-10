@@ -24,11 +24,12 @@ export class PaymentController implements IPaymentController {
     try {
       const userId = req.user.userId;
 
-      const { paymentStatus } =
+      const { paymentStatus, workspaceSlug } =
         await this._onboardingService.verifyPaymentStatus({ userId });
 
       successResponse(res, "Payment Verify Status", STATUS_CODES.OK, {
         paymentStatus,
+        workspaceSlug,
       });
     } catch (error) {
       next(error);

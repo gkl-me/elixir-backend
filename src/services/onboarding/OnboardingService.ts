@@ -21,6 +21,7 @@ import { STATUS_CODES } from "../../constants/statusCodes";
 import { IWorkspaceService } from "../workspace/interface/IWorkspaceService";
 import { ISubscriptionService } from "../subscription/interface/ISubscriptionService";
 import { IPaymentService } from "../payment/interface/IPaymentService";
+import { ENV } from "../../constants/env";
 
 @injectable()
 export class OnboardingService implements IOnboardingService {
@@ -85,6 +86,8 @@ export class OnboardingService implements IOnboardingService {
     try {
       const { userId } = data;
 
+      let workspaceSlug = "";
+
       const onboarding = await this._onboardingRepository.findOne({ userId });
 
       if (!onboarding) {
@@ -107,17 +110,19 @@ export class OnboardingService implements IOnboardingService {
         //   planId: onboarding.planId,
         //   workspaceId: String(workspace._id),
         // });
-        await this._workspaceService.bootStrapWorkspace({
+        const workspace = await this._workspaceService.bootStrapWorkspace({
           ownerId: userId,
           workspaceName: onboarding.workspaceName!,
           planId: onboarding.planId,
         });
+        workspaceSlug = workspace?.slug || "";
       }
 
       //save onboarding details indb
       onboarding.isCompleted = true;
       onboarding.paymentStatus = "success";
       onboarding.currentStep = 3;
+      onboarding.workspaceSlug = workspaceSlug;
 
       if (onboarding.planType !== "Free") {
         const session = await this._paymentService.startCheckout({
@@ -136,7 +141,7 @@ export class OnboardingService implements IOnboardingService {
 
       await onboarding.save();
       return {
-        payment_url: "",
+        payment_url: `${ENV.CLIENT_URL}/workspace/${workspaceSlug}`,
       };
     } catch (error) {
       throw error;
@@ -219,6 +224,7 @@ export class OnboardingService implements IOnboardingService {
 
       return {
         paymentStatus: onboarding.paymentStatus,
+        workspaceSlug: onboarding.workspaceSlug ?? "",
       };
     } catch (error) {
       throw error;

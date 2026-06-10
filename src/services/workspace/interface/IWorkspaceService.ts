@@ -1,3 +1,7 @@
+import {
+  IWorkpsaceContextDto,
+  IWorkspaceContextResDto,
+} from "../../../interfaces/dtos/WorkspaceDto";
 import { IWorkspace } from "../../../models/Workspace";
 
 export interface IWorkspaceService {
@@ -19,12 +23,8 @@ export interface IWorkspaceService {
     companyId?: string;
     stripePriceId?: string;
     stripeSubscriptionId?: string;
-  }): Promise<void>;
-  workspaceContext(data: {}): Promise<{
-    workspaceId: string;
-    memberId: string;
-    roleId: string;
-    name: string;
-    email: string;
-  }>;
+  }): Promise<IWorkspace>;
+  workspaceContext(
+    data: IWorkpsaceContextDto
+  ): Promise<IWorkspaceContextResDto>;
 }

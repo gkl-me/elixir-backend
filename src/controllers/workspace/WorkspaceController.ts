@@ -4,6 +4,9 @@ import { Token } from "../../di/token";
 import { IWorkspaceService } from "../../services/workspace/interface/IWorkspaceService";
 import { Request, Response, NextFunction } from "express";
 import { successResponse } from "../../helper/responseHanlder";
+import { extractStringParams } from "../../helper/stringParamUtils";
+import { WORKSPACE_MESSAGES } from "../../constants/messages";
+import { STATUS_CODES } from "../../constants/statusCodes";
 
 @injectable()
 export class WorkspaceController implements IWorkspaceController {
@@ -18,13 +21,18 @@ export class WorkspaceController implements IWorkspaceController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const params = extractStringParams(req.params, ["slug"]);
+      const slug = params.slug;
       const userId = req.user.userId;
+
+      console.log(userId);
 
       const workspaceContext = await this._workspaceService.workspaceContext({
         userId,
+        slug,
       });
 
-      successResponse(res, "Workspace context fetched successfully", 200, {
+      successResponse(res, WORKSPACE_MESSAGES.SUCCESS, STATUS_CODES.OK, {
         workspaceContext,
       });
     } catch (error) {

@@ -4,6 +4,7 @@ export type WorkspaceType = "personal" | "company";
 
 export interface IWorkspace extends Document {
   name: string;
+  slug: string;
   type: WorkspaceType;
   ownerId: string;
   companyId?: string;
@@ -17,6 +18,12 @@ const WorkspaceSchema = new Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
     },
     type: {
       type: String,
