@@ -28,9 +28,9 @@ export const Token = {
   CompanyService: "ICompanyService",
   WorkspaceService: "IWorkspaceService",
   PaymentService: "IPaymentService",
-  WorkspaceRoleService: 'IWorkspaceRoleService',
-  WorkspaceInviteService: 'IWorkspaceInviteService',
-  WorkspaceMemberService: 'IWorkspaceMemberService',
+  WorkspaceRoleService: "IWorkspaceRoleService",
+  WorkspaceInviteService: "IWorkspaceInviteService",
+  WorkspaceMemberService: "IWorkspaceMemberService",
 
   VerifyController: "IVerifyController",
   PasswordController: "IPasswordController",

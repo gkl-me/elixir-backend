@@ -43,8 +43,10 @@ export class AuthService implements IAuthService {
     private _cacheRepository: ICacheRepository<string | IAuthSession>,
     @inject(Token.GithubAuthService)
     private readonly _githubAuthService: IGithubAuthService,
-    @inject(Token.WorkspaceRepository) private readonly _workspaceRepository: IWorkspaceRepository,
-    @inject(Token.WorkspaceMemberRepository) private readonly _workspaceMemberRespository: IWorkspaceMemberRepository
+    @inject(Token.WorkspaceRepository)
+    private readonly _workspaceRepository: IWorkspaceRepository,
+    @inject(Token.WorkspaceMemberRepository)
+    private readonly _workspaceMemberRespository: IWorkspaceMemberRepository
   ) {
     this._oAuthClient = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
   }
@@ -201,31 +203,38 @@ export class AuthService implements IAuthService {
         sessionId
       );
 
-
       //user current workspace information
-      let workspaceData = null
+      let workspaceData = null;
 
-      const lastWorkspaceId = userFound.lastActiveWorkspaceId
+      const lastWorkspaceId = userFound.lastActiveWorkspaceId;
 
       let workspace = lastWorkspaceId
         ? await this._workspaceRepository.findById(lastWorkspaceId)
-        : await this._workspaceRepository.findOne({ ownerId: userFound._id })
-
+        : await this._workspaceRepository.findOne({ ownerId: userFound._id });
 
       //if workspace no found find workspace in which user is memeber off
       if (!workspace) {
-        const workspaceMemeberShip = await this._workspaceMemberRespository.findOne({ userId: userFound._id, isRemoved: false })
+        const workspaceMemeberShip =
+          await this._workspaceMemberRespository.findOne({
+            userId: userFound._id,
+            isRemoved: false,
+          });
 
         if (workspaceMemeberShip) {
-          workspace = await this._workspaceRepository.findById(workspaceMemeberShip.workspaceId)
+          workspace = await this._workspaceRepository.findById(
+            workspaceMemeberShip.workspaceId
+          );
         }
       }
 
-      //if workspace exists 
+      //if workspace exists
 
       if (workspace) {
-
-        const workspaceMember = await this._workspaceMemberRespository.findOne({ workspaceId: workspace._id, userId: userFound._id, isRemoved: false })
+        const workspaceMember = await this._workspaceMemberRespository.findOne({
+          workspaceId: workspace._id,
+          userId: userFound._id,
+          isRemoved: false,
+        });
 
         workspaceData = {
           id: String(workspace._id),
@@ -233,9 +242,8 @@ export class AuthService implements IAuthService {
           slug: workspace.slug,
           memberId: workspaceMember ? String(workspaceMember._id) : null,
           roleId: workspaceMember ? String(workspaceMember.roleId) : null,
-          isOwner: String(workspace.ownerId) === String(userFound._id)
-        }
-
+          isOwner: String(workspace.ownerId) === String(userFound._id),
+        };
       }
 
       const resDto = authDtoMapper.toAuthResponse(
@@ -377,29 +385,38 @@ export class AuthService implements IAuthService {
 
       if (user) {
         //user current workspace information
-        let workspaceData = null
+        let workspaceData = null;
 
-        const lastWorkspaceId = user.lastActiveWorkspaceId
+        const lastWorkspaceId = user.lastActiveWorkspaceId;
 
         let workspace = lastWorkspaceId
           ? await this._workspaceRepository.findById(lastWorkspaceId)
-          : await this._workspaceRepository.findOne({ ownerId: user._id })
-
+          : await this._workspaceRepository.findOne({ ownerId: user._id });
 
         //if workspace no found find workspace in which user is memeber off
         if (!workspace) {
-          const workspaceMemeberShip = await this._workspaceMemberRespository.findOne({ userId: user._id, isRemoved: false })
+          const workspaceMemeberShip =
+            await this._workspaceMemberRespository.findOne({
+              userId: user._id,
+              isRemoved: false,
+            });
 
           if (workspaceMemeberShip) {
-            workspace = await this._workspaceRepository.findById(workspaceMemeberShip.workspaceId)
+            workspace = await this._workspaceRepository.findById(
+              workspaceMemeberShip.workspaceId
+            );
           }
         }
 
-        //if workspace exists 
+        //if workspace exists
 
         if (workspace) {
-
-          const workspaceMember = await this._workspaceMemberRespository.findOne({ workspaceId: workspace._id, userId: user._id, isRemoved: false })
+          const workspaceMember =
+            await this._workspaceMemberRespository.findOne({
+              workspaceId: workspace._id,
+              userId: user._id,
+              isRemoved: false,
+            });
 
           workspaceData = {
             id: String(workspace._id),
@@ -407,9 +424,8 @@ export class AuthService implements IAuthService {
             slug: workspace.slug,
             memberId: workspaceMember ? String(workspaceMember._id) : null,
             roleId: workspaceMember ? String(workspaceMember.roleId) : null,
-            isOwner: String(workspace.ownerId) === String(user._id)
-          }
-
+            isOwner: String(workspace.ownerId) === String(user._id),
+          };
         }
 
         const resDto = authDtoMapper.toAuthResponse(
@@ -419,11 +435,9 @@ export class AuthService implements IAuthService {
           refreshToken
         );
 
-
         return {
           ...resDto,
         };
-
       }
 
       throw new CustomError(
@@ -547,29 +561,37 @@ export class AuthService implements IAuthService {
       );
 
       //user current workspace information
-      let workspaceData = null
+      let workspaceData = null;
 
-      const lastWorkspaceId = user.lastActiveWorkspaceId
+      const lastWorkspaceId = user.lastActiveWorkspaceId;
 
       let workspace = lastWorkspaceId
         ? await this._workspaceRepository.findById(lastWorkspaceId)
-        : await this._workspaceRepository.findOne({ ownerId: user._id })
-
+        : await this._workspaceRepository.findOne({ ownerId: user._id });
 
       //if workspace no found find workspace in which user is memeber off
       if (!workspace) {
-        const workspaceMemeberShip = await this._workspaceMemberRespository.findOne({ userId: user._id, isRemoved: false })
+        const workspaceMemeberShip =
+          await this._workspaceMemberRespository.findOne({
+            userId: user._id,
+            isRemoved: false,
+          });
 
         if (workspaceMemeberShip) {
-          workspace = await this._workspaceRepository.findById(workspaceMemeberShip.workspaceId)
+          workspace = await this._workspaceRepository.findById(
+            workspaceMemeberShip.workspaceId
+          );
         }
       }
 
-      //if workspace exists 
+      //if workspace exists
 
       if (workspace) {
-
-        const workspaceMember = await this._workspaceMemberRespository.findOne({ workspaceId: workspace._id, userId: user._id, isRemoved: false })
+        const workspaceMember = await this._workspaceMemberRespository.findOne({
+          workspaceId: workspace._id,
+          userId: user._id,
+          isRemoved: false,
+        });
 
         workspaceData = {
           id: String(workspace._id),
@@ -577,9 +599,8 @@ export class AuthService implements IAuthService {
           slug: workspace.slug,
           memberId: workspaceMember ? String(workspaceMember._id) : null,
           roleId: workspaceMember ? String(workspaceMember.roleId) : null,
-          isOwner: String(workspace.ownerId) === String(user._id)
-        }
-
+          isOwner: String(workspace.ownerId) === String(user._id),
+        };
       }
 
       const resDto = authDtoMapper.toAuthResponse(
@@ -588,7 +609,6 @@ export class AuthService implements IAuthService {
         accessToken,
         refreshToken
       );
-
 
       return {
         ...resDto,

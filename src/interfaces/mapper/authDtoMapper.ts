@@ -21,11 +21,11 @@ export class authDtoMapper {
         name: user.name,
         email: user.email,
         role: user.role,
-        avatarUrl: user.avatarUrl || null
+        avatarUrl: user.avatarUrl || null,
       },
       workspace: workspace ?? null,
       accessToken: accessToken,
-      refreshToken: refreshToken
-    }
+      refreshToken: refreshToken,
+    };
   }
 }

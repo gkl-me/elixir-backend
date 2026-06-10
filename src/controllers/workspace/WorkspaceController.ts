@@ -13,7 +13,7 @@ export class WorkspaceController implements IWorkspaceController {
   constructor(
     @inject(Token.WorkspaceService)
     private readonly _workspaceService: IWorkspaceService
-  ) { }
+  ) {}
 
   async handleWorkspaceContext(
     req: Request,
@@ -21,17 +21,15 @@ export class WorkspaceController implements IWorkspaceController {
     next: NextFunction
   ): Promise<void> {
     try {
-
-
-      const params = extractStringParams(req.params, ["slug"])
-      const slug = params.slug
+      const params = extractStringParams(req.params, ["slug"]);
+      const slug = params.slug;
       const userId = req.user.userId;
 
-      console.log(userId)
+      console.log(userId);
 
       const workspaceContext = await this._workspaceService.workspaceContext({
         userId,
-        slug
+        slug,
       });
 
       successResponse(res, WORKSPACE_MESSAGES.SUCCESS, STATUS_CODES.OK, {

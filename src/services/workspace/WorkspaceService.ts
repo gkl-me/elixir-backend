@@ -9,13 +9,23 @@ import { ISubscriptionRepository } from "../../repositories/subscription/interfa
 import { logError } from "../../middlewares/loggerHelper";
 import logger from "../../middlewares/logger";
 import { CustomError } from "../../errors/CustomError";
-import { CONSTANT_MESSAGES, WORKSPACE_MESSAGES } from "../../constants/messages";
+import {
+  CONSTANT_MESSAGES,
+  WORKSPACE_MESSAGES,
+} from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { IWorkspaceMemberRepository } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
 import { generateSlug } from "../../helper/generateSlug";
-import { IWorkpsaceContextDto, IWorkspaceContextResDto } from "../../interfaces/dtos/WorkspaceDto";
-import { WORKSPACE_PERMISSIONS, PERMISSION_DEPENDENCIES, BUILTIN_ROLES } from "../../constants/workspacePermissions";
+import {
+  IWorkpsaceContextDto,
+  IWorkspaceContextResDto,
+} from "../../interfaces/dtos/WorkspaceDto";
+import {
+  WORKSPACE_PERMISSIONS,
+  PERMISSION_DEPENDENCIES,
+  BUILTIN_ROLES,
+} from "../../constants/workspacePermissions";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -30,7 +40,7 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.UserRepository)
     private readonly _userRepository: IUserRepository
-  ) { }
+  ) {}
 
   async createWorkspace({
     name,
@@ -50,7 +60,7 @@ export class WorkspaceService implements IWorkspaceService {
         companyId,
         subscriptionId,
         slug: generateSlug(name),
-        type: companyId ? "company" : "personal"
+        type: companyId ? "company" : "personal",
       });
 
       return workspace;
@@ -103,39 +113,46 @@ export class WorkspaceService implements IWorkspaceService {
       workspace.subscriptionId = String(subscription._id);
       await workspace.save();
 
-      return workspace
+      return workspace;
     } catch (error) {
       throw error;
     }
   }
 
-  async workspaceContext(data: IWorkpsaceContextDto): Promise<IWorkspaceContextResDto> {
+  async workspaceContext(
+    data: IWorkpsaceContextDto
+  ): Promise<IWorkspaceContextResDto> {
     try {
       const { userId, slug } = data;
 
-      let workspace = await this._workspaceRepository.findOne({ slug })
+      let workspace = await this._workspaceRepository.findOne({ slug });
       if (!workspace && slug && slug.match(/^[0-9a-fA-F]{24}$/)) {
-        workspace = await this._workspaceRepository.findById(slug)
+        workspace = await this._workspaceRepository.findById(slug);
       }
 
       if (!workspace) {
-        throw new CustomError(WORKSPACE_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND)
+        throw new CustomError(
+          WORKSPACE_MESSAGES.NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        );
       }
-
 
       const member = await this._workspaceMemberRepository.findOne({
         workspaceId: workspace._id,
         userId,
-        isRemoved: false
-      })
+        isRemoved: false,
+      });
 
       if (!member) {
-        throw new CustomError(CONSTANT_MESSAGES.FORBIDDEN, STATUS_CODES.FORBIDDEN)
+        throw new CustomError(
+          CONSTANT_MESSAGES.FORBIDDEN,
+          STATUS_CODES.FORBIDDEN
+        );
       }
 
-      const role = await this._workspaceRoleRepository.findById(member.roleId)
+      const role = await this._workspaceRoleRepository.findById(member.roleId);
 
-      const user = await this._userRepository.findById(userId)
+      const user = await this._userRepository.findById(userId);
       if (!user) {
         logger.warn("WorkspaceService.workspaceContext DEBUG: User not found", {
           userId,
@@ -144,19 +161,21 @@ export class WorkspaceService implements IWorkspaceService {
           workspaceId: String(workspace?._id),
           memberId: String(member?._id),
           memberRoleId: String(member?.roleId),
-          memberUserId: String(member?.userId)
+          memberUserId: String(member?.userId),
         });
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
-
 
       const hasOwnWorkspace = await this._workspaceRepository.findOne({
         ownerId: userId,
-      })
+      });
 
       await this._userRepository.update(userId, {
-        lastActiveWorkspaceId: String(workspace._id)
-      })
+        lastActiveWorkspaceId: String(workspace._id),
+      });
 
       return {
         name: user?.name,
@@ -172,10 +191,12 @@ export class WorkspaceService implements IWorkspaceService {
         roleKey: role?.key || "member",
         permissions: role?.permissions || [],
         allPermissions: Object.values(WORKSPACE_PERMISSIONS),
-        permissionDependencies: PERMISSION_DEPENDENCIES as Record<string, string[]>,
-        builtinRoles: BUILTIN_ROLES as Record<string, string[]>
-      }
-
+        permissionDependencies: PERMISSION_DEPENDENCIES as Record<
+          string,
+          string[]
+        >,
+        builtinRoles: BUILTIN_ROLES as Record<string, string[]>,
+      };
     } catch (error) {
       logError(error, {
         service: "WorkspaceService.workspaceContext",

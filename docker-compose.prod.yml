@@ -6,7 +6,7 @@ services:
 
     env_file:
       - .env
-    
+
     restart: unless-stopped
 
     networks:
@@ -20,7 +20,7 @@ services:
 
     env_file:
       - .env
-    
+
     restart: unless-stopped
 
     networks:
@@ -31,4 +31,4 @@ networks:
   apps-network:
     external: true
   redis-network:
-    external: true 
+    external: true

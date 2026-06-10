@@ -105,7 +105,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
 
     onboarding.paymentStatus = "success";
     onboarding.isCompleted = true;
-    onboarding.workspaceSlug = workspace?.slug
+    onboarding.workspaceSlug = workspace?.slug;
     await onboarding.save();
   } catch (error) {
     console.log("payment success error", error);

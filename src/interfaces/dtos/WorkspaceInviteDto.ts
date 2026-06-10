@@ -1,59 +1,57 @@
 import { WorkspaceInviteStatus } from "../../models/WorkspaceInvite";
 
 export interface IListInvitesDto {
-    workspaceId: string,
+  workspaceId: string;
 }
 
 export interface IListInvitesResDto {
-    id: string,
-    workspaceId: string;
-    email: string;
-    roleId: string;
-    invitedByUserId: string;
-    status: WorkspaceInviteStatus;
-    sentAt: Date;
-    expiresAt: Date;
-    acceptedAt?: Date;
-    acceptedByUserId?: string;
-    revokedAt?: Date;
-    createdAt?: Date;
-    updatedAt?: Date;
+  id: string;
+  workspaceId: string;
+  email: string;
+  roleId: string;
+  invitedByUserId: string;
+  status: WorkspaceInviteStatus;
+  sentAt: Date;
+  expiresAt: Date;
+  acceptedAt?: Date;
+  acceptedByUserId?: string;
+  revokedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ISendInviteDto {
-    workspaceId: string,
-    email: string,
-    roleId: string,
-    invitedByUserId: string
+  workspaceId: string;
+  email: string;
+  roleId: string;
+  invitedByUserId: string;
 }
 
 export interface IResendInviteDto {
-    inviteId: string,
-    workspaceId: string
+  inviteId: string;
+  workspaceId: string;
 }
 
 export interface IRevokeInviteDto {
-    inviteId: string,
-    workspaceId: string
+  inviteId: string;
+  workspaceId: string;
 }
 
 export interface IValidateInviteDto {
-    inviteToken: string,
+  inviteToken: string;
 }
 
 export interface IAcceptInviteDto {
-    inviteToken: string,
-    userId: string,
+  inviteToken: string;
+  userId: string;
 }
 
 export interface IAcceptInviteResDto {
-    workspaceSlug: string
+  workspaceSlug: string;
 }
 
 export interface IValidateInviteResDto {
-    workspaceName: string,
-    workspaceSlug: string,
-    email: string
+  workspaceName: string;
+  workspaceSlug: string;
+  email: string;
 }
-
-

@@ -8,7 +8,7 @@ export interface IWorkspaceRole extends Document {
   createdByUserId: string;
   isEditable: boolean;
   isDeletable: boolean;
-  isDeleted: boolean,
+  isDeleted: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -45,8 +45,8 @@ const WorkspaceRoleSchema = new Schema(
     },
     isDeleted: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   {
     timestamps: true,

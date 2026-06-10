@@ -6,7 +6,8 @@ import { IWorkspaceRoleRepository } from "./interface/IWorkspaceRoleRepository";
 @injectable()
 export class WorkspaceRoleRepository
   extends BaseRepository<IWorkspaceRole>
-  implements IWorkspaceRoleRepository {
+  implements IWorkspaceRoleRepository
+{
   constructor() {
     super(WorkspaceRole);
   }

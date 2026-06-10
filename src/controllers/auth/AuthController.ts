@@ -13,7 +13,7 @@ import { logInfo } from "../../middlewares/loggerHelper";
 
 @injectable()
 export class AuthController implements IAuthController {
-  constructor(@inject(Token.AuthService) private _authService: IAuthService) { }
+  constructor(@inject(Token.AuthService) private _authService: IAuthService) {}
 
   async handleRegister(
     req: Request,
@@ -96,11 +96,13 @@ export class AuthController implements IAuthController {
       const userAgent = req.headers["user-agent"];
       const ip = req.ip;
 
-      const authUser =
-        await this._authService.googleAuth({ idToken }, { userAgent, ip });
+      const authUser = await this._authService.googleAuth(
+        { idToken },
+        { userAgent, ip }
+      );
 
       successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {
-        ...authUser
+        ...authUser,
       });
     } catch (error) {
       next(error);
@@ -117,10 +119,13 @@ export class AuthController implements IAuthController {
       const userAgent = req.headers["user-agent"];
       const ip = req.ip;
 
-      const authUser = await this._authService.githubAuth(data, { userAgent, ip });
+      const authUser = await this._authService.githubAuth(data, {
+        userAgent,
+        ip,
+      });
 
       successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {
-        ...authUser
+        ...authUser,
       });
     } catch (error) {
       next(error);

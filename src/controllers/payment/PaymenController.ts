@@ -14,7 +14,7 @@ export class PaymentController implements IPaymentController {
     private readonly _paymentService: IPaymentService,
     @inject(Token.OnboardingService)
     private readonly _onboardingService: IOnboardingService
-  ) { }
+  ) {}
 
   async handleVerifyPayment(
     req: Request,
@@ -29,7 +29,7 @@ export class PaymentController implements IPaymentController {
 
       successResponse(res, "Payment Verify Status", STATUS_CODES.OK, {
         paymentStatus,
-        workspaceSlug
+        workspaceSlug,
       });
     } catch (error) {
       next(error);

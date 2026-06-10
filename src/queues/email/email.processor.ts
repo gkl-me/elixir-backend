@@ -40,7 +40,6 @@ export async function sendOtpEmailJobProccessor(job: Job): Promise<void> {
   }
 }
 
-
 export async function sendInviteEmailProccessor(job: Job): Promise<void> {
   try {
     console.log("Invite email Proccessing");
@@ -55,14 +54,14 @@ export async function sendInviteEmailProccessor(job: Job): Promise<void> {
       email,
       workspaceId,
       invitedByUserId,
-      roleId
+      roleId,
     });
 
     return;
   } catch (error) {
     logError(error, {
-      service: "email.processor.sendInviteEmailProccessor"
-    })
+      service: "email.processor.sendInviteEmailProccessor",
+    });
   }
 }
 
@@ -70,7 +69,7 @@ export async function resendInviteEmailProccessor(job: Job): Promise<void> {
   try {
     console.log("Resend Invite email Proccessing");
 
-    const { inviteId, workspaceId, } = job.data;
+    const { inviteId, workspaceId } = job.data;
 
     const inviteService = container.resolve<IWorkspaceInviteService>(
       Token.WorkspaceInviteService
@@ -78,13 +77,13 @@ export async function resendInviteEmailProccessor(job: Job): Promise<void> {
 
     await inviteService.resendInvite({
       inviteId,
-      workspaceId
+      workspaceId,
     });
 
     return;
   } catch (error) {
     logError(error, {
-      service: "email.processor.resendInviteEmailProccessor"
-    })
+      service: "email.processor.resendInviteEmailProccessor",
+    });
   }
 }

@@ -25,36 +25,38 @@ export async function sendOtpEmailJob(email: string): Promise<void> {
   }
 }
 
-
-export async function sendInviteEmail(email: string, workspaceId: string, roleId: string, invitedByUserId: string): Promise<void> {
+export async function sendInviteEmail(
+  email: string,
+  workspaceId: string,
+  roleId: string,
+  invitedByUserId: string
+): Promise<void> {
   try {
-
     await emailQueue.add(EMAIL_JOBS.SEND_INVITE_EMAIL, {
       email,
       workspaceId,
       roleId,
       invitedByUserId,
-    })
-
+    });
   } catch (error) {
     logError(error, {
-      service: "email.producer.sendInviteEmail"
-    })
+      service: "email.producer.sendInviteEmail",
+    });
   }
 }
 
-
-export async function resendInviteEmail(inviteId: string, workspaceId: string): Promise<void> {
+export async function resendInviteEmail(
+  inviteId: string,
+  workspaceId: string
+): Promise<void> {
   try {
-
     await emailQueue.add(EMAIL_JOBS.RESEND_INVITE_EMAIL, {
       inviteId,
-      workspaceId
-    })
-
+      workspaceId,
+    });
   } catch (error) {
     logError(error, {
-      service: "email.producer.resendInviteEmail"
-    })
+      service: "email.producer.resendInviteEmail",
+    });
   }
 }

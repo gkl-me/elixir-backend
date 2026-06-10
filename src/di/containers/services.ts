@@ -53,14 +53,14 @@ container.register(Token.PaymentService, {
   useClass: PaymentService,
 });
 container.register(Token.WorkspaceRoleService, {
-  useClass: WorkspaceRoleService
-})
+  useClass: WorkspaceRoleService,
+});
 container.register(Token.WorkspaceInviteService, {
-  useClass: WorkspaceInviteService
-})
+  useClass: WorkspaceInviteService,
+});
 container.register(Token.WorkspaceMemberService, {
-  useClass: WorkspaceMemberService
-})
+  useClass: WorkspaceMemberService,
+});
 
 // container.register(Token.PlanService,{
 //     useClass:PlanService

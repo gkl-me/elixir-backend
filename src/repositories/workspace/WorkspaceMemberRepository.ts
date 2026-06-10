@@ -4,28 +4,33 @@ import {
   WorkspaceMember,
 } from "../../models/WorkspaceMember";
 import { BaseRepository } from "../base/BaseRepository";
-import { IWorkspaceMemberRepository, IWorkspaceMemberWithUser } from "./interface/IWorkspaceMemberRepository";
+import {
+  IWorkspaceMemberRepository,
+  IWorkspaceMemberWithUser,
+} from "./interface/IWorkspaceMemberRepository";
 import { CustomError } from "../../errors/CustomError";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { logError } from "../../middlewares/loggerHelper";
 
 @injectable()
 export class WorkspaceMemberRepository
   extends BaseRepository<IWorkspaceMember>
-  implements IWorkspaceMemberRepository {
+  implements IWorkspaceMemberRepository
+{
   constructor() {
     super(WorkspaceMember);
   }
 
-  async listMembers(workspaceId: string): Promise<IWorkspaceMemberWithUser[] | []> {
+  async listMembers(
+    workspaceId: string
+  ): Promise<IWorkspaceMemberWithUser[] | []> {
     try {
-
-
       const data = await this._model.aggregate([
         {
           $match: {
             workspaceId: workspaceId,
-            isRemoved: false
-          }
+            isRemoved: false,
+          },
         },
         {
           $addFields: {
@@ -34,30 +39,31 @@ export class WorkspaceMemberRepository
                 input: "$userId",
                 to: "objectId",
                 onError: null,
-                onNull: null
-              }
+                onNull: null,
+              },
             },
             roleObjId: {
               $convert: {
                 input: "$roleId",
                 to: "objectId",
                 onError: null,
-                onNull: null
-              }
-            }
-          }
+                onNull: null,
+              },
+            },
+          },
         },
         {
           $lookup: {
-            from: 'users',
+            from: "users",
             localField: "userObjId",
             foreignField: "_id",
-            as: "user"
-          }
+            as: "user",
+          },
         },
         {
-          $unwind: "$user"
-        }, {
+          $unwind: "$user",
+        },
+        {
           $project: {
             workspaceId: 1,
             userId: 1,
@@ -75,16 +81,19 @@ export class WorkspaceMemberRepository
               isVerified: "$user.isVerified",
             },
           },
-        }, {
+        },
+        {
           $lookup: {
-            from: 'workspaceroles',
+            from: "workspaceroles",
             localField: "roleObjId",
             foreignField: "_id",
-            as: "role"
-          }
-        }, {
-          $unwind: "$role"
-        }, {
+            as: "role",
+          },
+        },
+        {
+          $unwind: "$role",
+        },
+        {
           $project: {
             workspaceId: 1,
             userId: 1,
@@ -108,13 +117,18 @@ export class WorkspaceMemberRepository
               name: "$role.name",
             },
           },
-        }
-      ])
+        },
+      ]);
 
       return data;
-
     } catch (error) {
-      throw new CustomError("Failed to get workspace members", STATUS_CODES.INTERNAL_SERVER_ERROR)
+      logError(error, {
+        service: "WorkspaceMemberRepository.listMembers",
+      });
+      throw new CustomError(
+        "Failed to get workspace members",
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 }

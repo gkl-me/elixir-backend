@@ -68,11 +68,9 @@ export const PLAN_MESSAGES = {
   STRIPE_SUBSCRIPTION_ERROR: "failed to create stripe subscription",
 };
 
-
-
 export const WORKSPACE_MESSAGES = {
   NOT_FOUND: "Workspace not found",
   SLUG_ERROR: "Unable to generate slug",
   ERROR: "Workspace Error",
   SUCCESS: "Workspace context fetched successfully",
-}
+};

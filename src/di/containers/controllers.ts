@@ -57,14 +57,14 @@ container.register(Token.WorkspaceController, {
   useClass: WorkspaceController,
 });
 container.register(Token.WorkspaceRoleController, {
-  useClass: WorkspaceRoleController
-})
+  useClass: WorkspaceRoleController,
+});
 container.register(Token.WorkspaceInviteController, {
-  useClass: WorkspaceInviteController
-})
+  useClass: WorkspaceInviteController,
+});
 container.register(Token.WorkspaceMemberController, {
-  useClass: WorkspaceMemberController
-})
+  useClass: WorkspaceMemberController,
+});
 
 // container.register(Token.SubscriptionController,{
 //     useClass:SubscriptionController
