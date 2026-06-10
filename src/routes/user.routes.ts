@@ -22,6 +22,11 @@ router.patch(
   }
 );
 
+
+router.get("/me", auth, (req, res, next) => {
+  void userController.handleGetMe(req, res, next);
+})
+
 router.patch("/change-password", auth, (req, res, next) => {
   void userController.handleChangePassword(req, res, next);
 });

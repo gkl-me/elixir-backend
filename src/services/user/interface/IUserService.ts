@@ -1,5 +1,6 @@
 import {
   IChangePasswordDto,
+  IGetMeDto,
   IListActiveSessionsDto,
   IListActiveSessionsResponseDto,
   IUpdatePasswordDto,
@@ -19,4 +20,5 @@ export interface IUserService {
     data: IListActiveSessionsDto
   ): Promise<IListActiveSessionsResponseDto[]>;
   updateProfile(data: IUpdateUserProfileDto): Promise<void>;
+  getMe(data: IGetMeDto): Promise<IUserListDto>;
 }
