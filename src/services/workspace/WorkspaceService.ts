@@ -40,7 +40,7 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.UserRepository)
     private readonly _userRepository: IUserRepository
-  ) {}
+  ) { }
 
   async createWorkspace({
     name,
@@ -177,6 +177,8 @@ export class WorkspaceService implements IWorkspaceService {
         lastActiveWorkspaceId: String(workspace._id),
       });
 
+      const workspaces = await this._workspaceMemberRepository.listUserWorkspace(userId);
+
       return {
         name: user?.name,
         email: user?.email,
@@ -196,6 +198,7 @@ export class WorkspaceService implements IWorkspaceService {
           string[]
         >,
         builtinRoles: BUILTIN_ROLES as Record<string, string[]>,
+        workspaces
       };
     } catch (error) {
       logError(error, {

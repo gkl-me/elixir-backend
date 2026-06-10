@@ -5,6 +5,7 @@ import {
 } from "../../models/WorkspaceMember";
 import { BaseRepository } from "../base/BaseRepository";
 import {
+  IUserWorkspace,
   IWorkspaceMemberRepository,
   IWorkspaceMemberWithUser,
 } from "./interface/IWorkspaceMemberRepository";
@@ -15,8 +16,7 @@ import { logError } from "../../middlewares/loggerHelper";
 @injectable()
 export class WorkspaceMemberRepository
   extends BaseRepository<IWorkspaceMember>
-  implements IWorkspaceMemberRepository
-{
+  implements IWorkspaceMemberRepository {
   constructor() {
     super(WorkspaceMember);
   }
@@ -127,6 +127,62 @@ export class WorkspaceMemberRepository
       });
       throw new CustomError(
         "Failed to get workspace members",
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async listUserWorkspace(userId: string): Promise<IUserWorkspace[] | []> {
+    try {
+
+      const workspaces = await WorkspaceMember.aggregate([
+        {
+          $match: {
+            userId,
+            isRemoved: false,
+          },
+        },
+        {
+          $addFields: {
+            workspaceObjId: {
+              $toObjectId: "$workspaceId",
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "workspaces",
+            localField: "workspaceObjId",
+            foreignField: "_id",
+            as: "workspace",
+          },
+        },
+        {
+          $unwind: "$workspace",
+        },
+        {
+          $project: {
+            _id: 0,
+            id: {
+              $toString: "$workspace._id",
+            },
+            name: "$workspace.name",
+            slug: "$workspace.slug",
+            isActive: {
+              $literal: true,
+            },
+          },
+        },
+      ]);
+
+      return workspaces;
+
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceMemberRepository.listUserWorkspace",
+      });
+      throw new CustomError(
+        "Failed to get user workspaces",
         STATUS_CODES.INTERNAL_SERVER_ERROR
       );
     }
