@@ -29,7 +29,6 @@ const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
   Token.WorkspaceTeamController
 );
 
-
 router.get("/context/:slug", auth, (req, res, next) => {
   void workspaceController.handleWorkspaceContext(req, res, next);
 });
@@ -139,23 +138,25 @@ router.delete(
   }
 );
 
-
-
 //workspace teams
-router.get('/:workspaceId/teams', auth, (req, res, next) => {
+router.get("/:workspaceId/teams", auth, (req, res, next) => {
   void workspaceTeamController.handleListTeams(req, res, next);
-})
-router.post('/:workspaceId/teams', auth, (req, res, next) => {
+});
+router.post("/:workspaceId/teams", auth, (req, res, next) => {
   void workspaceTeamController.handleCreateTeam(req, res, next);
-})
-router.patch('/:workspaceId/teams/:teamId/members', auth, (req, res, next) => {
+});
+router.patch("/:workspaceId/teams/:teamId/members", auth, (req, res, next) => {
   void workspaceTeamController.handleAddMembers(req, res, next);
-})
-router.delete('/:workspaceId/teams/:teamId/members/:memberId', auth, (req, res, next) => {
-  void workspaceTeamController.handleRemoveMember(req, res, next);
-})
-router.get('/:workspaceId/teams/:teamId', auth, (req, res, next) => {
+});
+router.delete(
+  "/:workspaceId/teams/:teamId/members/:memberId",
+  auth,
+  (req, res, next) => {
+    void workspaceTeamController.handleRemoveMember(req, res, next);
+  }
+);
+router.get("/:workspaceId/teams/:teamId", auth, (req, res, next) => {
   void workspaceTeamController.handleGetTeam(req, res, next);
-})
+});
 
 export default router;

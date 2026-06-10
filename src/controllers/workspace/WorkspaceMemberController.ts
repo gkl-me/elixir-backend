@@ -12,7 +12,7 @@ export class WorkspaceMemberController implements IWorkspaceMemberController {
   constructor(
     @inject(Token.WorkspaceMemberService)
     private readonly _workspaceMemberService: IWorkspaceMemberService
-  ) { }
+  ) {}
 
   async handleListMembers(
     req: Request,

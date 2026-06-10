@@ -11,7 +11,7 @@ import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
 @injectable()
 export class UserController implements IUserController {
-  constructor(@inject(Token.UserService) private _userService: IUserService) { }
+  constructor(@inject(Token.UserService) private _userService: IUserService) {}
 
   async getAllUsers(
     req: Request,
@@ -139,8 +139,11 @@ export class UserController implements IUserController {
     }
   }
 
-
-  async handleGetMe(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async handleGetMe(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const userId = req.user.userId;
 

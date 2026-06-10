@@ -1,7 +1,10 @@
 import { IWorkspaceInvite } from "../../models/WorkspaceInvite";
 import { IWorkspaceRole } from "../../models/WorkspaceRole";
 import { IWorkspaceMemberWithUser } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
-import { IWorkspaceTeamWithMember, IWorkspaceTeamWithMemberDetail } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
+import {
+  IWorkspaceTeamWithMember,
+  IWorkspaceTeamWithMemberDetail,
+} from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
 import { IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
 import { IListMemberResDto } from "../dtos/WorkspaceMemberDto";
 import {
@@ -93,16 +96,14 @@ export class workspaceMemberDtoMapper {
   }
 }
 
-
-
 export class workspaceTeamDtoMapper {
   static toListTeams(team: IWorkspaceTeamWithMember): IListTeamsResDto {
     return {
       id: String(team?._id),
       name: team?.name,
       memberCount: team?.memberCount,
-      memberName: team?.memberName
-    }
+      memberName: team?.memberName,
+    };
   }
 
   static toGetTeam(team: IWorkspaceTeamWithMemberDetail): IGetTeamResDto {
@@ -115,8 +116,8 @@ export class workspaceTeamDtoMapper {
         name: member?.name,
         email: member?.email,
         avatarUrl: member?.avatarUrl,
-        role: member?.role
-      }))
-    }
+        role: member?.role,
+      })),
+    };
   }
 }

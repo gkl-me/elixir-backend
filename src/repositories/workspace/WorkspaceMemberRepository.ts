@@ -16,7 +16,8 @@ import { logError } from "../../middlewares/loggerHelper";
 @injectable()
 export class WorkspaceMemberRepository
   extends BaseRepository<IWorkspaceMember>
-  implements IWorkspaceMemberRepository {
+  implements IWorkspaceMemberRepository
+{
   constructor() {
     super(WorkspaceMember);
   }
@@ -134,7 +135,6 @@ export class WorkspaceMemberRepository
 
   async listUserWorkspace(userId: string): Promise<IUserWorkspace[] | []> {
     try {
-
       const workspaces = await WorkspaceMember.aggregate([
         {
           $match: {
@@ -176,7 +176,6 @@ export class WorkspaceMemberRepository
       ]);
 
       return workspaces;
-
     } catch (error) {
       logError(error, {
         service: "WorkspaceMemberRepository.listUserWorkspace",

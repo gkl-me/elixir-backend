@@ -32,7 +32,7 @@ export class UserService implements IUserService {
     @inject(Token.CacheRepository)
     private readonly _cacheRepository: ICacheRepository<IAuthSession>,
     @inject(Token.TokenManager) private _tokenManager: ITokenManager
-  ) { }
+  ) {}
 
   async getAllUsers(
     data: IUserQueryDto
@@ -201,7 +201,6 @@ export class UserService implements IUserService {
       user.bio = bio;
       user.jobTitle = jobTitle;
       await user.save();
-
     } catch (error) {
       logError(error, {
         service: "UserService.updateProfile",
@@ -212,7 +211,6 @@ export class UserService implements IUserService {
 
   async getMe(data: IGetMeDto): Promise<IUserListDto> {
     try {
-
       const { userId } = data;
 
       const user = await this._userRepository.findById(userId);
@@ -222,7 +220,6 @@ export class UserService implements IUserService {
       }
 
       return userDtoMapper.toUserListDto(user);
-
     } catch (error) {
       logError(error, {
         service: "UserService.getMe",

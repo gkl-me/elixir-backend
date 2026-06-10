@@ -28,5 +28,5 @@ export interface IWorkspaceContextResDto {
   allPermissions: string[];
   permissionDependencies: Record<string, string[]>;
   builtinRoles: Record<string, string[]>;
-  workspaces: IUserWorkspace[] | []
+  workspaces: IUserWorkspace[] | [];
 }

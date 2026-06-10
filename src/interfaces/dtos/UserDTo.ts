@@ -51,8 +51,6 @@ export interface IUpdateUserProfileDto {
   userId: string;
 }
 
-
-
 export interface IGetMeDto {
   userId: string;
 }

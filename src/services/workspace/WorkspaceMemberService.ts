@@ -7,7 +7,12 @@ import { STATUS_CODES } from "../../constants/statusCodes";
 import { CustomError } from "../../errors/CustomError";
 import { Token } from "../../di/token";
 import { IWorkspaceRoleRepository } from "../../repositories/workspace/interface/IWorkspaceRoleRepository";
-import { IListMemberDto, IListMemberResDto, IRemoveMemberDto, IUpdateMemberDto } from "../../interfaces/dtos/WorkspaceMemberDto";
+import {
+  IListMemberDto,
+  IListMemberResDto,
+  IRemoveMemberDto,
+  IUpdateMemberDto,
+} from "../../interfaces/dtos/WorkspaceMemberDto";
 
 @injectable()
 export class WorkspaceMemberService implements IWorkspaceMemberService {
@@ -16,7 +21,7 @@ export class WorkspaceMemberService implements IWorkspaceMemberService {
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.WorkspaceRoleRepository)
     private readonly _workspaceRoleRepository: IWorkspaceRoleRepository
-  ) { }
+  ) {}
 
   async listMember(data: IListMemberDto): Promise<IListMemberResDto[] | []> {
     try {

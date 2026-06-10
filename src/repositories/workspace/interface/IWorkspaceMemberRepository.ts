@@ -27,11 +27,10 @@ export interface IWorkspaceMemberWithUser {
 }
 
 export interface IUserWorkspace {
-  _id: string,
-  name: string,
-  slug: string,
-  isActive: boolean,
-
+  _id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
 }
 
 export interface IWorkspaceMemberRepository extends BaseRepository<IWorkspaceMember> {
