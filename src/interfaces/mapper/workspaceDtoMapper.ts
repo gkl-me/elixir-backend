@@ -10,6 +10,7 @@ export class workspaceRoleDtoMapper {
 
     static toGetRoles(role: IWorkspaceRole): IGetRolesResDto {
         return {
+            id: String(role?._id),
             workspaceId: role?.workspaceId,
             key: role?.key,
             name: role?.name,
@@ -62,6 +63,7 @@ export class workspaceRoleDtoMapper {
 export class workspaceInviteDtoMapper {
     static toListInvites(invite: IWorkspaceInvite): IListInvitesResDto {
         return {
+            id: String(invite?._id),
             workspaceId: invite?.workspaceId,
             email: invite?.email,
             roleId: invite?.roleId,

@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express"
-import { extractStringParams } from "../helper/stringParamUtils"
 import { container } from "tsyringe"
 import { Token } from "../di/token"
 import { ISubscriptionRepository } from "../repositories/subscription/interface/ISubscriptionRepository"
@@ -9,23 +8,33 @@ import { CustomError } from "../errors/CustomError"
 import { STATUS_CODES } from "../constants/statusCodes"
 import { IWorkspaceMemberRepository } from "../repositories/workspace/interface/IWorkspaceMemberRepository"
 import { IWorkspaceRoleRepository } from "../repositories/workspace/interface/IWorkspaceRoleRepository"
+import { extractStringParams } from "../helper/stringParamUtils"
+import { extractStringQueryParams } from "../helper/queryParamUtils"
 
 type LimitType = 'members' | 'customRoles' | 'projects' | 'teams' | 'storageBytes'
 
 export const checkPlanLimit = (limitType: LimitType) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-
-            const { slug } = extractStringParams(req.params, ["slug"])
-
+            const _workspaceRepository = container.resolve<IWorkspaceRepository>(Token.WorkspaceRepository)
             const _subscriptionRepository = container.resolve<ISubscriptionRepository>(Token.SubscriptionRepository)
             const _planRepository = container.resolve<IPlanRepository>(Token.PlanRepository)
-            const _workspaceRepository = container.resolve<IWorkspaceRepository>(Token.WorkspaceRepository)
 
-            const workspace = await _workspaceRepository.findOne({ slug })
+            const params = extractStringQueryParams(req.params, ["workspaceId", "slug"])
+            const workspaceId = params?.workspaceId
+            const slug = params?.slug
+
+            let workspace;
+            if (workspaceId) {
+                workspace = await _workspaceRepository.findById(workspaceId);
+            } else if (slug) {
+                workspace = await _workspaceRepository.findOne({ slug });
+            } else {
+                throw new CustomError("Workspace identifier is required", STATUS_CODES.BAD_REQUEST);
+            }
 
             if (!workspace) {
-                throw new CustomError("Workspace not found", STATUS_CODES.BAD_REQUEST)
+                throw new CustomError("Workspace not found", STATUS_CODES.BAD_REQUEST);
             }
 
             const subscription = await _subscriptionRepository.findOne({
@@ -58,7 +67,7 @@ export const checkPlanLimit = (limitType: LimitType) => {
                 if (count >= limits.members) {
                     throw new CustomError("Members limit reached. Upgrade your plan", STATUS_CODES.FORBIDDEN)
                 }
-                return
+                return next()
             }
 
             if (limitType == "customRoles") {
@@ -77,7 +86,7 @@ export const checkPlanLimit = (limitType: LimitType) => {
                     throw new CustomError("Custom role limit reached", STATUS_CODES.FORBIDDEN)
                 }
 
-                return
+                return next()
 
             }
 

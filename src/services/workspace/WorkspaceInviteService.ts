@@ -14,6 +14,7 @@ import { STATUS_CODES } from "../../constants/statusCodes";
 import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
 import { IWorkspaceMemberRepository } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
+import { WORKSPACE_INVITE_TEMPLATE } from "../../templates/inviteEmailTemplate";
 
 
 @injectable()
@@ -80,12 +81,13 @@ export class WorkspaceInviteService implements IWorkspaceInviteService {
                 sentAt: new Date()
             })
 
+            const workspace = await this._workspaceRepository.findById(workspaceId)
+            const inviteUrl = `${ENV.CLIENT_URL}/invite/${token}`
 
-            //email 
             await this._emailService.sendEmail(
                 email,
-                "Invites to workspace",
-                "invite url"
+                `You've been invited to ${workspace?.name ?? 'a workspace'}`,
+                WORKSPACE_INVITE_TEMPLATE(workspace?.name ?? 'Workspace', inviteUrl)
             )
 
             return
@@ -108,10 +110,10 @@ export class WorkspaceInviteService implements IWorkspaceInviteService {
                 throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
             }
 
-            if (invite.status === 'pending') {
-                throw new CustomError("Cant only resend pending invites", STATUS_CODES.BAD_REQUEST)
+            // Bug fix: should throw if NOT pending, not if IS pending
+            if (invite.status !== 'pending') {
+                throw new CustomError("Can only resend pending invites", STATUS_CODES.BAD_REQUEST)
             }
-
 
             const token = this._tokenManager.generateRandomToken()
             const hashToken = this._tokenManager.hashToken(token)
@@ -120,13 +122,15 @@ export class WorkspaceInviteService implements IWorkspaceInviteService {
             invite.tokenHash = hashToken
             invite.expiresAt = expiresAt
             invite.sentAt = new Date()
-            invite.status = 'pending'
             await invite.save()
+
+            const workspace = await this._workspaceRepository.findById(workspaceId)
+            const inviteUrl = `${ENV.CLIENT_URL}/invite/${token}`
 
             await this._emailService.sendEmail(
                 invite.email,
-                "Invites to workspace",
-                "invite url"
+                `You've been invited to ${workspace?.name ?? 'a workspace'}`,
+                WORKSPACE_INVITE_TEMPLATE(workspace?.name ?? 'Workspace', inviteUrl)
             )
 
             return
@@ -182,8 +186,13 @@ export class WorkspaceInviteService implements IWorkspaceInviteService {
                 throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
             }
 
-            if (invite.status === 'pending') {
-                throw new CustomError("Already Used token ", STATUS_CODES.BAD_REQUEST)
+            // Bug fix: 'pending' is the VALID state — throw only if NOT pending
+            if (invite.status === 'accepted') {
+                throw new CustomError("This invite has already been used", STATUS_CODES.BAD_REQUEST)
+            }
+
+            if (invite.status === 'expired') {
+                throw new CustomError("This invite has expired", STATUS_CODES.BAD_REQUEST)
             }
 
             if (invite.status === 'revoked') {

@@ -23,6 +23,8 @@ export class WorkspaceMemberController implements IWorkspaceMemberController {
 
             const members = await this._workspaceMemberService.listMember({ workspaceId })
 
+            console.log(members)
+
             successResponse(res, "Workspace members list fetched", STATUS_CODES.OK, {
                 members
             })

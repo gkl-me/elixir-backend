@@ -19,6 +19,7 @@ export class WorkspaceMemberRepository
   async listMembers(workspaceId: string): Promise<IWorkspaceMemberWithUser[] | []> {
     try {
 
+
       const data = await this._model.aggregate([
         {
           $match: {
@@ -27,9 +28,29 @@ export class WorkspaceMemberRepository
           }
         },
         {
+          $addFields: {
+            userObjId: {
+              $convert: {
+                input: "$userId",
+                to: "objectId",
+                onError: null,
+                onNull: null
+              }
+            },
+            roleObjId: {
+              $convert: {
+                input: "$roleId",
+                to: "objectId",
+                onError: null,
+                onNull: null
+              }
+            }
+          }
+        },
+        {
           $lookup: {
             from: 'users',
-            localField: "userId",
+            localField: "userObjId",
             foreignField: "_id",
             as: "user"
           }
@@ -44,6 +65,7 @@ export class WorkspaceMemberRepository
             isRemoved: 1,
             invitedByUserId: 1,
             joinedAt: 1,
+            roleObjId: 1,
 
             user: {
               _id: "$user._id",
@@ -56,7 +78,7 @@ export class WorkspaceMemberRepository
         }, {
           $lookup: {
             from: 'workspaceroles',
-            localField: "roleId",
+            localField: "roleObjId",
             foreignField: "_id",
             as: "role"
           }

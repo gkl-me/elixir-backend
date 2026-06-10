@@ -5,6 +5,7 @@ export interface IListInvitesDto {
 }
 
 export interface IListInvitesResDto {
+    id: string,
     workspaceId: string;
     email: string;
     roleId: string;

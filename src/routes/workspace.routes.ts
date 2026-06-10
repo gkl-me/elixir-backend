@@ -41,20 +41,8 @@ router.delete("/:workspaceId/roles/:roleId", auth, requirePermission(WORKSPACE_P
 
 
 
-//workspace invites 
-router.get("/:workspaceId/invites", auth, (req, res, next) => {
-  void workspaceInviteController.handleListInvites(req, res, next)
-})
-router.post("/:workspaceId/invites", auth, (req, res, next) => {
-  void workspaceInviteController.handleSendInvite(req, res, next)
-})
-router.get("/:workspaceId/invites/:inviteId/resend", auth, (req, res, next) => {
-  void workspaceInviteController.handleResendInvite(req, res, next)
-})
-router.patch("/:workspaceId/invites/:inviteId/revoke", auth, (req, res, next) => {
-  void workspaceInviteController.handleRevokeInvite(req, res, next)
-})
-
+// Invite validation & accept — MUST come before /:workspaceId/invites to avoid
+// Express capturing 'invites' as a workspaceId
 router.get("/invites/validate/:token", (req, res, next) => {
   void workspaceInviteController.handleValidateInvite(req, res, next)
 })
@@ -62,18 +50,29 @@ router.post("/invites/accept", auth, (req, res, next) => {
   void workspaceInviteController.handleAcceptInvite(req, res, next)
 })
 
-
+//workspace invites 
+router.get("/:workspaceId/invites", auth, requirePermission(WORKSPACE_PERMISSIONS.MEMBERS_INVITE), (req, res, next) => {
+  void workspaceInviteController.handleListInvites(req, res, next)
+})
+router.post("/:workspaceId/invites", auth, checkPlanLimit('members'), requirePermission(WORKSPACE_PERMISSIONS.MEMBERS_INVITE), (req, res, next) => {
+  void workspaceInviteController.handleSendInvite(req, res, next)
+})
+router.get("/:workspaceId/invites/:inviteId/resend", auth, requirePermission(WORKSPACE_PERMISSIONS.MEMBERS_INVITE), (req, res, next) => {
+  void workspaceInviteController.handleResendInvite(req, res, next)
+})
+router.patch("/:workspaceId/invites/:inviteId/revoke", auth, requirePermission(WORKSPACE_PERMISSIONS.MEMBERS_INVITE), (req, res, next) => {
+  void workspaceInviteController.handleRevokeInvite(req, res, next)
+})
 
 
 //members 
-
-router.get("/:workspaceId/members", auth, (req, res, next) => {
+router.get("/:workspaceId/members", auth, requirePermission(WORKSPACE_PERMISSIONS.MEMBERS_VIEW), (req, res, next) => {
   void workspaceMemberController.handleListMembers(req, res, next)
 })
-router.patch("/:workspaceId/members/:memberId", auth, (req, res, next) => {
+router.patch("/:workspaceId/members/:memberId", auth, requirePermission(WORKSPACE_PERMISSIONS.MEMBERS_ROLE_UPDATE), (req, res, next) => {
   void workspaceMemberController.handleUpdateMemberRole(req, res, next)
 })
-router.delete("/:workspaceId/members/:memberId", auth, (req, res, next) => {
+router.delete("/:workspaceId/members/:memberId", auth, requirePermission(WORKSPACE_PERMISSIONS.MEMBERS_REMOVE), (req, res, next) => {
   void workspaceMemberController.handleRemoveMember(req, res, next)
 })
 

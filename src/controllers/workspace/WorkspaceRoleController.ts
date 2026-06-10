@@ -6,6 +6,7 @@ import { Request, Response, NextFunction } from "express";
 import { extractStringParams } from "../../helper/stringParamUtils";
 import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
 
 
@@ -36,13 +37,14 @@ export class WorkspaceRoleController implements IWorkspaceRoleController {
     async handleCreateRole(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
 
-            const { workspaceId } = extractStringParams(req.params, ["workspaceId"])
+            const params = extractStringQueryParams(req.params, ["workspaceId"])
+            console.log(params?.workspaceId)
 
             const { name, permissions, createdByUserId } = req.body
 
             //validate the data
             const role = await this._workspaceRoleService.createRole({
-                workspaceId,
+                workspaceId: params?.workspaceId || "",
                 createdByUserId,
                 permissions,
                 name

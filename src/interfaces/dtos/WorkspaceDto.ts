@@ -21,5 +21,10 @@ export interface IWorkspaceContextResDto {
     isOwner: boolean,
     hasOwnWorkspace: boolean,
     memberId: string,
-    roleId: string
+    roleId: string,
+    roleKey: string,
+    permissions: string[],
+    allPermissions: string[],
+    permissionDependencies: Record<string, string[]>,
+    builtinRoles: Record<string, string[]>
 }

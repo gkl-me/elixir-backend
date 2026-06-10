@@ -6,6 +6,7 @@ export interface IGetRolesDto {
 }
 
 export interface IGetRolesResDto {
+    id: string
     workspaceId: string;
     key: string;
     name: string;
