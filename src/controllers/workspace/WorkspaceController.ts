@@ -27,6 +27,7 @@ export class WorkspaceController implements IWorkspaceController {
       const slug = params.slug
       const userId = req.user.userId;
 
+      console.log(userId)
 
       const workspaceContext = await this._workspaceService.workspaceContext({
         userId,
