@@ -19,13 +19,17 @@ import { IUserRepository } from "../../repositories/user/interfaces/IUserReposit
 import { generateSlug } from "../../helper/generateSlug";
 import {
   IWorkpsaceContextDto,
+  IWorksapceLimitsResDto,
   IWorkspaceContextResDto,
+  IWorkspaceLimits,
 } from "../../interfaces/dtos/WorkspaceDto";
 import {
   WORKSPACE_PERMISSIONS,
   PERMISSION_DEPENDENCIES,
   BUILTIN_ROLES,
 } from "../../constants/workspacePermissions";
+import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
+import { IWorkspaceTeamRepository } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -39,7 +43,9 @@ export class WorkspaceService implements IWorkspaceService {
     @inject(Token.WorkspaceMemberRepository)
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.UserRepository)
-    private readonly _userRepository: IUserRepository
+    private readonly _userRepository: IUserRepository,
+    @inject(Token.PlanRepository) private readonly _planRepository:IPlanRepository,
+    @inject(Token.WorkspaceTeamRepository) private readonly _workspaceTeamRepository:IWorkspaceTeamRepository,
   ) {}
 
   async createWorkspace({
@@ -206,6 +212,62 @@ export class WorkspaceService implements IWorkspaceService {
         service: "WorkspaceService.workspaceContext",
       });
       throw error;
+    }
+  }
+
+  async workspaceLimits(data: IWorkspaceLimits): Promise<IWorksapceLimitsResDto> {
+    try {
+ 
+      const {workspaceId} = data
+      
+      const workspace = await this._workspaceRepository.findById(workspaceId)
+
+      if(!workspace || !workspace.subscriptionId){
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+      }
+
+      const subscription = await this._subscriptionRepository.findById(workspace.subscriptionId)
+
+      if(!subscription || !subscription?.planId){
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+      }
+
+      const workspacePlan = await this._planRepository.findById(subscription?.planId)
+
+      if(!workspacePlan || !workspacePlan?.limits ){
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST) 
+      }
+
+      const limits = workspacePlan.limits
+
+      //usage 
+
+      const [teams, members, customRoles] = await Promise.all([
+  this._workspaceTeamRepository.count({ workspaceId }),
+  this._workspaceMemberRepository.count({ workspaceId }),
+  this._workspaceRoleRepository.count({ workspaceId }),
+]);
+
+console.log("teams",teams)
+
+
+      return {
+        limits,
+        used:{
+          teams,
+          members,
+          customRoles,
+          storageBytes:0,
+          projects:0
+        }
+      }
+
+
+    } catch (error) {
+      logError(error,{
+        service:"WorkspaceService.workspaceLimits"
+      })
+      throw error
     }
   }
 }

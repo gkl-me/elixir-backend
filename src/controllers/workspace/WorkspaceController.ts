@@ -5,8 +5,9 @@ import { IWorkspaceService } from "../../services/workspace/interface/IWorkspace
 import { Request, Response, NextFunction } from "express";
 import { successResponse } from "../../helper/responseHanlder";
 import { extractStringParams } from "../../helper/stringParamUtils";
-import { WORKSPACE_MESSAGES } from "../../constants/messages";
+import { CONSTANT_MESSAGES, WORKSPACE_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
 @injectable()
 export class WorkspaceController implements IWorkspaceController {
@@ -37,6 +38,23 @@ export class WorkspaceController implements IWorkspaceController {
       });
     } catch (error) {
       next(error);
+    }
+  }
+
+  async handleWorkspaceLimits(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      
+      const params = extractStringQueryParams(req.params,["workspaceId"])
+      const workspaceId = params?.workspaceId || ""
+
+      const data = await this._workspaceService.workspaceLimits({
+        workspaceId
+      })
+
+      successResponse(res,CONSTANT_MESSAGES.SUCCESS,STATUS_CODES.OK,data)
+
+    } catch (error) {
+      next(error)
     }
   }
 }

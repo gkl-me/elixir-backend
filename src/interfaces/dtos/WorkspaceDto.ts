@@ -30,3 +30,26 @@ export interface IWorkspaceContextResDto {
   builtinRoles: Record<string, string[]>;
   workspaces: IUserWorkspace[] | [];
 }
+
+
+
+export interface IWorkspaceLimits {
+  workspaceId:string 
+}
+
+export interface IWorksapceLimitsResDto{
+  limits:{
+    projects:number,
+    members:number,
+    teams:number,
+    customRoles:number,
+    storageBytes:number
+  },
+  used:{
+    projects:number,
+    members:number,
+    teams:number,
+    customRoles:number,
+    storageBytes:number
+  },
+}
