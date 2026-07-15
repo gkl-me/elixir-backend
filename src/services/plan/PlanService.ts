@@ -32,6 +32,9 @@ export class PlanService implements IPlanService {
 
       let stripeProductId;
       let stripePriceId;
+
+      const amount = Math.round(data.price*100)
+      
       if (data.type !== "Free") {
         stripeProductId = await this._stripeService.findProduct(data.type);
 
@@ -40,7 +43,7 @@ export class PlanService implements IPlanService {
         }
         stripePriceId = await this._stripeService.createPrice(
           stripeProductId,
-          data.price
+          amount
         );
       }
 
@@ -49,6 +52,7 @@ export class PlanService implements IPlanService {
         isActive: true,
         stripePriceId,
         stripeProductId,
+        price:amount
       });
 
       return planDtoMapper.toPlanResponse(newPlan);
