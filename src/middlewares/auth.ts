@@ -29,7 +29,8 @@ export const auth = async (
     if (!authHeader?.startsWith("Bearer "))
       throw new CustomError(
         CONSTANT_MESSAGES.UNAUTHORIZED,
-        STATUS_CODES.UNAUTHORIZED
+        STATUS_CODES.UNAUTHORIZED,
+        AUTH_ERROR_CODE.UNAUTHORIZED
       );
 
     const accessToken = authHeader.split(" ")[1];
@@ -37,7 +38,8 @@ export const auth = async (
     if (!accessToken) {
       throw new CustomError(
         CONSTANT_MESSAGES.UNAUTHORIZED,
-        STATUS_CODES.UNAUTHORIZED
+        STATUS_CODES.UNAUTHORIZED,
+        AUTH_ERROR_CODE.UNAUTHORIZED
       );
     }
 
@@ -50,7 +52,8 @@ export const auth = async (
     if (!session)
       throw new CustomError(
         AUTH_MESSAGES.SESSION_EXPIRED,
-        STATUS_CODES.UNAUTHORIZED
+        STATUS_CODES.UNAUTHORIZED,
+        AUTH_ERROR_CODE.UNAUTHORIZED
       );
 
     //check if the user is blocked or not
@@ -71,7 +74,7 @@ export const auth = async (
       return next(error);
     }
     return next(
-      new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED, STATUS_CODES.UNAUTHORIZED)
+      new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED, STATUS_CODES.UNAUTHORIZED,AUTH_ERROR_CODE.UNAUTHORIZED)
     );
   }
 };
