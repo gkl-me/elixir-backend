@@ -166,9 +166,28 @@ export class AuthController implements IAuthController {
 
       clearCookie(res, "refreshToken");
 
-      successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {});
+      successResponse(res, USER_MESSAGES.LOGOUT_SUCCESS, STATUS_CODES.OK, {});
     } catch (error) {
       next(error);
+    }
+  }
+
+  async handleLogoutAllDevices(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      
+      const userId = req.user.userId
+
+      await this._authService.logoutAllDevices({
+        userId
+      })
+
+      clearCookie(res,"refreshToken")
+      clearCookie(res,"accessToken")
+
+      successResponse(res,USER_MESSAGES.LOGOUT_SUCCESS,STATUS_CODES.OK,{})
+
+    } catch (error) {
+      next(error)
     }
   }
 }
