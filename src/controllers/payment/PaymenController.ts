@@ -6,6 +6,8 @@ import { IPaymentService } from "../../services/payment/interface/IPaymentServic
 import { IOnboardingService } from "../../services/onboarding/interface/IOnboardingService";
 import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { extractStringQueryParams } from "../../helper/queryParamUtils";
+import { CONSTANT_MESSAGES } from "../../constants/messages";
 
 @injectable()
 export class PaymentController implements IPaymentController {
@@ -53,6 +55,24 @@ export class PaymentController implements IPaymentController {
       });
     } catch (error) {
       next(error);
+    }
+  }
+
+  async handleBillingInfo(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      
+      const params = extractStringQueryParams(req.params,["workspaceId"])
+      const workspaceId = params?.workspaceId || ""
+
+      const data = await this._paymentService.billingInfo({
+        workspaceId
+      })
+
+
+      successResponse(res,CONSTANT_MESSAGES.SUCCESS,STATUS_CODES.OK,data)
+
+    } catch (error) {
+      next(error)
     }
   }
 }

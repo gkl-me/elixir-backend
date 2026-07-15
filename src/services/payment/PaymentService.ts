@@ -11,10 +11,14 @@ import { IPaymentService } from "./interface/IPaymentService";
 import {
   ICheckoutDto,
   ICheckoutResponseDto,
+  IGetBillingDto,
+  IGetBillingResDto,
   IRetryPaymentDto,
   IRetryPaymentResponseDto,
   IVerifyPaymentDto,
 } from "../../interfaces/dtos/PaymentDto";
+import { logError } from "../../middlewares/loggerHelper";
+import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
 
 @injectable()
 export class PaymentService implements IPaymentService {
@@ -24,8 +28,9 @@ export class PaymentService implements IPaymentService {
     @inject(Token.UserRepository)
     private readonly _userRepository: IUserRepository,
     @inject(Token.PlanRepository)
-    private readonly _planRepository: IPlanRepository
-  ) {}
+    private readonly _planRepository: IPlanRepository,
+    @inject(Token.SubscriptionRepository) private readonly _subscriptionRepository: ISubscriptionRepository
+  ) { }
 
   async startCheckout(data: ICheckoutDto): Promise<ICheckoutResponseDto> {
     try {
@@ -144,6 +149,71 @@ export class PaymentService implements IPaymentService {
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
         STATUS_CODES.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  async billingInfo(data: IGetBillingDto): Promise<IGetBillingResDto> {
+    try {
+
+      const { workspaceId } = data
+
+      console.log("workspaceId", workspaceId)
+
+      type PlanType = "free" | "pro" | "enterprice";
+
+      const planOrder: Record<PlanType, number> = {
+        free: 1,
+        pro: 2,
+        enterprice: 3,
+      };
+
+      const subscription = await this._subscriptionRepository.findOne({
+        workspaceId,
+        status: "active"
+      })
+
+      if (!subscription || !subscription.planId) {
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+      }
+
+      const currentPlan = await this._planRepository.findById(subscription.planId)
+
+      if (!currentPlan) {
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+      }
+
+      const allPlans = await this._planRepository.findAll({
+        isActive: true
+      })
+
+      const upgradePlans = allPlans?.filter((p) => {
+        const planType = p.type.toLowerCase() as PlanType;
+        const currentType = currentPlan.type.toLowerCase() as PlanType;
+
+        return planOrder[planType] > planOrder[currentType];
+      });
+
+
+      return {
+        currentPlan: {
+          id: String(currentPlan._id),
+          name: currentPlan.name,
+          price: currentPlan.price,
+          type: currentPlan.type
+        },
+        subscription: {
+          status: subscription.status,
+          currentPeriodEnd: subscription.currentPeriodEnd
+        },
+        upgradePlans
+      }
+
+
+    } catch (error) {
+      logError(error, {
+        service: "PaymentService.billingInfo"
+      })
+      throw error
     }
   }
 }
