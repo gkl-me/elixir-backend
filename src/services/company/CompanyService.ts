@@ -6,15 +6,22 @@ import {
   IGetAllCompanyDto,
   IGetAllCompanyReponseDto,
   IRegisterCompanyDto,
+  IToggleCompanyStatus,
 } from "../../interfaces/dtos/CompanyDto";
 import { companyDtoMapper } from "../../interfaces/mapper/companyDtoMapper";
+import { logError } from "../../middlewares/loggerHelper";
+import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
+import { CustomError } from "../../errors/CustomError";
+import { COMPANY_MESSAGES, WORKSPACE_MESSAGES } from "../../constants/messages";
+import { STATUS_CODES } from "../../constants/statusCodes";
 
 @injectable()
 export class CompanyService implements ICompanyService {
   constructor(
     @inject(Token.CompanyRepository)
-    private readonly _companyRepository: ICompanyRepository
-  ) {}
+    private readonly _companyRepository: ICompanyRepository,
+    @inject(Token.WorkspaceRepository) private readonly _workspaceRepository: IWorkspaceRepository
+  ) { }
 
   async registerCompany(data: IRegisterCompanyDto): Promise<void> {
     try {
@@ -22,7 +29,6 @@ export class CompanyService implements ICompanyService {
 
       await this._companyRepository.create({
         ...data,
-        isBlocked: false,
       });
     } catch (error) {
       throw error;
@@ -54,6 +60,39 @@ export class CompanyService implements ICompanyService {
       };
     } catch (error) {
       throw error;
+    }
+  }
+
+  async toggleCompanyStatus(data: IToggleCompanyStatus): Promise<void> {
+    try {
+
+      const { companyId } = data;
+
+      const company = await this._companyRepository.findById(companyId)
+
+      if (!company) {
+        throw new CustomError(COMPANY_MESSAGES.NOT_FOUND, STATUS_CODES.BAD_REQUEST)
+      }
+      company.status = company?.status === 'active' ? 'suspended' : 'active'
+
+      //need to disable workspace 
+      const workspace = await this._workspaceRepository.findOne({
+        companyId
+      })
+
+      if (!workspace) {
+        throw new CustomError(WORKSPACE_MESSAGES.NOT_FOUND, STATUS_CODES.BAD_REQUEST)
+      }
+
+      workspace.status = workspace?.status === 'active' ? "suspended" : 'active'
+
+      await company.save();
+      await workspace.save()
+
+    } catch (error) {
+      logError(error, {
+        service: 'CompanyService.suspendCompany'
+      })
     }
   }
 }

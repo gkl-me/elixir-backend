@@ -2,6 +2,7 @@ import {
   IGetAllCompanyDto,
   IGetAllCompanyReponseDto,
   IRegisterCompanyDto,
+  IToggleCompanyStatus,
 } from "../../../interfaces/dtos/CompanyDto";
 
 export interface ICompanyService {
@@ -10,4 +11,5 @@ export interface ICompanyService {
     companies: IGetAllCompanyReponseDto[] | null;
     totalCount: number;
   }>;
+  toggleCompanyStatus(data: IToggleCompanyStatus): Promise<void>
 }

@@ -1,4 +1,4 @@
-import mongoose, { Document, model } from "mongoose";
+import mongoose, { Document, model, } from "mongoose";
 
 export interface ICompany extends Document {
   name: string;
@@ -7,7 +7,7 @@ export interface ICompany extends Document {
   email: string;
   phone: string;
   website?: string;
-  isBlocked: boolean;
+  status: 'active' | 'suspended';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -36,14 +36,16 @@ const CompanySchema = new mongoose.Schema(
     phone: {
       type: String,
     },
-    isBlocked: {
-      type: Boolean,
-      default: false,
+    status: {
+      type: String,
+      enum: ['active', 'suspended'],
+      default: 'active',
     },
   },
   {
     timestamps: true,
   }
 );
+
 
 export const Company = model<ICompany>("company", CompanySchema);

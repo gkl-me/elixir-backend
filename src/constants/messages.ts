@@ -44,18 +44,15 @@ export const AUTH_MESSAGES = {
 };
 
 export const USER_MESSAGES = {
-  PASSWORD_UPDATED: "Password updated successfully",
-  PROFILE_UPDATED: "User profile updated successfully",
-
-  LOGIN_SUCCESS: "User successfully logged in",
-  LOGOUT_SUCCESS: "User logout success",
-  VERIFY_SUCCESS: "User successfully verified",
-  RESEND_VERIFY: "New verification mail has been sent",
-  REGISTER_USER: "Verification mail has been sent",
-  FETCH_SUCCESS: "User details fetched successfully",
-  TOGGLE_SUCCESS: "User status changed successfully",
+  LOGIN_SUCCESS: 'User successfully logged in',
+  LOGOUT_SUCCESS: 'User logout success',
+  VERIFY_SUCCESS: 'User successfully verified',
+  RESEND_VERIFY: 'New verification mail has been sent',
+  REGISTER_USER: 'Verification mail has been sent',
+  FETCH_SUCCESS: 'User details fetched successfully',
+  TOGGLE_SUCCESS: 'User status changed successfully',
   UPDATE_PASSWORD_SUCCESS: "User password updated",
-  REVOKE_SESSION:"Session revoked success"
+  REVOKE_SESSION: "Session revoked success"
 };
 
 export const PLAN_MESSAGES = {
@@ -75,3 +72,8 @@ export const WORKSPACE_MESSAGES = {
   ERROR: "Workspace Error",
   SUCCESS: "Workspace context fetched successfully",
 };
+
+export const COMPANY_MESSAGES = {
+  NOT_FOUND: "Company not found",
+  TOGGLE_STATUS: "Company status successfully changed"
+}

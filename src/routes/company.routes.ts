@@ -15,5 +15,8 @@ const companyController = container.resolve<ICompanyController>(
 router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
   void companyController.handleGetAllCompany(req, res, next);
 });
+router.patch("/:companyId/status", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
+  void companyController.handleToggleCompanyStatus(req, res, next)
+})
 
 export default router;

@@ -76,24 +76,6 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       companyId = company.id;
     }
 
-    // const workspace = await _workspaceRepository.create({
-    //   ownerId: userId,
-    //   name: onboarding.workspaceName || "Personal Workspace",
-    //   companyId,
-    //   type: "company",
-    // });
-
-    // const subscription = await _subscriptionRepository.create({
-    //   workspaceId: workspace.id,
-    //   userId,
-    //   stripePriceId: plan.stripePriceId,
-    //   planId,
-    //   stripeSubscriptionId: sub?.subscription as string,
-    // });
-
-    // workspace.subscriptionId = String(subscription._id);
-    // await workspace.save();
-
     const workspace = await _workspaceService.bootStrapWorkspace({
       ownerId: userId!,
       workspaceName: onboarding.workspaceName || "Personal Workspace",
