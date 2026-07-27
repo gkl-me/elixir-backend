@@ -55,6 +55,7 @@ export const USER_MESSAGES = {
 }
 
 
+<<<<<<< Updated upstream
 
 export const PLAN_MESSAGES = {
     UPDATE_ERROR:'Failed to update the plan',
@@ -66,4 +67,38 @@ export const PLAN_MESSAGES = {
     ERROR:"Failed to subscripe to the plan",
     STRIPE_SUBSCRIPTION_ERROR:'failed to create stripe subscription',
     
+=======
+  LOGIN_SUCCESS: "User successfully logged in",
+  LOGOUT_SUCCESS: "User logout success",
+  VERIFY_SUCCESS: "User successfully verified",
+  RESEND_VERIFY: "New verification mail has been sent",
+  REGISTER_USER: "Verification mail has been sent",
+  FETCH_SUCCESS: "User details fetched successfully",
+  TOGGLE_SUCCESS: "User status changed successfully",
+  UPDATE_PASSWORD_SUCCESS: "User password updated",
+  REVOKE_SESSION: "Session revoked success"
+};
+
+export const PLAN_MESSAGES = {
+  UPDATE_ERROR: "Failed to update the plan",
+  STRIPE_PRODUCT_ERROR: "Failed to create stripe product",
+  STRIPE_PRICE_ERROR: "Failed to create stripe price",
+  STRIPE_ERROR: "Failed to get details from stripe",
+  FETCH_SUCCESS: "Plans details fetched",
+  UPDATE_SUCCESS: "Plan successfully updated",
+  ERROR: "Failed to subscripe to the plan",
+  STRIPE_SUBSCRIPTION_ERROR: "failed to create stripe subscription",
+};
+
+export const WORKSPACE_MESSAGES = {
+  NOT_FOUND: "Workspace not found",
+  SLUG_ERROR: "Unable to generate slug",
+  ERROR: "Workspace Error",
+  SUCCESS: "Workspace context fetched successfully",
+};
+
+export const COMPANY_MESSAGES = {
+  NOT_FOUND: "Company not found",
+  TOGGLE_STATUS: "Company status successfully changed"
+>>>>>>> Stashed changes
 }
