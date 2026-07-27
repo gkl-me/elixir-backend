@@ -11,11 +11,7 @@ export class companyDtoMapper {
       email: company.email,
       phone: company.phone,
       website: company?.website,
-<<<<<<< HEAD
       status: company.status,
-=======
-      isBlocked: company.isBlocked,
->>>>>>> origin/week2
       createdAt: company.createdAt,
     };
   }
