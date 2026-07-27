@@ -1,6 +1,8 @@
 import {
   IWorkpsaceContextDto,
+  IWorksapceLimitsResDto,
   IWorkspaceContextResDto,
+  IWorkspaceLimits,
 } from "../../../interfaces/dtos/WorkspaceDto";
 import { IWorkspace } from "../../../models/Workspace";
 
@@ -27,4 +29,7 @@ export interface IWorkspaceService {
   workspaceContext(
     data: IWorkpsaceContextDto
   ): Promise<IWorkspaceContextResDto>;
+  workspaceLimits(
+    data:IWorkspaceLimits    
+  ):Promise<IWorksapceLimitsResDto>
 }

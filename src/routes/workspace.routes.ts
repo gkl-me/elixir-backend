@@ -67,6 +67,11 @@ router.delete(
     void workspaceRoleController.handleDeleteRole(req, res, next);
   }
 );
+router.get("/:workspaceId/limits",auth,
+  (req,res,next) => {
+    void workspaceController.handleWorkspaceLimits(req,res,next)
+  }
+)
 
 // Invite validation & accept — MUST come before /:workspaceId/invites to avoid
 // Express capturing 'invites' as a workspaceId

@@ -55,6 +55,7 @@ export const USER_MESSAGES = {
   FETCH_SUCCESS: "User details fetched successfully",
   TOGGLE_SUCCESS: "User status changed successfully",
   UPDATE_PASSWORD_SUCCESS: "User password updated",
+  REVOKE_SESSION:"Session revoked success"
 };
 
 export const PLAN_MESSAGES = {

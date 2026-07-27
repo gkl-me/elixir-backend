@@ -6,4 +6,9 @@ export interface IWorkspaceController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
+  handleWorkspaceLimits(
+    req:Request,
+    res:Response,
+    next:NextFunction
+  ):Promise<void>
 }

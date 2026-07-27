@@ -626,7 +626,8 @@ export class AuthService implements IAuthService {
       if (!refreshToken)
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
         );
 
       //verify token payload
@@ -637,7 +638,8 @@ export class AuthService implements IAuthService {
       if (!payload)
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
         );
 
       //check if user is blocked or not
@@ -657,7 +659,8 @@ export class AuthService implements IAuthService {
       if (!session || typeof session === "string")
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
         );
 
       const tokenHash = await this._tokenManager.hashToken(refreshToken);
@@ -672,7 +675,8 @@ export class AuthService implements IAuthService {
         );
         throw new CustomError(
           CONSTANT_MESSAGES.UNAUTHORIZED,
-          STATUS_CODES.UNAUTHORIZED
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
         );
       }
 
@@ -745,6 +749,31 @@ export class AuthService implements IAuthService {
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
         STATUS_CODES.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  async logoutAllDevices(data: any) {
+    try {
+      
+      const {userId} = data
+
+      const sessionKey = REDIS_STORE.USER_SESSION + userId
+
+      const sessionIds = await this._cacheRepository.getMembers(sessionKey)
+
+      for(const id of sessionIds){
+        await this._cacheRepository.delete(
+          REDIS_STORE.SESSION + id
+        )
+      }
+
+      await this._cacheRepository.delete(sessionKey)
+      
+    } catch (error) {
+      logError(error,{
+        service:"AuthServices.logoutAllDevices"
+      })
+      throw error
     }
   }
 }
