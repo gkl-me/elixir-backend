@@ -3,441 +3,777 @@ import { CustomError } from "../../errors/CustomError";
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
 import { IPasswordHasher } from "../../providers/interfaces/IPasswordHasher";
 import { ITokenManager } from "../../providers/interfaces/ITokenManager";
-import { IAuthService} from "./interfaces/IAuthService";
-import { LoginSchema, RegisterSchema}  from '../../validator/AuthSchema'
-import { IAuthResponseDto, IForgotPasswordDto, IGithubAuthDto, IGoogleAuthDto, ILoginDto, ILogoutDto, IRefreshTokenDto, IRefreshTokenResponseDto, IRegisterDto } from "../../interfaces/dtos/AuthDTO";
+import { IAuthService } from "./interfaces/IAuthService";
+import {
+  IAuthResponseDto,
+  IGithubAuthDto,
+  IGoogleAuthDto,
+  ILoginDto,
+  ILogoutDto,
+  IRefreshTokenDto,
+  IRefreshTokenResponseDto,
+  IRegisterDto,
+} from "../../interfaces/dtos/AuthDTO";
 import { authDtoMapper } from "../../interfaces/mapper/authDtoMapper";
-import { AUTH_MESSAGES, CONSTANT_MESSAGES, USER_MESSAGES, } from "../../constants/messages";
+import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../../constants/messages";
 import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
-import { IEmailService } from "../../providers/interfaces/IEmailService";
 import { ENV } from "../../constants/env";
-import { ICacheRepository } from "../../repositories/cache/ICacheRepository";
+import { ICacheRepository } from "../../repositories/cache/interface/ICacheRepository";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { AUTH_ERROR_CODE } from "../../constants/errorCode";
-import { IUserService } from "../user/interface/IUserService";
 import { sendVerificationEmailJob } from "../../queues/email/email.producer";
 import { IAuthSession } from "../../interfaces/types/session.types";
 import { ILoginMetaDto } from "../../interfaces/dtos/MetaDto";
 import { OAuth2Client } from "google-auth-library";
-import { userDtoMapper } from "../../interfaces/mapper/userDtoMapper";
-import { GithubAuthService } from "../../providers/GithubAuthService";
 import { IGithubAuthService } from "../../providers/interfaces/IGithubAuthService";
+import { logError } from "../../middlewares/loggerHelper";
+import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
+import { IWorkspaceMemberRepository } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 
 @injectable()
 export class AuthService implements IAuthService {
+  private _oAuthClient: OAuth2Client;
 
-    private _oAuthClient:OAuth2Client
+  constructor(
+    @inject(Token.UserRepository) private _userRepository: IUserRepository,
+    @inject(Token.PasswordHasher) private _passwordHasher: IPasswordHasher,
+    @inject(Token.TokenManager) private _tokenManager: ITokenManager,
+    @inject(Token.CacheRepository)
+    private _cacheRepository: ICacheRepository<string | IAuthSession>,
+    @inject(Token.GithubAuthService)
+    private readonly _githubAuthService: IGithubAuthService,
+    @inject(Token.WorkspaceRepository)
+    private readonly _workspaceRepository: IWorkspaceRepository,
+    @inject(Token.WorkspaceMemberRepository)
+    private readonly _workspaceMemberRespository: IWorkspaceMemberRepository
+  ) {
+    this._oAuthClient = new OAuth2Client(ENV.GOOGLE_CLIENT_ID);
+  }
 
-    constructor(
-        @inject(Token.UserRepository) private _userRepository:IUserRepository,
-        @inject(Token.PasswordHasher) private _passwordHasher:IPasswordHasher,
-        @inject(Token.TokenManager) private _tokenManager:ITokenManager,
-        @inject(Token.EmailService) private _emailService:IEmailService,
-        @inject(Token.CacheRepository) private _cacheRepository:ICacheRepository<string|IAuthSession>,
-        @inject(Token.UserService) private _userService:IUserService,
-        @inject(Token.GithubAuthService) private readonly _githubAuthService:IGithubAuthService
-    ){
-        this._oAuthClient = new OAuth2Client(ENV.GOOGLE_CLIENT_ID)
+  async register(user: IRegisterDto): Promise<void> {
+    const { name, email, password } = user;
+
+    try {
+      const hashedPassword = await this._passwordHasher.hashPassword(password);
+
+      //check if user already exists
+      const existingUser = await this._userRepository.findByEmail(email);
+      if (existingUser?.isVerified)
+        throw new CustomError(
+          AUTH_MESSAGES.ALREADY_EXITS,
+          STATUS_CODES.CONFLICT
+        );
+
+      // let userToVerify;
+
+      if (existingUser && !existingUser.isVerified) {
+        existingUser.name = name;
+        existingUser.email = email;
+        existingUser.password = hashedPassword;
+        await existingUser.save();
+      } else {
+        await this._userRepository.create({
+          name,
+          email,
+          password: hashedPassword,
+        });
+      }
+
+      //call queue to sent mail
+      await sendVerificationEmailJob(email);
+    } catch (error) {
+      throw error;
     }
+  }
 
-    async register(user:IRegisterDto):Promise<void>{
-        const {name,email,password} = user
+  /**
+   *
+   * @param {ILoginDto} user
+   * @param {ILoginMetaDto} meta
+   * @returns {Promise<IAuthResponseDto>}
+   */
+  async login(user: ILoginDto, meta: ILoginMetaDto): Promise<IAuthResponseDto> {
+    try {
+      const { email, password } = user;
 
-        try {
+      const userFound = await this._userRepository.findByEmail(email);
 
-            //validate user data using zod
-            const validate = RegisterSchema.safeParse(user)
-            if(!validate.success){
-                const errorMessages = validate.error.errors[0].message
-                throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
-            }
+      //check if a user exist with this email
+      if (!userFound)
+        throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND);
 
+      //check if the user is verified
+      if (!userFound?.isVerified) {
+        throw new CustomError(
+          AUTH_MESSAGES.VERIFY_ERROR,
+          STATUS_CODES.BAD_REQUEST,
+          AUTH_ERROR_CODE.NOT_VERIFIED
+        );
+      }
 
-            const hashedPassword = await this._passwordHasher.hashPassword(password)
+      //check if the user account is blocked
+      // need to send error code here
+      if (userFound?.isBlocked) {
+        throw new CustomError(
+          AUTH_MESSAGES.BLOCKED,
+          STATUS_CODES.FORBIDDEN,
+          AUTH_ERROR_CODE.BLOCKED
+        );
+      }
 
-            //check if user already exists
-            const existingUser = await this._userRepository.findByEmail(email)
-            if(existingUser?.isVerified) throw new CustomError(AUTH_MESSAGES.ALREADY_EXITS, STATUS_CODES.CONFLICT)
-            
-            let userToVerify;
+      if (!userFound.password && userFound?.githubId) {
+        throw new CustomError(
+          AUTH_MESSAGES.GITHUB_AUTH,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
 
-            if(existingUser && !existingUser.isVerified){
-                existingUser.name = name,
-                existingUser.email = email,
-                existingUser.password = hashedPassword
-                userToVerify = await existingUser.save()
-            }else{
-                userToVerify= await this._userRepository.create({name,email,password:hashedPassword})
-            }
+      if (!userFound.password && userFound?.googleId) {
+        throw new CustomError(
+          AUTH_MESSAGES.GOOGLE_AUTH,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
 
+      if (!userFound.password) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
 
-            //call queue to sent mail 
-            await sendVerificationEmailJob(email)
+      //check if the password is correct
+      const isMatch = await this._passwordHasher.comparePasswords(
+        password,
+        userFound?.password
+      );
 
-        } catch (error) {
-            throw error
+      if (!isMatch)
+        throw new CustomError(
+          CONSTANT_MESSAGES.INVALID_CREDENTIALS,
+          STATUS_CODES.BAD_REQUEST
+        );
+
+      //session and token manangement
+
+      const sessionId = this._tokenManager.generateSessionId();
+      const tokenVersion = 1;
+
+      const accessToken = await this._tokenManager.generateAccessToken(
+        String(userFound._id),
+        userFound.role,
+        sessionId
+      );
+      const refreshToken = await this._tokenManager.generateRefreshToken(
+        String(userFound._id),
+        userFound.role,
+        sessionId,
+        tokenVersion
+      );
+
+      const refreshTokenHash = await this._tokenManager.hashToken(refreshToken);
+
+      //session handling,
+
+      const now = Date.now();
+
+      //expires at time
+      const expiresAt = now + ENV.REFRESH_TOKEN_TTL * 1000;
+
+      const session: IAuthSession = {
+        userId: String(userFound._id),
+        refreshTokenHash,
+        tokenVersion,
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        createdAt: now,
+        expiresAt,
+      };
+
+      await this._cacheRepository.set(
+        REDIS_STORE.SESSION + sessionId,
+        session,
+        ENV.REFRESH_TOKEN_TTL
+      );
+
+      //add user sessions into redis user session list
+      await this._cacheRepository.addSet(
+        REDIS_STORE.USER_SESSION + String(userFound._id),
+        sessionId
+      );
+
+      //user current workspace information
+      let workspaceData = null;
+
+      const lastWorkspaceId = userFound.lastActiveWorkspaceId;
+
+      let workspace = lastWorkspaceId
+        ? await this._workspaceRepository.findById(lastWorkspaceId)
+        : await this._workspaceRepository.findOne({ ownerId: userFound._id });
+
+      //if workspace no found find workspace in which user is memeber off
+      if (!workspace) {
+        const workspaceMemeberShip =
+          await this._workspaceMemberRespository.findOne({
+            userId: userFound._id,
+            isRemoved: false,
+          });
+
+        if (workspaceMemeberShip) {
+          workspace = await this._workspaceRepository.findById(
+            workspaceMemeberShip.workspaceId
+          );
         }
+      }
+
+      //if workspace exists
+
+      if (workspace) {
+        const workspaceMember = await this._workspaceMemberRespository.findOne({
+          workspaceId: workspace._id,
+          userId: userFound._id,
+          isRemoved: false,
+        });
+
+        workspaceData = {
+          id: String(workspace._id),
+          name: workspace.name,
+          slug: workspace.slug,
+          memberId: workspaceMember ? String(workspaceMember._id) : null,
+          roleId: workspaceMember ? String(workspaceMember.roleId) : null,
+          isOwner: String(workspace.ownerId) === String(userFound._id),
+        };
+      }
+
+      const resDto = authDtoMapper.toAuthResponse(
+        userFound,
+        workspaceData,
+        accessToken,
+        refreshToken
+      );
+
+      return {
+        ...resDto,
+      };
+    } catch (error) {
+      logError(error, {
+        service: "Auth Service",
+      });
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(
+        CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
+  }
 
-    /**
-     * 
-     * @param {ILoginDto} user 
-     * @param {ILoginMetaDto} meta 
-     * @returns {Promise<IAuthResponseDto>}
-     */
-    async login(user:ILoginDto,meta:ILoginMetaDto): Promise<IAuthResponseDto>{
-        try {
+  //need to update google auth
+  async googleAuth(
+    data: IGoogleAuthDto,
+    meta: ILoginMetaDto
+  ): Promise<IAuthResponseDto> {
+    try {
+      const { idToken } = data;
 
-        const {email,password} = user
+      if (!idToken) {
+        throw new CustomError(
+          AUTH_MESSAGES.GOOGLE_TOKEN_ERROR,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
 
-        //validate user data using zod
-        const validate = LoginSchema.safeParse(user)
-        if(!validate.success){
-            const errorMessages = validate.error.errors[0].message
-            throw new CustomError(errorMessages, STATUS_CODES.BAD_REQUEST)
+      const ticket = await this._oAuthClient.verifyIdToken({
+        idToken,
+        audience: ENV.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = await ticket.getPayload();
+
+      if (!payload?.email) {
+        throw new CustomError(
+          AUTH_MESSAGES.INVALID_GOOGLE_ACC,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      const userFound = await this._userRepository.findByEmail(payload?.email);
+
+      //check if the user is blocked or not
+      if (userFound?.isBlocked) {
+        throw new CustomError(
+          AUTH_MESSAGES.BLOCKED,
+          STATUS_CODES.FORBIDDEN,
+          AUTH_ERROR_CODE.BLOCKED
+        );
+      }
+
+      let user = userFound;
+      if (userFound && !userFound.googleId) {
+        user = await this._userRepository.update(String(userFound._id), {
+          isVerified: true,
+          googleId: payload.sub,
+          avatarUrl: payload?.picture,
+        });
+      }
+      if (!userFound) {
+        user = await this._userRepository.create({
+          name: payload?.name,
+          email: payload?.email,
+          googleId: payload?.sub,
+          avatarUrl: payload?.picture,
+          isVerified: true,
+        });
+      }
+
+      if (!user) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      //session and token manangement
+
+      const sessionId = this._tokenManager.generateSessionId();
+      const tokenVersion = 1;
+
+      const accessToken = await this._tokenManager.generateAccessToken(
+        String(user._id),
+        user.role,
+        sessionId
+      );
+      const refreshToken = await this._tokenManager.generateRefreshToken(
+        String(user._id),
+        user.role,
+        sessionId,
+        tokenVersion
+      );
+
+      const refreshTokenHash = await this._tokenManager.hashToken(refreshToken);
+
+      //session handling,
+
+      const now = Date.now();
+
+      //expires at time
+      const expiresAt = now + ENV.REFRESH_TOKEN_TTL * 1000;
+
+      const session: IAuthSession = {
+        userId: String(user._id),
+        refreshTokenHash,
+        tokenVersion,
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        createdAt: now,
+        expiresAt,
+      };
+
+      await this._cacheRepository.set(
+        REDIS_STORE.SESSION + sessionId,
+        session,
+        ENV.REFRESH_TOKEN_TTL
+      );
+
+      //add user sessions into redis user session list
+      await this._cacheRepository.addSet(
+        REDIS_STORE.USER_SESSION + String(user._id),
+        sessionId
+      );
+
+      if (user) {
+        //user current workspace information
+        let workspaceData = null;
+
+        const lastWorkspaceId = user.lastActiveWorkspaceId;
+
+        let workspace = lastWorkspaceId
+          ? await this._workspaceRepository.findById(lastWorkspaceId)
+          : await this._workspaceRepository.findOne({ ownerId: user._id });
+
+        //if workspace no found find workspace in which user is memeber off
+        if (!workspace) {
+          const workspaceMemeberShip =
+            await this._workspaceMemberRespository.findOne({
+              userId: user._id,
+              isRemoved: false,
+            });
+
+          if (workspaceMemeberShip) {
+            workspace = await this._workspaceRepository.findById(
+              workspaceMemeberShip.workspaceId
+            );
+          }
         }
 
-        const userFound = await this._userRepository.findByEmail(email)
-        
-        //check if a user exist with this email
-        if(!userFound) throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND)
+        //if workspace exists
 
-        //check if the user is verified
-        if(!userFound?.isVerified){
-            throw new CustomError(AUTH_MESSAGES.VERIFY_ERROR,STATUS_CODES.BAD_REQUEST,AUTH_ERROR_CODE.NOT_VERIFIED)
+        if (workspace) {
+          const workspaceMember =
+            await this._workspaceMemberRespository.findOne({
+              workspaceId: workspace._id,
+              userId: user._id,
+              isRemoved: false,
+            });
+
+          workspaceData = {
+            id: String(workspace._id),
+            name: workspace.name,
+            slug: workspace.slug,
+            memberId: workspaceMember ? String(workspaceMember._id) : null,
+            roleId: workspaceMember ? String(workspaceMember.roleId) : null,
+            isOwner: String(workspace.ownerId) === String(user._id),
+          };
         }
 
-
-        //check if the user account is blocked
-        // need to send error code here
-        if(userFound?.isBlocked){
-            throw new CustomError(AUTH_MESSAGES.BLOCKED, STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
-        }
-
-        if(!userFound.password && userFound?.googleId){
-            throw new CustomError(AUTH_MESSAGES.GITHUB_AUTH,STATUS_CODES.BAD_REQUEST)
-        }
-
-        if(!userFound.password && userFound?.githubId){
-            throw new CustomError(AUTH_MESSAGES.GOOGLE_AUTH,STATUS_CODES.BAD_REQUEST)
-        }
-
-        if(!userFound.password){
-            throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
-        }
-
-        //check if the password is correct
-        const isMatch = await this._passwordHasher.comparePasswords(password, userFound?.password)
-        
-        if(!isMatch) throw new CustomError(CONSTANT_MESSAGES.INVALID_CREDENTIALS,STATUS_CODES.BAD_REQUEST)
-
-        //session and token manangement
-
-        const sessionId = this._tokenManager.generateSessionId()
-        const tokenVersion = 1
-
-        const accessToken = await this._tokenManager.generateAccessToken(String(userFound._id),userFound.role,sessionId)
-        const refreshToken = await this._tokenManager.generateRefreshToken(String(userFound._id),userFound.role,sessionId,tokenVersion)
-
-        const refreshTokenHash = await this._tokenManager.hashToken(refreshToken)
-
-        //session handling,
-
-        const now = Date.now()
-
-        //expires at time
-        const expiresAt = now + ENV.REFRESH_TOKEN_TTL*1000
-
-
-        const session:IAuthSession = {
-            userId:String(userFound._id),
-            refreshTokenHash,
-            tokenVersion,
-            ip:meta.ip,
-            userAgent:meta.userAgent,
-            createdAt:now,
-            expiresAt
-        }
-
-        await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
-
-        //add user sessions into redis user session list
-        await this._cacheRepository.addSet(REDIS_STORE.USER_SESSION+String(userFound._id),sessionId)
-
-
-        const resDto = authDtoMapper.toAuthResponse(userFound,accessToken,refreshToken)
+        const resDto = authDtoMapper.toAuthResponse(
+          user,
+          workspaceData,
+          accessToken,
+          refreshToken
+        );
 
         return {
-            ...resDto
-        }
-                    
-        } catch (error) {
-            if(error instanceof CustomError){
-                throw error
-            }
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
-        }
+          ...resDto,
+        };
+      }
+
+      throw new CustomError(
+        CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
+  }
 
+  async githubAuth(
+    data: IGithubAuthDto,
+    meta: ILoginMetaDto
+  ): Promise<IAuthResponseDto> {
+    try {
+      const { githubId, name, email, image, githubUsername, access_token } =
+        data;
 
-    //need to update google auth
-    async googleAuth(data: IGoogleAuthDto,meta:ILoginMetaDto): Promise<IAuthResponseDto> {
-        try {
-            
-            const {idToken} = data
+      const gitubEmails =
+        await this._githubAuthService.verifyGithubUser(access_token);
 
-            if(!idToken){
-                throw new CustomError(AUTH_MESSAGES.GOOGLE_TOKEN_ERROR,STATUS_CODES.BAD_REQUEST)
-            }
+      const emailVerified = gitubEmails.find(
+        (e) => e.primary && e.verified && e.email === email
+      );
 
-            const ticket = await this._oAuthClient.verifyIdToken({
-                idToken,
-                audience:ENV.GOOGLE_CLIENT_ID
-            })
+      if (!emailVerified) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
 
-            const payload = await ticket.getPayload()
+      const userFound = await this._userRepository.findByEmail(email);
 
-            if(!payload?.email){
-                throw new CustomError(AUTH_MESSAGES.INVALID_GOOGLE_ACC,STATUS_CODES.BAD_REQUEST)
-            }
+      //check if the user is blocked or not
+      if (userFound?.isBlocked) {
+        throw new CustomError(
+          AUTH_MESSAGES.BLOCKED,
+          STATUS_CODES.FORBIDDEN,
+          AUTH_ERROR_CODE.BLOCKED
+        );
+      }
 
+      let user = userFound;
 
-            const userFound = await this._userRepository.findByEmail(payload?.email)
-            
-            let user=userFound;
-            if(userFound && !userFound.googleId){
-                user = await this._userRepository.update(String(userFound._id),{
-                    isVerified:true,
-                    googleId:payload.sub,
-                    avatarUrl:payload?.picture
-                })
-            }
-            if(!userFound){
-                user = await this._userRepository.create({
-                    name:payload?.name,
-                    email:payload?.email,
-                    googleId:payload?.sub,
-                    avatarUrl:payload?.picture,
-                    isVerified:true
-                })
-            }
+      if (userFound && !userFound.githubId) {
+        user = await this._userRepository.update(String(userFound._id), {
+          isVerified: true,
+          avatarUrl: image,
+          githubId,
+          githubUsername,
+        });
+      }
+      if (!userFound) {
+        user = await this._userRepository.create({
+          name,
+          email,
+          isVerified: true,
+          avatarUrl: image,
+          githubId,
+          githubUsername,
+        });
+      }
 
-            if(!user){
-                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
-            }
+      if (!user) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
 
+      //session and token manangement
+      const sessionId = this._tokenManager.generateSessionId();
+      const tokenVersion = 1;
 
-            //session and token manangement
+      const accessToken = await this._tokenManager.generateAccessToken(
+        String(user._id),
+        user.role,
+        sessionId
+      );
+      const refreshToken = await this._tokenManager.generateRefreshToken(
+        String(user._id),
+        user.role,
+        sessionId,
+        tokenVersion
+      );
 
-            const sessionId = this._tokenManager.generateSessionId()
-            const tokenVersion = 1
+      const refreshTokenHash = await this._tokenManager.hashToken(refreshToken);
 
-            const accessToken = await this._tokenManager.generateAccessToken(String(user._id),user.role,sessionId)
-            const refreshToken = await this._tokenManager.generateRefreshToken(String(user._id),user.role,sessionId,tokenVersion)
+      //session handling,
+      const now = Date.now();
 
-            const refreshTokenHash = await this._tokenManager.hashToken(refreshToken)
+      //expires at time
+      const expiresAt = now + ENV.REFRESH_TOKEN_TTL * 1000;
 
-            //session handling,
+      const session: IAuthSession = {
+        userId: String(user._id),
+        refreshTokenHash,
+        tokenVersion,
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+        createdAt: now,
+        expiresAt,
+      };
 
-            const now = Date.now()
+      await this._cacheRepository.set(
+        REDIS_STORE.SESSION + sessionId,
+        session,
+        ENV.REFRESH_TOKEN_TTL
+      );
 
-            //expires at time
-            const expiresAt = now + ENV.REFRESH_TOKEN_TTL*1000
+      //add user sessions into redis user session list
+      await this._cacheRepository.addSet(
+        REDIS_STORE.USER_SESSION + String(user._id),
+        sessionId
+      );
 
+      //user current workspace information
+      let workspaceData = null;
 
-            const session:IAuthSession = {
-                userId:String(user._id),
-                refreshTokenHash,
-                tokenVersion,
-                ip:meta.ip,
-                userAgent:meta.userAgent,
-                createdAt:now,
-                expiresAt
-            }
+      const lastWorkspaceId = user.lastActiveWorkspaceId;
 
-            await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
+      let workspace = lastWorkspaceId
+        ? await this._workspaceRepository.findById(lastWorkspaceId)
+        : await this._workspaceRepository.findOne({ ownerId: user._id });
 
-            //add user sessions into redis user session list
-            await this._cacheRepository.addSet(REDIS_STORE.USER_SESSION+String(user._id),sessionId)
+      //if workspace no found find workspace in which user is memeber off
+      if (!workspace) {
+        const workspaceMemeberShip =
+          await this._workspaceMemberRespository.findOne({
+            userId: user._id,
+            isRemoved: false,
+          });
 
-            
-
-            if(user) return authDtoMapper.toAuthResponse(user,accessToken,refreshToken)
-
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR, STATUS_CODES.INTERNAL_SERVER_ERROR);
-
-        } catch (error) {
-            if(error instanceof CustomError) throw error
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
+        if (workspaceMemeberShip) {
+          workspace = await this._workspaceRepository.findById(
+            workspaceMemeberShip.workspaceId
+          );
         }
+      }
+
+      //if workspace exists
+
+      if (workspace) {
+        const workspaceMember = await this._workspaceMemberRespository.findOne({
+          workspaceId: workspace._id,
+          userId: user._id,
+          isRemoved: false,
+        });
+
+        workspaceData = {
+          id: String(workspace._id),
+          name: workspace.name,
+          slug: workspace.slug,
+          memberId: workspaceMember ? String(workspaceMember._id) : null,
+          roleId: workspaceMember ? String(workspaceMember.roleId) : null,
+          isOwner: String(workspace.ownerId) === String(user._id),
+        };
+      }
+
+      const resDto = authDtoMapper.toAuthResponse(
+        user,
+        workspaceData,
+        accessToken,
+        refreshToken
+      );
+
+      return {
+        ...resDto,
+      };
+    } catch (error) {
+      throw error;
     }
+  }
 
-    async githubAuth(data: IGithubAuthDto, meta: ILoginMetaDto): Promise<IAuthResponseDto> {
-        try {
+  async refreshToken(
+    data: IRefreshTokenDto
+  ): Promise<IRefreshTokenResponseDto> {
+    try {
+      const { refreshToken } = data;
+      if (!refreshToken)
+        throw new CustomError(
+          CONSTANT_MESSAGES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
+        );
 
+      //verify token payload
+      const payload = await this._tokenManager.verifyToken(
+        refreshToken,
+        "refresh"
+      );
+      if (!payload)
+        throw new CustomError(
+          CONSTANT_MESSAGES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
+        );
 
-            const {githubId,name,email,image,githubUsername,access_token} = data
+      //check if user is blocked or not
+      const user = await this._userRepository.findById(payload.userId);
+      if (user?.isBlocked)
+        throw new CustomError(
+          CONSTANT_MESSAGES.FORBIDDEN,
+          STATUS_CODES.FORBIDDEN,
+          AUTH_ERROR_CODE.BLOCKED
+        );
 
-            const gitubEmails = await this._githubAuthService.verifyGithubUser(access_token)
+      //session check
+      const session = await this._cacheRepository.get(
+        REDIS_STORE.SESSION + payload.sessionId
+      );
 
-            const emailVerified = gitubEmails.find((e) => e.primary && e.verified && e.email==email)
-            
-            if(!emailVerified){
-                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
-            }
+      if (!session || typeof session === "string")
+        throw new CustomError(
+          CONSTANT_MESSAGES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
+        );
 
+      const tokenHash = await this._tokenManager.hashToken(refreshToken);
 
-            const userFound = await this._userRepository.findByEmail(email)
+      //check if token reuse
+      if (
+        tokenHash !== session.refreshTokenHash ||
+        payload.tokenVersion !== session.tokenVersion
+      ) {
+        await this._cacheRepository.delete(
+          REDIS_STORE.SESSION + payload.sessionId
+        );
+        throw new CustomError(
+          CONSTANT_MESSAGES.UNAUTHORIZED,
+          STATUS_CODES.UNAUTHORIZED,
+          AUTH_ERROR_CODE.UNAUTHORIZED
+        );
+      }
 
-            let user=userFound;
+      //update token version
+      const newVersion = session.tokenVersion + 1;
 
-            if(userFound && !userFound.githubId){
-                user = await this._userRepository.update(String(userFound._id),{
-                    isVerified:true,
-                    avatarUrl:image,
-                    githubId,
-                    githubUsername
-                })
-            }
-            if(!userFound){
-                user = await this._userRepository.create({
-                    name,
-                    email,
-                    isVerified:true,
-                    avatarUrl:image,
-                    githubId,
-                    githubUsername
-                })
-            }
+      //create new token and rotate token
+      const newAccessToken = this._tokenManager.generateAccessToken(
+        payload.userId,
+        payload.role,
+        payload.sessionId
+      );
 
-             if(!user){
-                throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
-            }
+      const newRefreshToken = this._tokenManager.generateRefreshToken(
+        payload.userId,
+        payload.role,
+        payload.sessionId,
+        newVersion
+      );
 
-            //session and token manangement
-            const sessionId = this._tokenManager.generateSessionId()
-            const tokenVersion = 1
+      session.tokenVersion = newVersion;
+      session.refreshTokenHash = this._tokenManager.hashToken(newRefreshToken);
 
-            const accessToken = await this._tokenManager.generateAccessToken(String(user._id),user.role,sessionId)
-            const refreshToken = await this._tokenManager.generateRefreshToken(String(user._id),user.role,sessionId,tokenVersion)
+      //update the redis with new hash and version and new ttl
+      const ttl = Math.floor((session.expiresAt - Date.now()) / 1000);
+      await this._cacheRepository.set(
+        REDIS_STORE.SESSION + payload.sessionId,
+        session,
+        ttl
+      );
 
-            const refreshTokenHash = await this._tokenManager.hashToken(refreshToken)
-
-            //session handling,
-            const now = Date.now()
-
-            //expires at time
-            const expiresAt = now + ENV.REFRESH_TOKEN_TTL*1000
-
-
-            const session:IAuthSession = {
-                userId:String(user._id),
-                refreshTokenHash,
-                tokenVersion,
-                ip:meta.ip,
-                userAgent:meta.userAgent,
-                createdAt:now,
-                expiresAt
-            }
-
-            await this._cacheRepository.set(REDIS_STORE.SESSION+sessionId,session,ENV.REFRESH_TOKEN_TTL)
-
-            //add user sessions into redis user session list
-            await this._cacheRepository.addSet(REDIS_STORE.USER_SESSION+String(user._id),sessionId)   
-
-            const resDto = authDtoMapper.toAuthResponse(user,accessToken,refreshToken)
-
-            return {
-                ...resDto
-            }
-
-        } catch (error) {
-            throw error
-        }
+      return {
+        newAccessToken,
+        newRefreshToken,
+      };
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(
+        CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
+  }
 
-    async refreshToken(data: IRefreshTokenDto): Promise<IRefreshTokenResponseDto> {
-        try {
+  async logout(data: ILogoutDto): Promise<void> {
+    try {
+      const { refreshToken } = data;
 
-            const {refreshToken} = data
-            if(!refreshToken) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
-            
-            //verify token payload
-            const payload = await this._tokenManager.verifyToken(refreshToken,'refresh')
-            if(!payload) throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
+      if (!refreshToken) return;
 
-            //check if user is blocked or not
-            const user = await this._userRepository.findById(payload.userId)
-            if(user?.isBlocked) throw new CustomError(CONSTANT_MESSAGES.FORBIDDEN,STATUS_CODES.FORBIDDEN,AUTH_ERROR_CODE.BLOCKED)
+      //find session and delete session
+      const payload = this._tokenManager.verifyToken(refreshToken, "refresh");
 
+      const sessionKey = REDIS_STORE.SESSION + payload.sessionId;
 
-            //session check 
-            const session = await this._cacheRepository.get(REDIS_STORE.SESSION+payload.sessionId)
+      await this._cacheRepository.delete(sessionKey);
 
-            if(!session || typeof session == 'string') throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
-
-            const tokenHash = await this._tokenManager.hashToken(refreshToken)
-
-            //check if token reuse
-            if(tokenHash !== session.refreshTokenHash ||  payload.tokenVersion !== session.tokenVersion ){
-                await this._cacheRepository.delete(REDIS_STORE.SESSION+payload.sessionId)
-                throw new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED,STATUS_CODES.UNAUTHORIZED)
-            }
-
-            //update token version
-            const newVersion = session.tokenVersion + 1
-
-            //create new token and rotate token
-            const newAccessToken = this._tokenManager.generateAccessToken(payload.userId,payload.role,payload.sessionId)
-
-            const newRefreshToken = this._tokenManager.generateRefreshToken(payload.userId,payload.role,payload.sessionId,newVersion)
-
-            session.tokenVersion = newVersion
-            session.refreshTokenHash = this._tokenManager.hashToken(newRefreshToken)
-
-            //update the redis with new hash and version and new ttl
-            const ttl = Math.floor((session.expiresAt -  Date.now())/1000 )
-            await this._cacheRepository.set(REDIS_STORE.SESSION+payload.sessionId,session,ttl)
-
-            return {
-                newAccessToken,
-                newRefreshToken
-            }
-            
-        } catch (error) {
-            if(error instanceof CustomError){
-                throw error
-            }
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
-        }
+      //delete from user set in redis
+      await this._cacheRepository.remSet(
+        REDIS_STORE.USER_SESSION + payload.userId,
+        payload.sessionId
+      );
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(
+        CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
+  }
 
-    async logout(data: ILogoutDto): Promise<void> {
-        try {
+  async logoutAllDevices(data: any) {
+    try {
+      
+      const {userId} = data
 
-            const {refreshToken} = data
+      const sessionKey = REDIS_STORE.USER_SESSION + userId
 
-             if(!refreshToken) return;
+      const sessionIds = await this._cacheRepository.getMembers(sessionKey)
 
-             //find session and delete session
-             const payload = this._tokenManager.verifyToken(refreshToken,'refresh')
+      for(const id of sessionIds){
+        await this._cacheRepository.delete(
+          REDIS_STORE.SESSION + id
+        )
+      }
 
-             const sessionKey = REDIS_STORE.SESSION + payload.sessionId
-
-             await this._cacheRepository.delete(sessionKey)
-
-             //delete from user set in redis
-             await this._cacheRepository.remSet(
-                REDIS_STORE.USER_SESSION+payload.userId,
-                payload.sessionId
-             )
-            
-        } catch (error) {
-            if(error instanceof CustomError){
-                throw error
-            }
-            throw new CustomError(CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,STATUS_CODES.INTERNAL_SERVER_ERROR)
-        }
+      await this._cacheRepository.delete(sessionKey)
+      
+    } catch (error) {
+      logError(error,{
+        service:"AuthServices.logoutAllDevices"
+      })
+      throw error
     }
+  }
 }
