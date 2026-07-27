@@ -41,6 +41,7 @@ app.use(
   })
 );
 
+app.set("trust proxy", true)
 app.use(requestIdMiddleware);
 
 //webhooks
