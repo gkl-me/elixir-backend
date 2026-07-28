@@ -21,6 +21,7 @@ export interface IGetAllCompanyDto {
   search: string;
   page: number;
   limit: number;
+  status?: string
 }
 
 

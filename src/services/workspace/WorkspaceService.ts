@@ -18,10 +18,16 @@ import { IWorkspaceMemberRepository } from "../../repositories/workspace/interfa
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
 import { generateSlug } from "../../helper/generateSlug";
 import {
+  ICreateWorkspaceDto,
+  IListAllWorkspaceDto,
+  IListAllWorkspaceResDto,
+  IToggleWorkspaceStatusDto,
   IWorkpsaceContextDto,
   IWorksapceLimitsResDto,
+  IWorkspaceBootstrapDto,
   IWorkspaceContextResDto,
-  IWorkspaceLimits,
+  IWorkspaceLimitsDto,
+  IWorkspaceResDto,
 } from "../../interfaces/dtos/WorkspaceDto";
 import {
   WORKSPACE_PERMISSIONS,
@@ -30,6 +36,7 @@ import {
 } from "../../constants/workspacePermissions";
 import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
 import { IWorkspaceTeamRepository } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
+import { workspaceDtoMapper } from "../../interfaces/mapper/workspaceDtoMapper";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -44,22 +51,15 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.UserRepository)
     private readonly _userRepository: IUserRepository,
-    @inject(Token.PlanRepository) private readonly _planRepository:IPlanRepository,
-    @inject(Token.WorkspaceTeamRepository) private readonly _workspaceTeamRepository:IWorkspaceTeamRepository,
-  ) {}
+    @inject(Token.PlanRepository) private readonly _planRepository: IPlanRepository,
+    @inject(Token.WorkspaceTeamRepository) private readonly _workspaceTeamRepository: IWorkspaceTeamRepository,
+  ) { }
 
-  async createWorkspace({
-    name,
-    ownerId,
-    companyId,
-    subscriptionId,
-  }: {
-    name: string;
-    ownerId: string;
-    companyId?: string;
-    subscriptionId?: string;
-  }): Promise<IWorkspace> {
+  async createWorkspace(data: ICreateWorkspaceDto): Promise<IWorkspace> {
     try {
+
+      const { name, ownerId, companyId, subscriptionId, planId } = data
+
       const workspace = await this._workspaceRepository.create({
         name,
         ownerId,
@@ -67,27 +67,22 @@ export class WorkspaceService implements IWorkspaceService {
         subscriptionId,
         slug: generateSlug(name),
         type: companyId ? "company" : "personal",
+        planId
       });
 
-      return workspace;
+      return workspace
     } catch (error) {
       throw error;
     }
   }
 
-  async bootStrapWorkspace(data: {
-    ownerId: string;
-    workspaceName: string;
-    planId: string;
-    companyId?: string;
-    stripePriceId?: string;
-    stripeSubscriptionId?: string;
-  }): Promise<IWorkspace> {
+  async bootStrapWorkspace(data: IWorkspaceBootstrapDto): Promise<IWorkspaceResDto> {
     try {
       const workspace = await this.createWorkspace({
         name: data.workspaceName,
         ownerId: data.ownerId,
         companyId: data.companyId,
+        planId: data.planId,
       });
 
       const roles = builtInRoles(String(workspace._id), data.ownerId);
@@ -119,7 +114,7 @@ export class WorkspaceService implements IWorkspaceService {
       workspace.subscriptionId = String(subscription._id);
       await workspace.save();
 
-      return workspace;
+      return workspaceDtoMapper.toWorkspace(workspace);
     } catch (error) {
       throw error;
     }
@@ -215,27 +210,27 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  async workspaceLimits(data: IWorkspaceLimits): Promise<IWorksapceLimitsResDto> {
+  async workspaceLimits(data: IWorkspaceLimitsDto): Promise<IWorksapceLimitsResDto> {
     try {
- 
-      const {workspaceId} = data
-      
+
+      const { workspaceId } = data
+
       const workspace = await this._workspaceRepository.findById(workspaceId)
 
-      if(!workspace || !workspace.subscriptionId){
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+      if (!workspace || !workspace.subscriptionId) {
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
       }
 
       const subscription = await this._subscriptionRepository.findById(workspace.subscriptionId)
 
-      if(!subscription || !subscription?.planId){
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
+      if (!subscription || !subscription?.planId) {
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
       }
 
       const workspacePlan = await this._planRepository.findById(subscription?.planId)
 
-      if(!workspacePlan || !workspacePlan?.limits ){
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST) 
+      if (!workspacePlan || !workspacePlan?.limits) {
+        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
       }
 
       const limits = workspacePlan.limits
@@ -243,29 +238,72 @@ export class WorkspaceService implements IWorkspaceService {
       //usage 
 
       const [teams, members, customRoles] = await Promise.all([
-  this._workspaceTeamRepository.count({ workspaceId }),
-  this._workspaceMemberRepository.count({ workspaceId }),
-  this._workspaceRoleRepository.count({ workspaceId }),
-]);
+        this._workspaceTeamRepository.count({ workspaceId }),
+        this._workspaceMemberRepository.count({ workspaceId }),
+        this._workspaceRoleRepository.count({ workspaceId }),
+      ]);
 
-console.log("teams",teams)
+      console.log("teams", teams)
 
 
       return {
         limits,
-        used:{
+        used: {
           teams,
           members,
           customRoles,
-          storageBytes:0,
-          projects:0
+          storageBytes: 0,
+          projects: 0
         }
       }
 
 
     } catch (error) {
-      logError(error,{
-        service:"WorkspaceService.workspaceLimits"
+      logError(error, {
+        service: "WorkspaceService.workspaceLimits"
+      })
+      throw error
+    }
+  }
+
+  async listAllWorkspace(data: IListAllWorkspaceDto): Promise<IListAllWorkspaceResDto> {
+    try {
+
+      const { search, page, limit, status } = data
+
+      const skip = (page - 1) * limit
+
+      const { workspaces, totalCount } = await this._workspaceRepository.getWorkspaceDetails({ search, status, skip, limit })
+
+      return {
+        workspaces: workspaces.map(workspace => workspaceDtoMapper.toWorkspaceList(workspace)),
+        totalCount
+      }
+
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceService.listAllWorkspace"
+      })
+      throw error
+    }
+  }
+
+  async toggleWorkspaceStatus(data: IToggleWorkspaceStatusDto): Promise<void> {
+    try {
+      const { workspaceId } = data
+
+      const workspace = await this._workspaceRepository.findById(workspaceId)
+
+      if (!workspace) {
+        throw new CustomError(WORKSPACE_MESSAGES.NOT_FOUND, STATUS_CODES.BAD_REQUEST)
+      }
+
+      workspace.status = workspace.status === "active" ? "suspended" : "active"
+      await workspace.save()
+
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceService.toggleWorkspaceStatus"
       })
       throw error
     }

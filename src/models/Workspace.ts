@@ -10,6 +10,7 @@ export interface IWorkspace extends Document {
   companyId?: string;
   subscriptionId?: string;
   status: 'active' | 'suspended';
+  planId: string,
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -45,6 +46,9 @@ const WorkspaceSchema = new Schema(
       type: String,
       enum: ['active', 'suspended'],
       default: 'active'
+    },
+    planId: {
+      type: String,
     }
   },
   {
