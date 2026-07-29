@@ -11,6 +11,7 @@ import { WorkspaceRoleRepository } from "../../repositories/workspace/WorkspaceR
 import { WorkspaceMemberRepository } from "../../repositories/workspace/WorkspaceMemberRepository";
 import { WorkspaceInviteRepository } from "../../repositories/workspace/WorkspaceInviteRepository";
 import { WorkspaceTeamRepository } from "../../repositories/workspace/WorkspaceTeamRepository";
+import { TransactionRepository } from "../../repositories/transaction/TransactionRepository";
 
 //repository
 container.register(Token.PlanRepository, {
@@ -49,3 +50,6 @@ container.register(Token.WorkspaceInviteRepository, {
 container.register(Token.WorkspaceTeamRepository, {
   useClass: WorkspaceTeamRepository,
 });
+container.register(Token.TransactionRepository, {
+  useClass: TransactionRepository
+})

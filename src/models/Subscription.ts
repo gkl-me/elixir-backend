@@ -1,6 +1,7 @@
 import { Document, model, Schema } from "mongoose";
+import { PlanType } from "./Plan";
 
-export type SUBSCRIBTION_STATUS = "active" | "inactive" | "cancelled";
+export type SUBSCRIPTION_STATUS = "active" | "canceled" | "past_due" | "paused" | "incomplete" | "incomplete_expired" | 'trialing' | 'unpaid'
 
 export interface ISubscription extends Document {
   userId: string;
@@ -8,15 +9,18 @@ export interface ISubscription extends Document {
 
   stripeSubscriptionId: string;
   stripePriceId: string;
+  stripeCustomerId?: string
 
   planId: string;
+  planType: PlanType
+  price: number
 
-  status: SUBSCRIBTION_STATUS;
+  status: SUBSCRIPTION_STATUS;
 
   currentPeriodStart?: Date;
   currentPeriodEnd?: Date;
-
-  cancelAtPeriodEnd?: Date;
+  billingCycle: "monthly"
+  cancelAtPeriodEnd?: boolean;
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -39,7 +43,7 @@ const SubscriptionSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "inactive", "cancelled"],
+      enum: ["active", "inactive", "canceled"],
       default: "inactive",
     },
     currentPeriodStart: {
@@ -49,11 +53,28 @@ const SubscriptionSchema = new Schema(
       type: Date,
     },
     cancelAtPeriodEnd: {
-      type: Date,
+      type: Boolean,
+      default: false
     },
     planId: {
       type: String,
     },
+    planType: {
+      type: String,
+      enum: ["Free", "Pro", "Enterprice"]
+    },
+    billingCycle: {
+      type: String,
+      enum: ["monthly"],
+      default: "monthly"
+    },
+    price: {
+      type: Number,
+    },
+    stripeCustomerId: {
+      type: String
+    }
+
   },
   {
     timestamps: true,

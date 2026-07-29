@@ -6,6 +6,7 @@ import { IStripeService } from "./interfaces/IStripeService";
 import logger from "../middlewares/logger";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../constants/messages";
 import { ENV } from "../constants/env";
+import { logError } from "../middlewares/loggerHelper";
 
 @injectable()
 export class StripeService implements IStripeService {
@@ -194,6 +195,24 @@ export class StripeService implements IStripeService {
     }
   }
 
+  async retrivePaymentIntent(intentId: string) {
+    try {
+
+      return await this._stripe.paymentIntents.retrieve(intentId, {
+        expand: [
+          "payment_method",
+          "latest_charge"
+        ]
+      })
+
+    } catch (error) {
+      logError(error, {
+        service: "StripeSerivce.retrivePaymentIntent"
+      })
+      throw error
+    }
+  }
+
   async expireSession(
     sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session> | null> {
@@ -250,6 +269,25 @@ export class StripeService implements IStripeService {
       );
     }
   }
+
+  async updateSubscription(subscriptionId: string, cancel: boolean): Promise<void> {
+    try {
+
+      await this._stripe.subscriptions.update(
+        subscriptionId,
+        {
+          cancel_at_period_end: cancel
+        }
+      )
+
+    } catch (error) {
+      logError(error, {
+        service: "StripeService.updateSubscription"
+      })
+      throw error
+    }
+  }
+
 
   async getOpenInvoice(customerId: string): Promise<Stripe.Invoice | null> {
     try {

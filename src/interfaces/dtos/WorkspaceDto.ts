@@ -31,6 +31,9 @@ export interface IWorkspaceBootstrapDto {
   companyId?: string;
   stripePriceId?: string;
   stripeSubscriptionId?: string;
+  stripeCustomerId?: string
+  currentPeriodStart?: Date
+  currentPeriodEnd?: Date,
 }
 
 export interface IWorkpsaceContextDto {

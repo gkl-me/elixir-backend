@@ -37,6 +37,7 @@ import {
 import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
 import { IWorkspaceTeamRepository } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
 import { workspaceDtoMapper } from "../../interfaces/mapper/workspaceDtoMapper";
+import { ISubscriptionService } from "../subscription/interface/ISubscriptionService";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -45,8 +46,8 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _workspaceRepository: IWorkspaceRepository,
     @inject(Token.WorkspaceRoleRepository)
     private readonly _workspaceRoleRepository: IWorkspaceRoleRepository,
-    @inject(Token.SubscriptionRepository)
-    private readonly _subscriptionRepository: ISubscriptionRepository,
+    @inject(Token.SubscriptionService)
+    private readonly _subscriptionService: ISubscriptionService,
     @inject(Token.WorkspaceMemberRepository)
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.UserRepository)
@@ -90,15 +91,26 @@ export class WorkspaceService implements IWorkspaceService {
       const workspaceRoles =
         await this._workspaceRoleRepository.createMany(roles);
 
-      const subscription = await this._subscriptionRepository.create({
+      // const subscription = await this._subscriptionRepository.create({
+      //   workspaceId: String(workspace._id),
+      //   userId: data.ownerId,
+      //   planId: data.planId,
+      //   stripePriceId: data.stripePriceId,
+      //   stripeSubscriptionId: data.stripeSubscriptionId,
+      //   status: "active",
+      //   currentPeriodStart: new Date(),
+      // });
+
+      const { subscriptionId } = await this._subscriptionService.createSubscription({
         workspaceId: String(workspace._id),
         userId: data.ownerId,
         planId: data.planId,
         stripePriceId: data.stripePriceId,
         stripeSubscriptionId: data.stripeSubscriptionId,
-        status: "active",
-        currentPeriodStart: new Date(),
-      });
+        stripeCustomerId: data.stripeCustomerId,
+        currentPeriodEnd: data.currentPeriodEnd,
+        currentPeriodStart: data.currentPeriodStart,
+      })
 
       const roleId = workspaceRoles.find((role) => role.name === "Owner")?._id;
 
@@ -111,7 +123,7 @@ export class WorkspaceService implements IWorkspaceService {
         joinedAt: new Date(),
       });
 
-      workspace.subscriptionId = String(subscription._id);
+      workspace.subscriptionId = String(subscriptionId);
       await workspace.save();
 
       return workspaceDtoMapper.toWorkspace(workspace);
@@ -217,17 +229,11 @@ export class WorkspaceService implements IWorkspaceService {
 
       const workspace = await this._workspaceRepository.findById(workspaceId)
 
-      if (!workspace || !workspace.subscriptionId) {
+      if (!workspace || !workspace.planId) {
         throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
       }
 
-      const subscription = await this._subscriptionRepository.findById(workspace.subscriptionId)
-
-      if (!subscription || !subscription?.planId) {
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
-      }
-
-      const workspacePlan = await this._planRepository.findById(subscription?.planId)
+      const workspacePlan = await this._planRepository.findById(workspace?.planId)
 
       if (!workspacePlan || !workspacePlan?.limits) {
         throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)

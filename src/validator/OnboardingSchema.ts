@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CompanySchema } from "./CompanySchema";
+import { PlanType } from "../models/Plan";
 
 export const OnboardingStateSchema = z
   .object({
@@ -7,7 +8,7 @@ export const OnboardingStateSchema = z
 
     isCompleted: z.boolean(),
 
-    planType: z.enum(["Free", "Pro", "Enterprice"]),
+    planType: z.nativeEnum(PlanType),
 
     planId: z.string().trim().min(1),
 
