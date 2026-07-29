@@ -16,17 +16,24 @@ import { logError } from "../../middlewares/loggerHelper";
 @injectable()
 export class WorkspaceMemberRepository
   extends BaseRepository<IWorkspaceMember>
-  implements IWorkspaceMemberRepository
-{
+  implements IWorkspaceMemberRepository {
   constructor() {
     super(WorkspaceMember);
   }
 
   async listMembers(
-    workspaceId: string
-  ): Promise<IWorkspaceMemberWithUser[] | []> {
+    workspaceId: string,
+    limit: number,
+    skip: number,
+    search?: string,
+  ): Promise<{
+    members: IWorkspaceMemberWithUser[] | []
+    totalCount: number
+  }> {
     try {
-      const data = await this._model.aggregate([
+
+      const pipeline = []
+      pipeline.push(
         {
           $match: {
             workspaceId: workspaceId,
@@ -119,9 +126,57 @@ export class WorkspaceMemberRepository
             },
           },
         },
-      ]);
+      )
 
-      return data;
+      if (search) {
+        pipeline.push({
+          $match: {
+            $or: [{
+              'user.name': {
+                $regex: search,
+                $options: "i"
+              }
+            },
+            {
+              'user.email': {
+                $regex: search,
+                $options: "i"
+              }
+            },
+            {
+              'role.name': {
+                $regex: search,
+                $options: "i"
+              }
+            }
+            ]
+          }
+        })
+      }
+
+      pipeline.push({
+        $facet: {
+          data: [
+            {
+              $skip: skip
+            },
+            {
+              $limit: limit
+            }
+          ],
+          totalCount: [
+            {
+              $count: "count"
+            }
+          ]
+        }
+      })
+
+      const [result] = await this._model.aggregate(pipeline)
+      return {
+        members: result.data,
+        totalCount: result.totalCount[0]?.count || 0,
+      }
     } catch (error) {
       logError(error, {
         service: "WorkspaceMemberRepository.listMembers",

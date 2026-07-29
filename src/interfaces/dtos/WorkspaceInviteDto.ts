@@ -2,9 +2,12 @@ import { WorkspaceInviteStatus } from "../../models/WorkspaceInvite";
 
 export interface IListInvitesDto {
   workspaceId: string;
+  search?: string,
+  limit: number,
+  page: number
 }
 
-export interface IListInvitesResDto {
+export interface IListInvitesDetails {
   id: string;
   workspaceId: string;
   email: string;
@@ -18,6 +21,12 @@ export interface IListInvitesResDto {
   revokedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface IListInvitesResDto {
+  invites: IListInvitesDetails[] | [];
+  totalCount: number;
+
 }
 
 export interface ISendInviteDto {

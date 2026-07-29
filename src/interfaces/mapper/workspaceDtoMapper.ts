@@ -8,8 +8,8 @@ import {
   IWorkspaceTeamWithMemberDetail,
 } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
 import { IListAllWorkspaceResponseDto, IWorkspaceResDto } from "../dtos/WorkspaceDto";
-import { IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
-import { IListMemberResDto } from "../dtos/WorkspaceMemberDto";
+import { IListInvitesDetails, IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
+import { IListMemberDetils, IListMemberResDto } from "../dtos/WorkspaceMemberDto";
 import {
   ICreateRoleResDto,
   IGetRolesResDto,
@@ -66,7 +66,7 @@ export class workspaceRoleDtoMapper {
 }
 
 export class workspaceInviteDtoMapper {
-  static toListInvites(invite: IWorkspaceInvite): IListInvitesResDto {
+  static toListInvites(invite: IWorkspaceInvite): IListInvitesDetails {
     return {
       id: String(invite?._id),
       workspaceId: invite?.workspaceId,
@@ -85,7 +85,7 @@ export class workspaceInviteDtoMapper {
 }
 
 export class workspaceMemberDtoMapper {
-  static toListMembers(member: IWorkspaceMemberWithUser): IListMemberResDto {
+  static toListMembers(member: IWorkspaceMemberWithUser): IListMemberDetils {
     return {
       memberId: member?._id,
       name: member?.user?.name,
