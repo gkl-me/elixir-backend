@@ -15,7 +15,7 @@ import {
   IGetRolesResDto,
   IUpdateRoleResDto,
 } from "../dtos/WorkspaceRoleDto";
-import { IGetTeamResDto, IListTeamsResDto } from "../dtos/WorkspaceTeamDto";
+import { IGetTeamResDto, IListTeamsDetails, IListTeamsResDto } from "../dtos/WorkspaceTeamDto";
 
 export class workspaceRoleDtoMapper {
   static toGetRoles(role: IWorkspaceRole): IGetRolesResDto {
@@ -100,7 +100,7 @@ export class workspaceMemberDtoMapper {
 }
 
 export class workspaceTeamDtoMapper {
-  static toListTeams(team: IWorkspaceTeamWithMember): IListTeamsResDto {
+  static toListTeams(team: IWorkspaceTeamWithMember): IListTeamsDetails {
     return {
       id: String(team?._id),
       name: team?.name,

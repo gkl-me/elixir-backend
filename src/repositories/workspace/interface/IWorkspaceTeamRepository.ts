@@ -22,7 +22,7 @@ export interface IWorkspaceTeamWithMemberDetail {
 }
 
 export interface IWorkspaceTeamRepository extends IBaseRepository<IWorkspaceTeam> {
-  listTeams(workspaceId: string): Promise<IWorkspaceTeamWithMember[] | []>;
+  listTeams(workspaceId: string, limit: number, skip: number, search?: string): Promise<IWorkspaceTeamWithMember[] | []>;
   listTeamMembers(
     workspaceId: string,
     teamId: string

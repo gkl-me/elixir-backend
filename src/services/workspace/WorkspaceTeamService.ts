@@ -21,15 +21,20 @@ export class WorkspaceTeamService implements IWorkspaceTeamService {
   constructor(
     @inject(Token.WorkspaceTeamRepository)
     private readonly _workspaceTeamRepository: IWorkspaceTeamRepository
-  ) {}
+  ) { }
 
-  async listTeams(data: IListTeamsDto): Promise<IListTeamsResDto[] | []> {
+  async listTeams(data: IListTeamsDto): Promise<IListTeamsResDto> {
     try {
-      const { workspaceId } = data;
+      const { workspaceId, limit, page, search } = data;
 
-      const teams = await this._workspaceTeamRepository.listTeams(workspaceId);
+      const skip = (page - 1) * limit
 
-      return teams.length ? teams.map(workspaceTeamDtoMapper.toListTeams) : [];
+      const teams = await this._workspaceTeamRepository.listTeams(workspaceId, limit, skip, search);
+
+      return {
+        teams: teams.map(workspaceTeamDtoMapper.toListTeams),
+        totalCount: teams.length
+      }
     } catch (error) {
       logError(error, {
         service: "WorkspaceTeamService.listTeams",

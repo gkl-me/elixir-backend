@@ -6,13 +6,14 @@ import { Request, Response, NextFunction } from "express";
 import { extractStringQueryParams } from "../../helper/queryParamUtils";
 import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { extractStringParams } from "../../helper/stringParamUtils";
 
 @injectable()
 export class WorkspaceTeamController implements IWorkspaceTeamController {
   constructor(
     @inject(Token.WorkspaceTeamService)
     private readonly workspaceTeamService: IWorkspaceTeamService
-  ) {}
+  ) { }
 
   async handleListTeams(
     req: Request,
@@ -20,20 +21,30 @@ export class WorkspaceTeamController implements IWorkspaceTeamController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const params = extractStringQueryParams(req.params, ["workspaceId"]);
-      const workspaceId = params?.workspaceId || "";
+      const { workspaceId } = extractStringParams(req.params, ["workspaceId"]);
 
-      const teams = await this.workspaceTeamService.listTeams({
+      const params = extractStringQueryParams(req.query, [
+        "search",
+        "page",
+        "limit",
+      ]);
+
+      const proccessParams = {
+        search: params?.search ?? "",
+        page: parseInt(params?.page || "1"),
+        limit: parseInt(params?.limit || "10"),
+      };
+
+      const result = await this.workspaceTeamService.listTeams({
         workspaceId,
+        ...proccessParams,
       });
 
       successResponse(
         res,
         "Workspace teams fetched successfully",
         STATUS_CODES.OK,
-        {
-          teams,
-        }
+        result
       );
     } catch (error) {
       next(error);

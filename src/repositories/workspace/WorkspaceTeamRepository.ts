@@ -14,20 +14,29 @@ import { CustomError } from "../../errors/CustomError";
 @injectable()
 export class WorkspaceTeamRepository
   extends BaseRepository<IWorkspaceTeam>
-  implements IWorkspaceTeamRepository
-{
+  implements IWorkspaceTeamRepository {
   constructor() {
     super(WorkspaceTeam);
   }
 
   async listTeams(
-    workspaceId: string
+    workspaceId: string,
+    limit: number,
+    skip: number,
+    search?: string
   ): Promise<IWorkspaceTeamWithMember[] | []> {
     try {
       const teams = await this._model.aggregate([
         {
           $match: {
             workspaceId,
+          },
+        },
+        {
+          $match: {
+            $or: [
+              { name: { $regex: search, $options: "i" } },
+            ],
           },
         },
         {
@@ -72,6 +81,11 @@ export class WorkspaceTeamRepository
             },
           },
         },
+        {
+          $skip: skip
+        }, {
+          $limit: limit
+        }
       ]);
 
       return teams;
