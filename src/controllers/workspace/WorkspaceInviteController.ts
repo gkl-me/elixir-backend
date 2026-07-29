@@ -10,13 +10,14 @@ import {
   resendInviteEmail,
   sendInviteEmail,
 } from "../../queues/email/email.producer";
+import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
 @injectable()
 export class WorkspaceInviteController implements IWorkspaceInviteController {
   constructor(
     @inject(Token.WorkspaceInviteService)
     private readonly workspaceInviteService: IWorkspaceInviteService
-  ) {}
+  ) { }
 
   async handleListInvites(
     req: Request,
@@ -25,13 +26,21 @@ export class WorkspaceInviteController implements IWorkspaceInviteController {
   ): Promise<void> {
     try {
       const { workspaceId } = extractStringParams(req.params, ["workspaceId"]);
-      const invites = await this.workspaceInviteService.listInvites({
+
+      const params = extractStringQueryParams(req.query, ["search", "page", "limit"])
+
+      const search = params?.search || ""
+      const page = parseInt(params?.page || "1")
+      const limit = parseInt(params?.limit || "10")
+
+      const result = await this.workspaceInviteService.listInvites({
         workspaceId,
+        search,
+        limit,
+        page
       });
 
-      successResponse(res, "Workspace invite list ", STATUS_CODES.OK, {
-        invites,
-      });
+      successResponse(res, "Workspace invite list ", STATUS_CODES.OK, result);
     } catch (error) {
       next(error);
     }

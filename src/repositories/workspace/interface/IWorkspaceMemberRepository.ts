@@ -34,6 +34,14 @@ export interface IUserWorkspace {
 }
 
 export interface IWorkspaceMemberRepository extends BaseRepository<IWorkspaceMember> {
-  listMembers(workspaceId: string): Promise<IWorkspaceMemberWithUser[] | []>;
+  listMembers(
+    workspaceId: string,
+    limit: number,
+    skip: number,
+    search?: string,
+  ): Promise<{
+    members: IWorkspaceMemberWithUser[] | []
+    totalCount: number
+  }>;
   listUserWorkspace(userId: string): Promise<IUserWorkspace[] | []>;
 }
