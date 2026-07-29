@@ -30,4 +30,6 @@ export interface IStripeService {
   getSubscriptionFromInvoice(
     invoice: Stripe.Invoice
   ): Promise<Stripe.Invoice.Parent.SubscriptionDetails | null>;
+  updateSubscription(subscriptionId: string, cancel: boolean): Promise<void>
+  retrivePaymentIntent(intentId: string): Promise<Stripe.PaymentIntent>
 }

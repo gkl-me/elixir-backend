@@ -40,11 +40,11 @@ export class CompanyService implements ICompanyService {
     totalCount: number;
   }> {
     try {
-      const { search, page, limit } = data;
+      const { search, page, limit, status } = data;
       const skip = (page - 1) * limit;
 
       const [allCompany, totalCount] = await Promise.all([
-        this._companyRepository.searchCompanies(search, {
+        this._companyRepository.searchCompanies(search, status, {
           skip,
           limit,
         }),
@@ -93,6 +93,7 @@ export class CompanyService implements ICompanyService {
       logError(error, {
         service: 'CompanyService.suspendCompany'
       })
+      throw error
     }
   }
 }

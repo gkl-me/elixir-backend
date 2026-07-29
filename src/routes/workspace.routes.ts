@@ -10,6 +10,8 @@ import { WORKSPACE_PERMISSIONS } from "../constants/workspacePermissions";
 import { IWorkspaceInviteController } from "../controllers/workspace/interface/IWorkspaceInviteController";
 import { IWorkspaceMemberController } from "../controllers/workspace/interface/IWorkspaceMemberController";
 import { IWorkspaceTeamController } from "../controllers/workspace/interface/IWorkspaceTeamController";
+import { authorize } from "../middlewares/authorize";
+import { APP_ROLES } from "../constants/roles";
 
 const router = Router();
 
@@ -28,6 +30,14 @@ const workspaceMemberController = container.resolve<IWorkspaceMemberController>(
 const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
   Token.WorkspaceTeamController
 );
+
+
+router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
+  void workspaceController.handleListAllWorkspace(req, res, next);
+});
+router.patch('/:workspaceId/status', auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
+  void workspaceController.handletoggleWorkspaceStatus(req, res, next)
+})
 
 router.get("/context/:slug", auth, (req, res, next) => {
   void workspaceController.handleWorkspaceContext(req, res, next);
@@ -67,9 +77,9 @@ router.delete(
     void workspaceRoleController.handleDeleteRole(req, res, next);
   }
 );
-router.get("/:workspaceId/limits",auth,
-  (req,res,next) => {
-    void workspaceController.handleWorkspaceLimits(req,res,next)
+router.get("/:workspaceId/limits", auth,
+  (req, res, next) => {
+    void workspaceController.handleWorkspaceLimits(req, res, next)
   }
 )
 

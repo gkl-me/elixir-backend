@@ -2,7 +2,7 @@ export interface IGetOnboardingDto {
   userId: string;
 }
 
-type PlanType = "Free" | "Pro" | "Enterprice";
+import { PlanType } from "../../models/Plan";
 
 export interface IResponeOnboardingDto {
   userId: string;
@@ -16,6 +16,7 @@ export interface IResponeOnboardingDto {
   planPrice: number;
 
   workspaceName?: string;
+  workspaceSlug?: string
 
   company?: {
     name: string;

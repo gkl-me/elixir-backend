@@ -25,12 +25,14 @@ export class CompanyController implements ICompanyController {
         "search",
         "page",
         "limit",
+        "status"
       ]);
 
       const proccessParams = {
         search: params?.search ?? "",
         page: parseInt(params?.page || "1"),
         limit: parseInt(params?.limit || "10"),
+        status: params?.status || ""
       };
 
       const { companies, totalCount } =

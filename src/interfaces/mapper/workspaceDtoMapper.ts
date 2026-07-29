@@ -1,10 +1,13 @@
+import { IWorkspace } from "../../models/Workspace";
 import { IWorkspaceInvite } from "../../models/WorkspaceInvite";
 import { IWorkspaceRole } from "../../models/WorkspaceRole";
 import { IWorkspaceMemberWithUser } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
+import { IGetAllWorkspaceDetails, IGetAllWorkspaceRes } from "../../repositories/workspace/interface/IWorkspaceRepository";
 import {
   IWorkspaceTeamWithMember,
   IWorkspaceTeamWithMemberDetail,
 } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
+import { IListAllWorkspaceResponseDto, IWorkspaceResDto } from "../dtos/WorkspaceDto";
 import { IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
 import { IListMemberResDto } from "../dtos/WorkspaceMemberDto";
 import {
@@ -120,4 +123,38 @@ export class workspaceTeamDtoMapper {
       })),
     };
   }
+}
+
+
+
+export class workspaceDtoMapper {
+
+  static toWorkspace(workspace: IWorkspace): IWorkspaceResDto {
+    return {
+      id: String(workspace._id),
+      name: workspace.name,
+      slug: workspace.slug,
+      ownerId: workspace.ownerId,
+      companyId: workspace.companyId,
+      subscriptionId: workspace.subscriptionId,
+      planId: workspace.planId,
+      type: workspace.type,
+      status: workspace.status,
+      createdAt: workspace.createdAt,
+      updatedAt: workspace.updatedAt,
+    }
+  }
+
+  static toWorkspaceList(workspace: IGetAllWorkspaceDetails): IListAllWorkspaceResponseDto {
+    return {
+      id: String(workspace._id),
+      name: workspace.name,
+      ownerEmail: workspace.ownerEmail,
+      totalUsers: workspace.totalUsers,
+      status: workspace.status,
+      planType: workspace.planType,
+      createdAt: workspace.createdAt,
+    }
+  }
+
 }

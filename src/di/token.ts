@@ -1,3 +1,5 @@
+import { Subscription } from "../models/Subscription";
+
 export const Token = {
   PasswordHasher: "IPasswordHasher",
   TokenManager: "ITokenManager",
@@ -16,6 +18,7 @@ export const Token = {
   WorkspaceMemberRepository: "IWorkspaceMemberRepository",
   WorkspaceInviteRepository: "IWorkspaceInviteRepository",
   WorkspaceTeamRepository: "IWorkspaceTeamRepository",
+  TransactionRepository: "ITransactionRepository",
 
   PlanService: "IPlanService",
   AuthService: "IAuthService",
@@ -33,6 +36,7 @@ export const Token = {
   WorkspaceInviteService: "IWorkspaceInviteService",
   WorkspaceMemberService: "IWorkspaceMemberService",
   WorkspaceTeamService: "IWorkspaceTeamService",
+  TransactionService: "ITransactionService",
 
   VerifyController: "IVerifyController",
   PasswordController: "IPasswordController",
@@ -50,4 +54,5 @@ export const Token = {
   WorkspaceInviteController: "IWorkspaceInviteController",
   WorkspaceMemberController: "IWorkspaceMemberController",
   WorkspaceTeamController: "IWorkspaceTeamController",
+  TransactionController: "ITransactionController"
 };

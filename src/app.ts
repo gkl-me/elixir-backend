@@ -18,6 +18,8 @@ import webhookRoutes from "./routes/webhook.routes";
 import paymentRoutes from "./routes/payment.routes";
 import companyRoutes from "./routes/company.routes";
 import workspaceRoutes from "./routes/workspace.routes";
+import subscriptionRoutes from "./routes/subscription.routes";
+import transactionRoutes from "./routes/transaction.routes"
 
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -59,6 +61,9 @@ app.use("/api/v1/onboarding", onboardingRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/company", companyRoutes);
 app.use("/api/v1/workspace", workspaceRoutes);
+app.use("/api/v1/subscription", subscriptionRoutes);
+app.use("/api/v1/transaction", transactionRoutes);
+
 
 app.get("/api/v1/demo", auth, (req, res) => {
   res.json({
