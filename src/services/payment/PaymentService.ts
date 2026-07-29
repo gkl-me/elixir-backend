@@ -173,12 +173,14 @@ export class PaymentService implements IPaymentService {
       })
 
       if (!subscription || !subscription.planId) {
+        console.log("Subscription not found")
         throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
       }
 
       const currentPlan = await this._planRepository.findById(subscription.planId)
 
       if (!currentPlan) {
+        console.log("current plan")
         throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
       }
 
