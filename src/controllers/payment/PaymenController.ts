@@ -16,7 +16,7 @@ export class PaymentController implements IPaymentController {
     private readonly _paymentService: IPaymentService,
     @inject(Token.OnboardingService)
     private readonly _onboardingService: IOnboardingService
-  ) {}
+  ) { }
 
   async handleVerifyPayment(
     req: Request,
@@ -60,8 +60,8 @@ export class PaymentController implements IPaymentController {
 
   async handleBillingInfo(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      
-      const params = extractStringQueryParams(req.params,["workspaceId"])
+
+      const params = extractStringQueryParams(req.params, ["workspaceId"])
       const workspaceId = params?.workspaceId || ""
 
       const data = await this._paymentService.billingInfo({
@@ -69,10 +69,26 @@ export class PaymentController implements IPaymentController {
       })
 
 
-      successResponse(res,CONSTANT_MESSAGES.SUCCESS,STATUS_CODES.OK,data)
+      successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, data)
 
     } catch (error) {
       next(error)
+    }
+  }
+
+  async handleCreateCustomerPortal(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+
+      const userId = req.user.userId;
+      const { workspaceId } = req.body
+
+      const result = await this._paymentService.createCustomerPortal({
+        userId,
+        workspaceId
+      });
+      successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, result);
+    } catch (error) {
+      next(error);
     }
   }
 }

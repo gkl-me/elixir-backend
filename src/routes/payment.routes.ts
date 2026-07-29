@@ -17,8 +17,12 @@ router.post("/retry", auth, (req, res, next) => {
   void paymentController.handleRetryPayment(req, res, next);
 });
 
-router.get('/billing/:workspaceId',auth,(req,res,next) => {
-  void paymentController.handleBillingInfo(req,res,next)
+router.get('/billing/:workspaceId', auth, (req, res, next) => {
+  void paymentController.handleBillingInfo(req, res, next)
+})
+
+router.post('/customer-portal', auth, (req, res, next) => {
+  void paymentController.handleCreateCustomerPortal(req, res, next)
 })
 
 export default router;

@@ -16,4 +16,5 @@ export interface IPaymentController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
+  handleCreateCustomerPortal(req: Request, res: Response, next: NextFunction): Promise<void>
 }

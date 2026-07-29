@@ -11,6 +11,8 @@ import { IPaymentService } from "./interface/IPaymentService";
 import {
   ICheckoutDto,
   ICheckoutResponseDto,
+  ICreateCustomerPortalDto,
+  ICreateCustomerPortalResDto,
   IGetBillingDto,
   IGetBillingResDto,
   IRetryPaymentDto,
@@ -19,6 +21,7 @@ import {
 } from "../../interfaces/dtos/PaymentDto";
 import { logError } from "../../middlewares/loggerHelper";
 import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
+import { ENV } from "../../constants/env";
 
 @injectable()
 export class PaymentService implements IPaymentService {
@@ -214,6 +217,32 @@ export class PaymentService implements IPaymentService {
     } catch (error) {
       logError(error, {
         service: "PaymentService.billingInfo"
+      })
+      throw error
+    }
+  }
+
+  async createCustomerPortal(data: ICreateCustomerPortalDto): Promise<ICreateCustomerPortalResDto> {
+    try {
+
+      const { userId, workspaceId } = data
+
+      const user = await this._userRepository.findById(userId)
+      if (!user || !user.stripeCustomerId) {
+        throw new CustomError("Stripe customer not found", STATUS_CODES.BAD_REQUEST);
+      }
+
+      const returnUrl = `${ENV.CLIENT_URL}/workspace/${workspaceId}/settings/?tab=billing`;
+      const portalUrl = await this._stripeService.createCustomerPortalSession(
+        user.stripeCustomerId,
+        returnUrl
+      );
+
+      return { customerPortalUrl: portalUrl };
+
+    } catch (error) {
+      logError(error, {
+        service: "PaymentService.creatCustomerPortal"
       })
       throw error
     }

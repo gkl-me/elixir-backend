@@ -369,6 +369,9 @@ async function handleSubscriptionUpdated(event: Stripe.Event): Promise<void> {
 
     const stripeSub = event.data.object as Stripe.Subscription
 
+    console.log("sub updated")
+    console.log("cancel", stripeSub.cancel_at_period_end)
+
     const sub = await _subscriptionRepository.findOne({
       stripeSubscriptionId: stripeSub.id
     })

@@ -347,4 +347,21 @@ export class StripeService implements IStripeService {
       );
     }
   }
+
+  async createCustomerPortalSession(customerId: string, returnUrl: string): Promise<string> {
+    try {
+
+      const session = await this._stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: returnUrl
+      })
+
+      return session.url
+    } catch (error) {
+      logError(error, {
+        service: "StripeService.createCustomerPortalSession"
+      })
+      throw error
+    }
+  }
 }
