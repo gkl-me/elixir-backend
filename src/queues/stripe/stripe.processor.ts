@@ -38,7 +38,9 @@ export async function handleStripeEventProcessor(job: Job): Promise<void> {
   return;
 }
 
-function getPaymentIntentIdFromInvoice(invoice: Stripe.Invoice): string | undefined {
+function getPaymentIntentIdFromInvoice(
+  invoice: Stripe.Invoice
+): string | undefined {
   // 1. Direct payment_intent property on invoice
   const directPi = (invoice as any).payment_intent;
   if (directPi) {
@@ -99,7 +101,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     );
     const _transactionService = container.resolve<ITransactionService>(
       Token.TransactionService
-    )
+    );
 
     const invoice = event.data.object as Stripe.Invoice;
 
@@ -121,7 +123,8 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       if (paymentIntentId.startsWith("pi_")) {
         pi = await _stripeService.retrivePaymentIntent(paymentIntentId);
         if (pi) {
-          const paymentMethod = pi.payment_method as Stripe.PaymentMethod | null;
+          const paymentMethod =
+            pi.payment_method as Stripe.PaymentMethod | null;
           const charge = pi.latest_charge as Stripe.Charge | null;
           brand = paymentMethod?.card?.brand || "Card";
           last4 = paymentMethod?.card?.last4 || "4242";
@@ -145,25 +148,24 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       chargeId,
     });
 
-
-
-
     const existingSub = await _subscriptionRepository.findOne({
-      stripeSubscriptionId: stripeSubId
-    })
+      stripeSubscriptionId: stripeSubId,
+    });
 
     if (existingSub) {
-      logInfo("Processuing recurring renewal payment")
+      logInfo("Processuing recurring renewal payment");
 
-      existingSub.status = "active",
-        existingSub.cancelAtPeriodEnd = false
-      existingSub.currentPeriodStart = new Date(invoice.period_start * 1000)
-      existingSub.currentPeriodEnd = new Date(invoice.period_end * 1000)
-      await existingSub.save()
-
+      ((existingSub.status = "active"),
+        (existingSub.cancelAtPeriodEnd = false));
+      existingSub.currentPeriodStart = new Date(invoice.period_start * 1000);
+      existingSub.currentPeriodEnd = new Date(invoice.period_end * 1000);
+      await existingSub.save();
 
       //need to add transaction
-      console.log("[Stripe Processor] Creating renewal transaction for workspace:", existingSub.workspaceId);
+      console.log(
+        "[Stripe Processor] Creating renewal transaction for workspace:",
+        existingSub.workspaceId
+      );
       await _transactionService.createTransaction({
         transactionRef: pi?.id || paymentIntentId || invoice.id || "",
         invoiceNumber: invoice.number || `INV-RENEW-${Date.now()}`,
@@ -173,7 +175,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
         customerEmail: invoice.customer_email!,
         amount: invoice.amount_paid,
         currency: invoice.currency.toUpperCase(),
-        status: 'success',
+        status: "success",
         paymentMethod: brand || "Card",
         last4: last4 || "4242",
         planType: existingSub.planType,
@@ -181,11 +183,12 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
         stripeChargeId: chargeId,
         invoicePdfUrl: invoice.invoice_pdf || "",
       });
-      console.log("[Stripe Processor] Renewal transaction created successfully.");
+      console.log(
+        "[Stripe Processor] Renewal transaction created successfully."
+      );
 
-      return
+      return;
     }
-
 
     const onboarding = await _onboardingRepository.findOne({ userId });
     const plan = await _planRepository.findById(planId);
@@ -220,7 +223,10 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     });
 
     //need to add transaction
-    console.log("[Stripe Processor] Creating initial onboarding transaction for workspace:", workspace.id);
+    console.log(
+      "[Stripe Processor] Creating initial onboarding transaction for workspace:",
+      workspace.id
+    );
     await _transactionService.createTransaction({
       transactionRef: pi?.id || paymentIntentId || invoice.id || "",
       invoiceNumber: invoice.number || `INV-INIT-${Date.now()}`,
@@ -230,7 +236,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       customerEmail: invoice.customer_email!,
       amount: invoice.amount_paid,
       currency: invoice.currency.toUpperCase(),
-      status: 'success',
+      status: "success",
       paymentMethod: brand || "Card",
       last4: last4 || "4242",
       planType: onboarding.planType,
@@ -265,7 +271,7 @@ async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
     );
     const _transactionService = container.resolve<ITransactionService>(
       Token.TransactionService
-    )
+    );
 
     const invoice = event.data.object as Stripe.Invoice;
 
@@ -304,17 +310,14 @@ async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
       chargeId,
     });
 
-
     const existingSub = await _subscriptionRepository.findOne({
-      stripeSubscriptionId: stripeSubId
-    })
+      stripeSubscriptionId: stripeSubId,
+    });
 
     if (existingSub) {
-      logInfo("Processuing recurring renewal payment")
+      logInfo("Processuing recurring renewal payment");
 
-      existingSub.status = "past_due",
-        await existingSub.save()
-
+      ((existingSub.status = "past_due"), await existingSub.save());
 
       //need to add transaction
       await _transactionService.createTransaction({
@@ -335,13 +338,15 @@ async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
         invoicePdfUrl: invoice.invoice_pdf || "",
       });
 
-
-      return
+      return;
     }
 
     const onboarding = await _onboardingRepository.findOne({ userId });
     if (!onboarding) {
-      console.log("[Stripe Processor] handlePaymentFailed missing onboarding for userId:", userId);
+      console.log(
+        "[Stripe Processor] handlePaymentFailed missing onboarding for userId:",
+        userId
+      );
       throw new CustomError(
         CONSTANT_MESSAGES.BAD_REQUEST,
         STATUS_CODES.BAD_REQUEST
@@ -358,63 +363,55 @@ async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
   }
 }
 
-
 async function handleSubscriptionUpdated(event: Stripe.Event): Promise<void> {
-
   try {
-
     const _subscriptionRepository = container.resolve<ISubscriptionRepository>(
       Token.SubscriptionRepository
     );
 
-    const stripeSub = event.data.object as Stripe.Subscription
+    const stripeSub = event.data.object as Stripe.Subscription;
 
-    console.log("sub updated")
-    console.log("cancel", stripeSub.cancel_at_period_end)
+    console.log("sub updated");
+    console.log("cancel", stripeSub.cancel_at_period_end);
 
     const sub = await _subscriptionRepository.findOne({
-      stripeSubscriptionId: stripeSub.id
-    })
+      stripeSubscriptionId: stripeSub.id,
+    });
 
-    if (!sub) return
+    if (!sub) return;
 
-    sub.status = sub.status === "active" ? "active" : stripeSub.status
-    sub.cancelAtPeriodEnd = stripeSub.cancel_at_period_end
-    await sub.save()
-
+    sub.status = sub.status === "active" ? "active" : stripeSub.status;
+    sub.cancelAtPeriodEnd = stripeSub.cancel_at_period_end;
+    await sub.save();
   } catch (error) {
     logError(error, {
-      service: "Stripe.Processor.updateSubscription"
-    })
-    throw error
+      service: "Stripe.Processor.updateSubscription",
+    });
+    throw error;
   }
-
 }
-
 
 async function handleSubscriptionDeleted(event: Stripe.Event): Promise<void> {
   try {
-
     const _subscriptionRepository = container.resolve<ISubscriptionRepository>(
       Token.SubscriptionRepository
     );
 
-    const stripSub = event.data.object as Stripe.Subscription
+    const stripSub = event.data.object as Stripe.Subscription;
 
     const sub = await _subscriptionRepository.findOne({
-      stripeSubscriptionId: stripSub.id
-    })
+      stripeSubscriptionId: stripSub.id,
+    });
 
-    if (!sub) return
+    if (!sub) return;
 
-    sub.status = "canceled"
-    sub.cancelAtPeriodEnd = true
-    await sub.save()
-
+    sub.status = "canceled";
+    sub.cancelAtPeriodEnd = true;
+    await sub.save();
   } catch (error) {
     logError(error, {
-      service: "Stripe.Processor.delteSubscription"
-    })
-    throw error
+      service: "Stripe.Processor.delteSubscription",
+    });
+    throw error;
   }
 }

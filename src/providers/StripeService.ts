@@ -197,19 +197,14 @@ export class StripeService implements IStripeService {
 
   async retrivePaymentIntent(intentId: string) {
     try {
-
       return await this._stripe.paymentIntents.retrieve(intentId, {
-        expand: [
-          "payment_method",
-          "latest_charge"
-        ]
-      })
-
+        expand: ["payment_method", "latest_charge"],
+      });
     } catch (error) {
       logError(error, {
-        service: "StripeSerivce.retrivePaymentIntent"
-      })
-      throw error
+        service: "StripeSerivce.retrivePaymentIntent",
+      });
+      throw error;
     }
   }
 
@@ -270,24 +265,21 @@ export class StripeService implements IStripeService {
     }
   }
 
-  async updateSubscription(subscriptionId: string, cancel: boolean): Promise<void> {
+  async updateSubscription(
+    subscriptionId: string,
+    cancel: boolean
+  ): Promise<void> {
     try {
-
-      await this._stripe.subscriptions.update(
-        subscriptionId,
-        {
-          cancel_at_period_end: cancel
-        }
-      )
-
+      await this._stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: cancel,
+      });
     } catch (error) {
       logError(error, {
-        service: "StripeService.updateSubscription"
-      })
-      throw error
+        service: "StripeService.updateSubscription",
+      });
+      throw error;
     }
   }
-
 
   async getOpenInvoice(customerId: string): Promise<Stripe.Invoice | null> {
     try {
@@ -348,20 +340,22 @@ export class StripeService implements IStripeService {
     }
   }
 
-  async createCustomerPortalSession(customerId: string, returnUrl: string): Promise<string> {
+  async createCustomerPortalSession(
+    customerId: string,
+    returnUrl: string
+  ): Promise<string> {
     try {
-
       const session = await this._stripe.billingPortal.sessions.create({
         customer: customerId,
-        return_url: returnUrl
-      })
+        return_url: returnUrl,
+      });
 
-      return session.url
+      return session.url;
     } catch (error) {
       logError(error, {
-        service: "StripeService.createCustomerPortalSession"
-      })
-      throw error
+        service: "StripeService.createCustomerPortalSession",
+      });
+      throw error;
     }
   }
 }

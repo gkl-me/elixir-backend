@@ -14,7 +14,8 @@ import { CustomError } from "../../errors/CustomError";
 @injectable()
 export class WorkspaceTeamRepository
   extends BaseRepository<IWorkspaceTeam>
-  implements IWorkspaceTeamRepository {
+  implements IWorkspaceTeamRepository
+{
   constructor() {
     super(WorkspaceTeam);
   }
@@ -34,9 +35,7 @@ export class WorkspaceTeamRepository
         },
         {
           $match: {
-            $or: [
-              { name: { $regex: search, $options: "i" } },
-            ],
+            $or: [{ name: { $regex: search, $options: "i" } }],
           },
         },
         {
@@ -82,10 +81,11 @@ export class WorkspaceTeamRepository
           },
         },
         {
-          $skip: skip
-        }, {
-          $limit: limit
-        }
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
       ]);
 
       return teams;

@@ -13,7 +13,7 @@ export class WorkspaceTeamController implements IWorkspaceTeamController {
   constructor(
     @inject(Token.WorkspaceTeamService)
     private readonly workspaceTeamService: IWorkspaceTeamService
-  ) { }
+  ) {}
 
   async handleListTeams(
     req: Request,

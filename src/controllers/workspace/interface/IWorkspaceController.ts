@@ -10,11 +10,15 @@ export interface IWorkspaceController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void>
+  ): Promise<void>;
   handleListAllWorkspace(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void>
-  handletoggleWorkspaceStatus(req: Request, res: Response, next: NextFunction): Promise<void>
+  ): Promise<void>;
+  handletoggleWorkspaceStatus(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
 }

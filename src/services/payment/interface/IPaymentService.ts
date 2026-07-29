@@ -14,6 +14,8 @@ export interface IPaymentService {
   startCheckout(data: ICheckoutDto): Promise<ICheckoutResponseDto>;
   verifyPayment(data: IVerifyPaymentDto): Promise<boolean>;
   retryPayment(data: IRetryPaymentDto): Promise<IRetryPaymentResponseDto>;
-  billingInfo(data: IGetBillingDto): Promise<IGetBillingResDto>
-  createCustomerPortal(data: ICreateCustomerPortalDto): Promise<ICreateCustomerPortalResDto>
+  billingInfo(data: IGetBillingDto): Promise<IGetBillingResDto>;
+  createCustomerPortal(
+    data: ICreateCustomerPortalDto
+  ): Promise<ICreateCustomerPortalResDto>;
 }

@@ -74,7 +74,11 @@ export const auth = async (
       return next(error);
     }
     return next(
-      new CustomError(CONSTANT_MESSAGES.UNAUTHORIZED, STATUS_CODES.UNAUTHORIZED,AUTH_ERROR_CODE.UNAUTHORIZED)
+      new CustomError(
+        CONSTANT_MESSAGES.UNAUTHORIZED,
+        STATUS_CODES.UNAUTHORIZED,
+        AUTH_ERROR_CODE.UNAUTHORIZED
+      )
     );
   }
 };

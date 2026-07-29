@@ -17,7 +17,7 @@ export class WorkspaceInviteController implements IWorkspaceInviteController {
   constructor(
     @inject(Token.WorkspaceInviteService)
     private readonly workspaceInviteService: IWorkspaceInviteService
-  ) { }
+  ) {}
 
   async handleListInvites(
     req: Request,
@@ -27,17 +27,21 @@ export class WorkspaceInviteController implements IWorkspaceInviteController {
     try {
       const { workspaceId } = extractStringParams(req.params, ["workspaceId"]);
 
-      const params = extractStringQueryParams(req.query, ["search", "page", "limit"])
+      const params = extractStringQueryParams(req.query, [
+        "search",
+        "page",
+        "limit",
+      ]);
 
-      const search = params?.search || ""
-      const page = parseInt(params?.page || "1")
-      const limit = parseInt(params?.limit || "10")
+      const search = params?.search || "";
+      const page = parseInt(params?.page || "1");
+      const limit = parseInt(params?.limit || "10");
 
       const result = await this.workspaceInviteService.listInvites({
         workspaceId,
         search,
         limit,
-        page
+        page,
       });
 
       successResponse(res, "Workspace invite list ", STATUS_CODES.OK, result);

@@ -24,32 +24,29 @@ export interface IRetryPaymentResponseDto {
   payment_url: string;
 }
 
-
 export interface IGetBillingDto {
-  workspaceId: string
+  workspaceId: string;
 }
-
 
 export interface IGetBillingResDto {
   currentPlan: {
-    id: string,
-    name: string,
-    type: string,
-    price: number,
-  },
+    id: string;
+    name: string;
+    type: string;
+    price: number;
+  };
   subscription: {
-    status: string,
-    currentPeriodEnd?: Date
-  },
-  upgradePlans: IPlan[] | undefined
+    status: string;
+    currentPeriodEnd?: Date;
+  };
+  upgradePlans: IPlan[] | undefined;
 }
 
-
 export interface ICreateCustomerPortalDto {
-  userId: string,
-  workspaceId: string
+  userId: string;
+  workspaceId: string;
 }
 
 export interface ICreateCustomerPortalResDto {
-  customerPortalUrl: string
+  customerPortalUrl: string;
 }

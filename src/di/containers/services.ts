@@ -67,8 +67,8 @@ container.register(Token.WorkspaceTeamService, {
   useClass: WorkspaceTeamService,
 });
 container.register(Token.TransactionService, {
-  useClass: TransactionService
-})
+  useClass: TransactionService,
+});
 
 // container.register(Token.PlanService,{
 //     useClass:PlanService

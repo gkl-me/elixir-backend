@@ -31,13 +31,17 @@ const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
   Token.WorkspaceTeamController
 );
 
-
 router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
   void workspaceController.handleListAllWorkspace(req, res, next);
 });
-router.patch('/:workspaceId/status', auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
-  void workspaceController.handletoggleWorkspaceStatus(req, res, next)
-})
+router.patch(
+  "/:workspaceId/status",
+  auth,
+  authorize(APP_ROLES.SUPER_ADMIN),
+  (req, res, next) => {
+    void workspaceController.handletoggleWorkspaceStatus(req, res, next);
+  }
+);
 
 router.get("/context/:slug", auth, (req, res, next) => {
   void workspaceController.handleWorkspaceContext(req, res, next);
@@ -77,11 +81,9 @@ router.delete(
     void workspaceRoleController.handleDeleteRole(req, res, next);
   }
 );
-router.get("/:workspaceId/limits", auth,
-  (req, res, next) => {
-    void workspaceController.handleWorkspaceLimits(req, res, next)
-  }
-)
+router.get("/:workspaceId/limits", auth, (req, res, next) => {
+  void workspaceController.handleWorkspaceLimits(req, res, next);
+});
 
 // Invite validation & accept — MUST come before /:workspaceId/invites to avoid
 // Express capturing 'invites' as a workspaceId

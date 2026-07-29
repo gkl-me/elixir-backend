@@ -8,7 +8,8 @@ import { ICompanyRepository } from "./interface/ICompanyRepository";
 
 export class CompanyRepository
   extends BaseRepository<ICompany>
-  implements ICompanyRepository {
+  implements ICompanyRepository
+{
   constructor() {
     super(Company);
   }
@@ -21,9 +22,8 @@ export class CompanyRepository
     try {
       let query = this._model.find({
         ...(search ? { name: { $regex: search, $options: "i" } } : {}),
-        ...(status ? { status: status } : {})
-      }
-      );
+        ...(status ? { status: status } : {}),
+      });
 
       if (options?.limit !== undefined) {
         query = query.limit(options?.limit);

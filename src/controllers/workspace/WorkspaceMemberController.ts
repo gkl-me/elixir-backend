@@ -13,7 +13,7 @@ export class WorkspaceMemberController implements IWorkspaceMemberController {
   constructor(
     @inject(Token.WorkspaceMemberService)
     private readonly _workspaceMemberService: IWorkspaceMemberService
-  ) { }
+  ) {}
 
   async handleListMembers(
     req: Request,
@@ -23,19 +23,28 @@ export class WorkspaceMemberController implements IWorkspaceMemberController {
     try {
       const { workspaceId } = extractStringParams(req.params, ["workspaceId"]);
 
-      const params = extractStringQueryParams(req.query, ["search", "page", "limit"])
+      const params = extractStringQueryParams(req.query, [
+        "search",
+        "page",
+        "limit",
+      ]);
 
-      const search = params?.search || ""
-      const page = parseInt(params?.page || "1")
-      const limit = parseInt(params?.limit || "10")
+      const search = params?.search || "";
+      const page = parseInt(params?.page || "1");
+      const limit = parseInt(params?.limit || "10");
 
       const result = await this._workspaceMemberService.listMember({
         workspaceId,
         search,
         limit,
-        page
+        page,
       });
-      successResponse(res, "Workspace members list fetched", STATUS_CODES.OK, result)
+      successResponse(
+        res,
+        "Workspace members list fetched",
+        STATUS_CODES.OK,
+        result
+      );
     } catch (error) {
       next(error);
     }

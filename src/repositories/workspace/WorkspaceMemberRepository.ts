@@ -16,7 +16,8 @@ import { logError } from "../../middlewares/loggerHelper";
 @injectable()
 export class WorkspaceMemberRepository
   extends BaseRepository<IWorkspaceMember>
-  implements IWorkspaceMemberRepository {
+  implements IWorkspaceMemberRepository
+{
   constructor() {
     super(WorkspaceMember);
   }
@@ -25,14 +26,13 @@ export class WorkspaceMemberRepository
     workspaceId: string,
     limit: number,
     skip: number,
-    search?: string,
+    search?: string
   ): Promise<{
-    members: IWorkspaceMemberWithUser[] | []
-    totalCount: number
+    members: IWorkspaceMemberWithUser[] | [];
+    totalCount: number;
   }> {
     try {
-
-      const pipeline = []
+      const pipeline = [];
       pipeline.push(
         {
           $match: {
@@ -125,58 +125,59 @@ export class WorkspaceMemberRepository
               name: "$role.name",
             },
           },
-        },
-      )
+        }
+      );
 
       if (search) {
         pipeline.push({
           $match: {
-            $or: [{
-              'user.name': {
-                $regex: search,
-                $options: "i"
-              }
-            },
-            {
-              'user.email': {
-                $regex: search,
-                $options: "i"
-              }
-            },
-            {
-              'role.name': {
-                $regex: search,
-                $options: "i"
-              }
-            }
-            ]
-          }
-        })
+            $or: [
+              {
+                "user.name": {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
+              {
+                "user.email": {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
+              {
+                "role.name": {
+                  $regex: search,
+                  $options: "i",
+                },
+              },
+            ],
+          },
+        });
       }
 
       pipeline.push({
         $facet: {
           data: [
             {
-              $skip: skip
+              $skip: skip,
             },
             {
-              $limit: limit
-            }
+              $limit: limit,
+            },
           ],
           totalCount: [
             {
-              $count: "count"
-            }
-          ]
-        }
-      })
+              $count: "count",
+            },
+          ],
+        },
+      });
 
-      const [result] = await this._model.aggregate(pipeline)
+      const [result] = await this._model.aggregate(pipeline);
       return {
         members: result.data,
         totalCount: result.totalCount[0]?.count || 0,
-      }
+      };
     } catch (error) {
       logError(error, {
         service: "WorkspaceMemberRepository.listMembers",

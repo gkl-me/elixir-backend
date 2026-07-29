@@ -18,9 +18,9 @@ export interface IWorkspaceService {
   workspaceContext(
     data: IWorkpsaceContextDto
   ): Promise<IWorkspaceContextResDto>;
-  workspaceLimits(
-    data: IWorkspaceLimitsDto
-  ): Promise<IWorksapceLimitsResDto>
-  listAllWorkspace(data: IListAllWorkspaceDto): Promise<IListAllWorkspaceResDto>
-  toggleWorkspaceStatus(data: IToggleWorkspaceStatusDto): Promise<void>
+  workspaceLimits(data: IWorkspaceLimitsDto): Promise<IWorksapceLimitsResDto>;
+  listAllWorkspace(
+    data: IListAllWorkspaceDto
+  ): Promise<IListAllWorkspaceResDto>;
+  toggleWorkspaceStatus(data: IToggleWorkspaceStatusDto): Promise<void>;
 }

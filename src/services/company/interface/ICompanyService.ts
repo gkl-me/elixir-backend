@@ -11,5 +11,5 @@ export interface ICompanyService {
     companies: IGetAllCompanyReponseDto[] | null;
     totalCount: number;
   }>;
-  toggleCompanyStatus(data: IToggleCompanyStatus): Promise<void>
+  toggleCompanyStatus(data: IToggleCompanyStatus): Promise<void>;
 }

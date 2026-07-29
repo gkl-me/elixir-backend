@@ -6,5 +6,9 @@ export interface ICompanyController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
-  handleToggleCompanyStatus(req: Request, res: Response, next: NextFunction): Promise<void>
+  handleToggleCompanyStatus(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
 }

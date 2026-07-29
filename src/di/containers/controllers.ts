@@ -72,8 +72,8 @@ container.register(Token.WorkspaceTeamController, {
   useClass: WorkspaceTeamController,
 });
 container.register(Token.SubscriptionController, {
-  useClass: SubscriptionController
-})
+  useClass: SubscriptionController,
+});
 container.register(Token.TransactionController, {
-  useClass: TransactionController
-})
+  useClass: TransactionController,
+});

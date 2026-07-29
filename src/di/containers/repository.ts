@@ -51,5 +51,5 @@ container.register(Token.WorkspaceTeamRepository, {
   useClass: WorkspaceTeamRepository,
 });
 container.register(Token.TransactionRepository, {
-  useClass: TransactionRepository
-})
+  useClass: TransactionRepository,
+});

@@ -22,5 +22,5 @@ export interface IUserService {
   ): Promise<IListActiveSessionsResponseDto[]>;
   updateProfile(data: IUpdateUserProfileDto): Promise<void>;
   getMe(data: IGetMeDto): Promise<IUserListDto>;
-  revokeSession(data:IRevokeSessionDto):Promise<void>
+  revokeSession(data: IRevokeSessionDto): Promise<void>;
 }

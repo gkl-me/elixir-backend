@@ -2,20 +2,36 @@ import { IWorkspace } from "../../models/Workspace";
 import { IWorkspaceInvite } from "../../models/WorkspaceInvite";
 import { IWorkspaceRole } from "../../models/WorkspaceRole";
 import { IWorkspaceMemberWithUser } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
-import { IGetAllWorkspaceDetails, IGetAllWorkspaceRes } from "../../repositories/workspace/interface/IWorkspaceRepository";
+import {
+  IGetAllWorkspaceDetails,
+  IGetAllWorkspaceRes,
+} from "../../repositories/workspace/interface/IWorkspaceRepository";
 import {
   IWorkspaceTeamWithMember,
   IWorkspaceTeamWithMemberDetail,
 } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
-import { IListAllWorkspaceResponseDto, IWorkspaceResDto } from "../dtos/WorkspaceDto";
-import { IListInvitesDetails, IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
-import { IListMemberDetils, IListMemberResDto } from "../dtos/WorkspaceMemberDto";
+import {
+  IListAllWorkspaceResponseDto,
+  IWorkspaceResDto,
+} from "../dtos/WorkspaceDto";
+import {
+  IListInvitesDetails,
+  IListInvitesResDto,
+} from "../dtos/WorkspaceInviteDto";
+import {
+  IListMemberDetils,
+  IListMemberResDto,
+} from "../dtos/WorkspaceMemberDto";
 import {
   ICreateRoleResDto,
   IGetRolesResDto,
   IUpdateRoleResDto,
 } from "../dtos/WorkspaceRoleDto";
-import { IGetTeamResDto, IListTeamsDetails, IListTeamsResDto } from "../dtos/WorkspaceTeamDto";
+import {
+  IGetTeamResDto,
+  IListTeamsDetails,
+  IListTeamsResDto,
+} from "../dtos/WorkspaceTeamDto";
 
 export class workspaceRoleDtoMapper {
   static toGetRoles(role: IWorkspaceRole): IGetRolesResDto {
@@ -125,10 +141,7 @@ export class workspaceTeamDtoMapper {
   }
 }
 
-
-
 export class workspaceDtoMapper {
-
   static toWorkspace(workspace: IWorkspace): IWorkspaceResDto {
     return {
       id: String(workspace._id),
@@ -142,10 +155,12 @@ export class workspaceDtoMapper {
       status: workspace.status,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
-    }
+    };
   }
 
-  static toWorkspaceList(workspace: IGetAllWorkspaceDetails): IListAllWorkspaceResponseDto {
+  static toWorkspaceList(
+    workspace: IGetAllWorkspaceDetails
+  ): IListAllWorkspaceResponseDto {
     return {
       id: String(workspace._id),
       name: workspace.name,
@@ -154,7 +169,6 @@ export class workspaceDtoMapper {
       status: workspace.status,
       planType: workspace.planType,
       createdAt: workspace.createdAt,
-    }
+    };
   }
-
 }

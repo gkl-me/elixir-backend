@@ -38,10 +38,10 @@ export interface IWorkspaceMemberRepository extends BaseRepository<IWorkspaceMem
     workspaceId: string,
     limit: number,
     skip: number,
-    search?: string,
+    search?: string
   ): Promise<{
-    members: IWorkspaceMemberWithUser[] | []
-    totalCount: number
+    members: IWorkspaceMemberWithUser[] | [];
+    totalCount: number;
   }>;
   listUserWorkspace(userId: string): Promise<IUserWorkspace[] | []>;
 }

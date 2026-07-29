@@ -9,8 +9,8 @@ export interface IWorkspace extends Document {
   ownerId: string;
   companyId?: string;
   subscriptionId?: string;
-  status: 'active' | 'suspended';
-  planId: string,
+  status: "active" | "suspended";
+  planId: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -44,12 +44,12 @@ const WorkspaceSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'suspended'],
-      default: 'active'
+      enum: ["active", "suspended"],
+      default: "active",
     },
     planId: {
       type: String,
-    }
+    },
   },
   {
     timestamps: true,

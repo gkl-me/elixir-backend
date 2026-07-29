@@ -20,9 +20,9 @@ export interface IRemoveMemberDto {
 
 export interface IListTeamsDto {
   workspaceId: string;
-  page: number
-  limit: number
-  search: string
+  page: number;
+  limit: number;
+  search: string;
 }
 
 export interface IGetTeamDto {
@@ -51,6 +51,6 @@ export interface IListTeamsDetails {
 }
 
 export interface IListTeamsResDto {
-  teams: IListTeamsDetails[]
-  totalCount: number
+  teams: IListTeamsDetails[];
+  totalCount: number;
 }

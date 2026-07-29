@@ -7,49 +7,47 @@ export interface ICreateSubscriptionDto {
   workspaceId: string;
   stripeSubscriptionId?: string;
   stripePriceId?: string;
-  status?: SUBSCRIPTION_STATUS
+  status?: SUBSCRIPTION_STATUS;
   currentPeriodStart?: Date;
   currentPeriodEnd?: Date;
-  stripeCustomerId?: string
+  stripeCustomerId?: string;
 }
 
 export interface ICreateSubscriptionResDto {
-  subscriptionId: string
+  subscriptionId: string;
 }
 
 export interface ICancelSubscriptionDto {
-  subscriptionId: string
-  cancelMode: "period_end" | "immediate"
+  subscriptionId: string;
+  cancelMode: "period_end" | "immediate";
 }
 
 export interface IReactivateSubscriptionDto {
-  subscriptionId: string
+  subscriptionId: string;
 }
 
-
 export interface IListAllSubscriptionDto {
-  search?: string,
-  status?: string,
-  plan?: string,
-  page: number,
-  limit: number
+  search?: string;
+  status?: string;
+  plan?: string;
+  page: number;
+  limit: number;
 }
 
 export interface IListAllSubscriptionDetailsDto {
-  id: string,
-  workspaceName: string,
-  ownerEmail: string,
-  planType: PlanType,
-  status: SUBSCRIPTION_STATUS,
-  price: number
-  currentPeriodEnd: Date,
-  currentPeriodStart: Date,
-  cancelAtPeriodEnd: boolean
-  createdAt: Date
+  id: string;
+  workspaceName: string;
+  ownerEmail: string;
+  planType: PlanType;
+  status: SUBSCRIPTION_STATUS;
+  price: number;
+  currentPeriodEnd: Date;
+  currentPeriodStart: Date;
+  cancelAtPeriodEnd: boolean;
+  createdAt: Date;
 }
 
-
 export interface IListAllSubResDto {
-  subscriptions: IListAllSubscriptionDetailsDto[] | [],
-  totalCount: number
+  subscriptions: IListAllSubscriptionDetailsDto[] | [];
+  totalCount: number;
 }

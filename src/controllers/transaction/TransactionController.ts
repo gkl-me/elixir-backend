@@ -8,34 +8,38 @@ import { successResponse } from "../../helper/responseHanlder";
 import { CONSTANT_MESSAGES } from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 
-
-
-
 @injectable()
 export class TransactionController implements ITransactionController {
-    constructor(
-        @inject(Token.TransactionService) private readonly _transactionService: ITransactionService
-    ) { }
+  constructor(
+    @inject(Token.TransactionService)
+    private readonly _transactionService: ITransactionService
+  ) {}
 
+  async handleListTransactions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const params = extractStringQueryParams(req.query, [
+        "search",
+        "status",
+        "page",
+        "limit",
+      ]);
 
-    async handleListTransactions(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
+      const processed = {
+        search: params?.search || "",
+        status: params?.status || "",
+        page: parseInt(params?.page || "1"),
+        limit: parseInt(params?.limit || "10"),
+      };
 
-            const params = extractStringQueryParams(req.query, ["search", "status", "page", "limit"])
+      const data = await this._transactionService.listAllTransaction(processed);
 
-            const processed = {
-                search: params?.search || "",
-                status: params?.status || "",
-                page: parseInt(params?.page || "1"),
-                limit: parseInt(params?.limit || "10"),
-            }
-
-            const data = await this._transactionService.listAllTransaction(processed)
-
-            successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, data)
-
-        } catch (error) {
-            next(error)
-        }
+      successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, data);
+    } catch (error) {
+      next(error);
     }
+  }
 }

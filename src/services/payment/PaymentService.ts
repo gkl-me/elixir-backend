@@ -32,8 +32,9 @@ export class PaymentService implements IPaymentService {
     private readonly _userRepository: IUserRepository,
     @inject(Token.PlanRepository)
     private readonly _planRepository: IPlanRepository,
-    @inject(Token.SubscriptionRepository) private readonly _subscriptionRepository: ISubscriptionRepository
-  ) { }
+    @inject(Token.SubscriptionRepository)
+    private readonly _subscriptionRepository: ISubscriptionRepository
+  ) {}
 
   async startCheckout(data: ICheckoutDto): Promise<ICheckoutResponseDto> {
     try {
@@ -157,10 +158,9 @@ export class PaymentService implements IPaymentService {
 
   async billingInfo(data: IGetBillingDto): Promise<IGetBillingResDto> {
     try {
+      const { workspaceId } = data;
 
-      const { workspaceId } = data
-
-      console.log("workspaceId", workspaceId)
+      console.log("workspaceId", workspaceId);
 
       type PlanType = "free" | "pro" | "enterprice";
 
@@ -172,24 +172,32 @@ export class PaymentService implements IPaymentService {
 
       const subscription = await this._subscriptionRepository.findOne({
         workspaceId,
-        status: "active"
-      })
+        status: "active",
+      });
 
       if (!subscription || !subscription.planId) {
-        console.log("Subscription not found")
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+        console.log("Subscription not found");
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      const currentPlan = await this._planRepository.findById(subscription.planId)
+      const currentPlan = await this._planRepository.findById(
+        subscription.planId
+      );
 
       if (!currentPlan) {
-        console.log("current plan")
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+        console.log("current plan");
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
       const allPlans = await this._planRepository.findAll({
-        isActive: true
-      })
+        isActive: true,
+      });
 
       const upgradePlans = allPlans?.filter((p) => {
         const planType = p.type.toLowerCase() as PlanType;
@@ -198,38 +206,39 @@ export class PaymentService implements IPaymentService {
         return planOrder[planType] > planOrder[currentType];
       });
 
-
       return {
         currentPlan: {
           id: String(currentPlan._id),
           name: currentPlan.name,
           price: currentPlan.price,
-          type: currentPlan.type
+          type: currentPlan.type,
         },
         subscription: {
           status: subscription.status,
-          currentPeriodEnd: subscription.currentPeriodEnd
+          currentPeriodEnd: subscription.currentPeriodEnd,
         },
-        upgradePlans
-      }
-
-
+        upgradePlans,
+      };
     } catch (error) {
       logError(error, {
-        service: "PaymentService.billingInfo"
-      })
-      throw error
+        service: "PaymentService.billingInfo",
+      });
+      throw error;
     }
   }
 
-  async createCustomerPortal(data: ICreateCustomerPortalDto): Promise<ICreateCustomerPortalResDto> {
+  async createCustomerPortal(
+    data: ICreateCustomerPortalDto
+  ): Promise<ICreateCustomerPortalResDto> {
     try {
+      const { userId, workspaceId } = data;
 
-      const { userId, workspaceId } = data
-
-      const user = await this._userRepository.findById(userId)
+      const user = await this._userRepository.findById(userId);
       if (!user || !user.stripeCustomerId) {
-        throw new CustomError("Stripe customer not found", STATUS_CODES.BAD_REQUEST);
+        throw new CustomError(
+          "Stripe customer not found",
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
       const returnUrl = `${ENV.CLIENT_URL}/workspace/${workspaceId}/settings/?tab=billing`;
@@ -239,12 +248,11 @@ export class PaymentService implements IPaymentService {
       );
 
       return { customerPortalUrl: portalUrl };
-
     } catch (error) {
       logError(error, {
-        service: "PaymentService.creatCustomerPortal"
-      })
-      throw error
+        service: "PaymentService.creatCustomerPortal",
+      });
+      throw error;
     }
   }
 }

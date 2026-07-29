@@ -22,6 +22,10 @@ export interface IUserController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
-  handleRevokeSession(req:Request,res:Response,next:NextFunction):Promise<void>
+  handleRevokeSession(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
   handleGetMe(req: Request, res: Response, next: NextFunction): Promise<void>;
 }

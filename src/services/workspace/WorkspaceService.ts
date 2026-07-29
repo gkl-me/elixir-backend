@@ -52,14 +52,15 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.UserRepository)
     private readonly _userRepository: IUserRepository,
-    @inject(Token.PlanRepository) private readonly _planRepository: IPlanRepository,
-    @inject(Token.WorkspaceTeamRepository) private readonly _workspaceTeamRepository: IWorkspaceTeamRepository,
-  ) { }
+    @inject(Token.PlanRepository)
+    private readonly _planRepository: IPlanRepository,
+    @inject(Token.WorkspaceTeamRepository)
+    private readonly _workspaceTeamRepository: IWorkspaceTeamRepository
+  ) {}
 
   async createWorkspace(data: ICreateWorkspaceDto): Promise<IWorkspace> {
     try {
-
-      const { name, ownerId, companyId, subscriptionId, planId } = data
+      const { name, ownerId, companyId, subscriptionId, planId } = data;
 
       const workspace = await this._workspaceRepository.create({
         name,
@@ -68,16 +69,18 @@ export class WorkspaceService implements IWorkspaceService {
         subscriptionId,
         slug: generateSlug(name),
         type: companyId ? "company" : "personal",
-        planId
+        planId,
       });
 
-      return workspace
+      return workspace;
     } catch (error) {
       throw error;
     }
   }
 
-  async bootStrapWorkspace(data: IWorkspaceBootstrapDto): Promise<IWorkspaceResDto> {
+  async bootStrapWorkspace(
+    data: IWorkspaceBootstrapDto
+  ): Promise<IWorkspaceResDto> {
     try {
       const workspace = await this.createWorkspace({
         name: data.workspaceName,
@@ -101,16 +104,17 @@ export class WorkspaceService implements IWorkspaceService {
       //   currentPeriodStart: new Date(),
       // });
 
-      const { subscriptionId } = await this._subscriptionService.createSubscription({
-        workspaceId: String(workspace._id),
-        userId: data.ownerId,
-        planId: data.planId,
-        stripePriceId: data.stripePriceId,
-        stripeSubscriptionId: data.stripeSubscriptionId,
-        stripeCustomerId: data.stripeCustomerId,
-        currentPeriodEnd: data.currentPeriodEnd,
-        currentPeriodStart: data.currentPeriodStart,
-      })
+      const { subscriptionId } =
+        await this._subscriptionService.createSubscription({
+          workspaceId: String(workspace._id),
+          userId: data.ownerId,
+          planId: data.planId,
+          stripePriceId: data.stripePriceId,
+          stripeSubscriptionId: data.stripeSubscriptionId,
+          stripeCustomerId: data.stripeCustomerId,
+          currentPeriodEnd: data.currentPeriodEnd,
+          currentPeriodStart: data.currentPeriodStart,
+        });
 
       const roleId = workspaceRoles.find((role) => role.name === "Owner")?._id;
 
@@ -222,26 +226,35 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  async workspaceLimits(data: IWorkspaceLimitsDto): Promise<IWorksapceLimitsResDto> {
+  async workspaceLimits(
+    data: IWorkspaceLimitsDto
+  ): Promise<IWorksapceLimitsResDto> {
     try {
+      const { workspaceId } = data;
 
-      const { workspaceId } = data
-
-      const workspace = await this._workspaceRepository.findById(workspaceId)
+      const workspace = await this._workspaceRepository.findById(workspaceId);
 
       if (!workspace || !workspace.planId) {
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      const workspacePlan = await this._planRepository.findById(workspace?.planId)
+      const workspacePlan = await this._planRepository.findById(
+        workspace?.planId
+      );
 
       if (!workspacePlan || !workspacePlan?.limits) {
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      const limits = workspacePlan.limits
+      const limits = workspacePlan.limits;
 
-      //usage 
+      //usage
 
       const [teams, members, customRoles] = await Promise.all([
         this._workspaceTeamRepository.count({ workspaceId }),
@@ -249,8 +262,7 @@ export class WorkspaceService implements IWorkspaceService {
         this._workspaceRoleRepository.count({ workspaceId }),
       ]);
 
-      console.log("teams", teams)
-
+      console.log("teams", teams);
 
       return {
         limits,
@@ -259,59 +271,67 @@ export class WorkspaceService implements IWorkspaceService {
           members,
           customRoles,
           storageBytes: 0,
-          projects: 0
-        }
-      }
-
-
+          projects: 0,
+        },
+      };
     } catch (error) {
       logError(error, {
-        service: "WorkspaceService.workspaceLimits"
-      })
-      throw error
+        service: "WorkspaceService.workspaceLimits",
+      });
+      throw error;
     }
   }
 
-  async listAllWorkspace(data: IListAllWorkspaceDto): Promise<IListAllWorkspaceResDto> {
+  async listAllWorkspace(
+    data: IListAllWorkspaceDto
+  ): Promise<IListAllWorkspaceResDto> {
     try {
+      const { search, page, limit, status } = data;
 
-      const { search, page, limit, status } = data
+      const skip = (page - 1) * limit;
 
-      const skip = (page - 1) * limit
-
-      const { workspaces, totalCount } = await this._workspaceRepository.getWorkspaceDetails({ search, status, skip, limit })
+      const { workspaces, totalCount } =
+        await this._workspaceRepository.getWorkspaceDetails({
+          search,
+          status,
+          skip,
+          limit,
+        });
 
       return {
-        workspaces: workspaces.map(workspace => workspaceDtoMapper.toWorkspaceList(workspace)),
-        totalCount
-      }
-
+        workspaces: workspaces.map((workspace) =>
+          workspaceDtoMapper.toWorkspaceList(workspace)
+        ),
+        totalCount,
+      };
     } catch (error) {
       logError(error, {
-        service: "WorkspaceService.listAllWorkspace"
-      })
-      throw error
+        service: "WorkspaceService.listAllWorkspace",
+      });
+      throw error;
     }
   }
 
   async toggleWorkspaceStatus(data: IToggleWorkspaceStatusDto): Promise<void> {
     try {
-      const { workspaceId } = data
+      const { workspaceId } = data;
 
-      const workspace = await this._workspaceRepository.findById(workspaceId)
+      const workspace = await this._workspaceRepository.findById(workspaceId);
 
       if (!workspace) {
-        throw new CustomError(WORKSPACE_MESSAGES.NOT_FOUND, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          WORKSPACE_MESSAGES.NOT_FOUND,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      workspace.status = workspace.status === "active" ? "suspended" : "active"
-      await workspace.save()
-
+      workspace.status = workspace.status === "active" ? "suspended" : "active";
+      await workspace.save();
     } catch (error) {
       logError(error, {
-        service: "WorkspaceService.toggleWorkspaceStatus"
-      })
-      throw error
+        service: "WorkspaceService.toggleWorkspaceStatus",
+      });
+      throw error;
     }
   }
 }

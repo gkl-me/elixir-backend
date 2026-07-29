@@ -7,19 +7,19 @@ export interface ICreateWorkspaceDto {
   ownerId: string;
   companyId?: string;
   subscriptionId?: string;
-  planId: string
+  planId: string;
 }
 
 export interface IWorkspaceResDto {
-  id: string
+  id: string;
   name: string;
   slug: string;
   type: WorkspaceType;
   ownerId: string;
   companyId?: string;
   subscriptionId?: string;
-  status: 'active' | 'suspended';
-  planId: string,
+  status: "active" | "suspended";
+  planId: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -31,9 +31,9 @@ export interface IWorkspaceBootstrapDto {
   companyId?: string;
   stripePriceId?: string;
   stripeSubscriptionId?: string;
-  stripeCustomerId?: string
-  currentPeriodStart?: Date
-  currentPeriodEnd?: Date,
+  stripeCustomerId?: string;
+  currentPeriodStart?: Date;
+  currentPeriodEnd?: Date;
 }
 
 export interface IWorkpsaceContextDto {
@@ -60,52 +60,49 @@ export interface IWorkspaceContextResDto {
   workspaces: IUserWorkspace[] | [];
 }
 
-
-
 export interface IWorkspaceLimitsDto {
-  workspaceId: string
+  workspaceId: string;
 }
 
 export interface IWorksapceLimitsResDto {
   limits: {
-    projects: number,
-    members: number,
-    teams: number,
-    customRoles: number,
-    storageBytes: number
-  },
+    projects: number;
+    members: number;
+    teams: number;
+    customRoles: number;
+    storageBytes: number;
+  };
   used: {
-    projects: number,
-    members: number,
-    teams: number,
-    customRoles: number,
-    storageBytes: number
-  },
+    projects: number;
+    members: number;
+    teams: number;
+    customRoles: number;
+    storageBytes: number;
+  };
 }
 
 export interface IListAllWorkspaceDto {
-  search?: string,
-  page: number,
-  limit: number
-  status: string
+  search?: string;
+  page: number;
+  limit: number;
+  status: string;
 }
 
 export interface IListAllWorkspaceResponseDto {
-  id: string,
-  name: string,
-  ownerEmail: string,
-  totalUsers: number,
-  status: string,
-  planType: PlanType,
-  createdAt?: Date,
+  id: string;
+  name: string;
+  ownerEmail: string;
+  totalUsers: number;
+  status: string;
+  planType: PlanType;
+  createdAt?: Date;
 }
 
 export interface IListAllWorkspaceResDto {
-  workspaces: IListAllWorkspaceResponseDto[] | [],
-  totalCount: number
+  workspaces: IListAllWorkspaceResponseDto[] | [];
+  totalCount: number;
 }
 
-
 export interface IToggleWorkspaceStatusDto {
-  workspaceId: string
+  workspaceId: string;
 }

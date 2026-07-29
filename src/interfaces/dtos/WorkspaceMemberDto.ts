@@ -1,8 +1,8 @@
 export interface IListMemberDto {
   workspaceId: string;
-  search?: string,
-  limit: number,
-  page: number
+  search?: string;
+  limit: number;
+  page: number;
 }
 
 export interface IListMemberDetils {
@@ -17,11 +17,9 @@ export interface IListMemberDetils {
 }
 
 export interface IListMemberResDto {
-  members: IListMemberDetils[] | [],
-  totalCount: number
+  members: IListMemberDetils[] | [];
+  totalCount: number;
 }
-
-
 
 export interface IUpdateMemberDto {
   workspaceId: string;

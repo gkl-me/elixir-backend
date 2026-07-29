@@ -2,12 +2,11 @@ import { model, Schema, Document } from "mongoose";
 import { PlanType } from "./Plan";
 
 export interface ITransaction extends Document {
+  transactionRef: string;
+  invoiceNumber: string;
 
-  transactionRef: string,
-  invoiceNumber: string,
-
-  workspaceName: string,
-  customerEmail: string,
+  workspaceName: string;
+  customerEmail: string;
 
   userId: string;
   workspaceId: string;
@@ -15,16 +14,16 @@ export interface ITransaction extends Document {
 
   stripeInvoiceId?: string;
   stripeChargeId?: string;
-  invoicePdfUrl?: string
+  invoicePdfUrl?: string;
 
-  planType: PlanType
+  planType: PlanType;
 
   amount: number;
-  currency: string
+  currency: string;
 
   status: "success" | "failed" | "pending";
   paymentMethod?: string;
-  last4: string
+  last4: string;
 
   createAt?: Date;
   updatedAt?: Date;
@@ -38,7 +37,7 @@ const TransactionSchema = new Schema(
     },
     invoiceNumber: {
       type: String,
-      required: true
+      required: true,
     },
     workspaceName: {
       type: String,
@@ -70,25 +69,25 @@ const TransactionSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      default: "Card"
+      default: "Card",
     },
     last4: {
       type: String,
-      default: "000"
+      default: "000",
     },
     stripeChargeId: {
       type: String,
     },
     invoicePdfUrl: {
-      type: String
+      type: String,
     },
     planType: {
       type: String,
-      enum: ["Free", "Pro", "Enterprice"]
+      enum: ["Free", "Pro", "Enterprice"],
     },
     currency: {
-      type: String
-    }
+      type: String,
+    },
   },
   {
     timestamps: true,

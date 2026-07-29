@@ -6,16 +6,14 @@ import { authorize } from "../middlewares/authorize";
 import { APP_ROLES } from "../constants/roles";
 import { auth } from "../middlewares/auth";
 
+const router = Router();
 
+const transactionController = container.resolve<ITransactionController>(
+  Token.TransactionController
+);
 
-const router = Router()
+router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
+  void transactionController.handleListTransactions(req, res, next);
+});
 
-const transactionController = container.resolve<ITransactionController>(Token.TransactionController)
-
-
-router.get('/', auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
-    void transactionController.handleListTransactions(req, res, next)
-})
-
-
-export default router
+export default router;

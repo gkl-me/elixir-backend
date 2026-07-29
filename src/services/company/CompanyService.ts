@@ -20,8 +20,9 @@ export class CompanyService implements ICompanyService {
   constructor(
     @inject(Token.CompanyRepository)
     private readonly _companyRepository: ICompanyRepository,
-    @inject(Token.WorkspaceRepository) private readonly _workspaceRepository: IWorkspaceRepository
-  ) { }
+    @inject(Token.WorkspaceRepository)
+    private readonly _workspaceRepository: IWorkspaceRepository
+  ) {}
 
   async registerCompany(data: IRegisterCompanyDto): Promise<void> {
     try {
@@ -65,35 +66,40 @@ export class CompanyService implements ICompanyService {
 
   async toggleCompanyStatus(data: IToggleCompanyStatus): Promise<void> {
     try {
-
       const { companyId } = data;
 
-      const company = await this._companyRepository.findById(companyId)
+      const company = await this._companyRepository.findById(companyId);
 
       if (!company) {
-        throw new CustomError(COMPANY_MESSAGES.NOT_FOUND, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          COMPANY_MESSAGES.NOT_FOUND,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
-      company.status = company?.status === 'active' ? 'suspended' : 'active'
+      company.status = company?.status === "active" ? "suspended" : "active";
 
-      //need to disable workspace 
+      //need to disable workspace
       const workspace = await this._workspaceRepository.findOne({
-        companyId
-      })
+        companyId,
+      });
 
       if (!workspace) {
-        throw new CustomError(WORKSPACE_MESSAGES.NOT_FOUND, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          WORKSPACE_MESSAGES.NOT_FOUND,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      workspace.status = workspace?.status === 'active' ? "suspended" : 'active'
+      workspace.status =
+        workspace?.status === "active" ? "suspended" : "active";
 
       await company.save();
-      await workspace.save()
-
+      await workspace.save();
     } catch (error) {
       logError(error, {
-        service: 'CompanyService.suspendCompany'
-      })
-      throw error
+        service: "CompanyService.suspendCompany",
+      });
+      throw error;
     }
   }
 }

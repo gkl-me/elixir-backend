@@ -1,81 +1,82 @@
 import { injectable } from "tsyringe";
 import { BaseRepository } from "../base/BaseRepository";
 import { ISubscription, Subscription } from "../../models/Subscription";
-import { IGetAllSubscription, IGetAllSubscriptionRes, ISubscriptionRepository } from "./interface/ISubscriptionRepository";
+import {
+  IGetAllSubscription,
+  IGetAllSubscriptionRes,
+  ISubscriptionRepository,
+} from "./interface/ISubscriptionRepository";
 import { logError } from "../../middlewares/loggerHelper";
 
 @injectable()
 export class SubscriptionRepository
   extends BaseRepository<ISubscription>
-  implements ISubscriptionRepository {
+  implements ISubscriptionRepository
+{
   constructor() {
     super(Subscription);
   }
 
-  async getAllSubscriptions(data: IGetAllSubscription): Promise<IGetAllSubscriptionRes> {
+  async getAllSubscriptions(
+    data: IGetAllSubscription
+  ): Promise<IGetAllSubscriptionRes> {
     try {
+      const { search, status, skip, limit, plan } = data;
 
-      const { search, status, skip, limit, plan } = data
-
-      const pipeline = []
+      const pipeline = [];
 
       if (status) {
         pipeline.push({
           $match: {
-            status: status
-          }
-        })
+            status: status,
+          },
+        });
       }
 
       if (plan) {
         pipeline.push({
           $match: {
-            planType: plan
-          }
-        })
+            planType: plan,
+          },
+        });
       }
 
-      //lookup for owner email 
+      //lookup for owner email
 
       pipeline.push(
-
-
         {
           $lookup: {
             from: "users",
             let: {
               userId: {
-                $toObjectId: "$userId"
-              }
+                $toObjectId: "$userId",
+              },
             },
             pipeline: [
               {
                 $match: {
                   $expr: {
-                    $eq: [
-                      '$_id',
-                      '$$userId'
-                    ]
-                  }
-                }
+                    $eq: ["$_id", "$$userId"],
+                  },
+                },
               },
               {
                 $project: {
                   _id: 0,
-                  email: 1
-                }
-              }
+                  email: 1,
+                },
+              },
             ],
-            as: "ownerEmail"
-          }
+            as: "ownerEmail",
+          },
         },
 
         //unwind ownerEmail
         {
           $unwind: {
-            path: '$ownerEmail',
-            preserveNullAndEmptyArrays: true
-          }
+            path: "$ownerEmail",
+            preserveNullAndEmptyArrays: true,
+          },
         },
 
         //lookup for workspace name
@@ -85,38 +86,35 @@ export class SubscriptionRepository
             from: "workspaces",
             let: {
               workspaceId: {
-                $toObjectId: "$workspaceId"
-              }
+                $toObjectId: "$workspaceId",
+              },
             },
             pipeline: [
               {
                 $match: {
                   $expr: {
-                    $eq: [
-                      '$_id',
-                      '$$workspaceId'
-                    ]
-                  }
-                }
+                    $eq: ["$_id", "$$workspaceId"],
+                  },
+                },
               },
               {
                 $project: {
                   _id: 0,
-                  name: 1
-                }
-              }
+                  name: 1,
+                },
+              },
             ],
-            as: "workspaceName"
-          }
+            as: "workspaceName",
+          },
         },
 
         //unwind workspaceName
 
         {
           $unwind: {
-            path: '$workspaceName',
-            preserveNullAndEmptyArrays: true
-          }
+            path: "$workspaceName",
+            preserveNullAndEmptyArrays: true,
+          },
         },
 
         //project the details
@@ -132,10 +130,10 @@ export class SubscriptionRepository
             currentPeriodEnd: 1,
             currentPeriodStart: 1,
             cancelAtPeriodEnd: 1,
-            createdAt: 1
-          }
+            createdAt: 1,
+          },
         }
-      )
+      );
 
       if (search) {
         pipeline.push({
@@ -144,18 +142,18 @@ export class SubscriptionRepository
               {
                 workspaceName: {
                   $regex: search,
-                  $options: "i"
-                }
+                  $options: "i",
+                },
               },
               {
                 ownerEmail: {
                   $regex: search,
-                  $options: "i"
-                }
-              }
-            ]
-          }
-        })
+                  $options: "i",
+                },
+              },
+            ],
+          },
+        });
       }
 
       // add facet
@@ -163,31 +161,30 @@ export class SubscriptionRepository
         $facet: {
           data: [
             {
-              $skip: skip
+              $skip: skip,
             },
             {
-              $limit: limit
-            }
+              $limit: limit,
+            },
           ],
           totalCount: [
             {
-              $count: "count"
-            }
-          ]
-        }
-      })
+              $count: "count",
+            },
+          ],
+        },
+      });
 
-      const [result] = await this._model.aggregate(pipeline)
+      const [result] = await this._model.aggregate(pipeline);
       return {
         subscriptions: result.data,
         totalCount: result.totalCount[0]?.count || 0,
-      }
-
+      };
     } catch (error) {
       logError(error, {
-        service: "SubscriptionRepostiory.getAllSubscriptions"
-      })
-      throw error
+        service: "SubscriptionRepostiory.getAllSubscriptions",
+      });
+      throw error;
     }
   }
 }

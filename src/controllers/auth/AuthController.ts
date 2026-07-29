@@ -14,7 +14,7 @@ import { getClientInfo } from "../../helper/clientInfoHelper";
 
 @injectable()
 export class AuthController implements IAuthController {
-  constructor(@inject(Token.AuthService) private _authService: IAuthService) { }
+  constructor(@inject(Token.AuthService) private _authService: IAuthService) {}
 
   async handleRegister(
     req: Request,
@@ -67,7 +67,7 @@ export class AuthController implements IAuthController {
 
       const { email, password } = validate.data;
 
-      const clientInfo = getClientInfo(req)
+      const clientInfo = getClientInfo(req);
 
       const authUser = await this._authService.login(
         { email, password },
@@ -95,7 +95,7 @@ export class AuthController implements IAuthController {
     try {
       const { idToken } = req.body;
 
-      const clientInfo = getClientInfo(req)
+      const clientInfo = getClientInfo(req);
 
       const authUser = await this._authService.googleAuth(
         { idToken },
@@ -118,7 +118,7 @@ export class AuthController implements IAuthController {
     try {
       const data = req.body;
 
-      const clientInfo = getClientInfo(req)
+      const clientInfo = getClientInfo(req);
       const authUser = await this._authService.githubAuth(data, clientInfo);
 
       successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {
@@ -169,22 +169,24 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async handleLogoutAllDevices(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async handleLogoutAllDevices(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-
-      const userId = req.user.userId
+      const userId = req.user.userId;
 
       await this._authService.logoutAllDevices({
-        userId
-      })
+        userId,
+      });
 
-      clearCookie(res, "refreshToken")
-      clearCookie(res, "accessToken")
+      clearCookie(res, "refreshToken");
+      clearCookie(res, "accessToken");
 
-      successResponse(res, USER_MESSAGES.LOGOUT_SUCCESS, STATUS_CODES.OK, {})
-
+      successResponse(res, USER_MESSAGES.LOGOUT_SUCCESS, STATUS_CODES.OK, {});
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 }

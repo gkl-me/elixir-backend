@@ -170,13 +170,13 @@ export class UserService implements IUserService {
           activeSessions.push({
             ...session,
             isCurrentSession: false,
-            sessionId:id
+            sessionId: id,
           });
         } else if (session && id === decodedToken.sessionId) {
           activeSessions.push({
             ...session,
             isCurrentSession: true,
-            sessionId:id
+            sessionId: id,
           });
         }
       }
@@ -192,22 +192,22 @@ export class UserService implements IUserService {
 
   async revokeSession(data: IRevokeSessionDto): Promise<void> {
     try {
+      const { userId, sessionId } = data;
 
-      const {userId,sessionId} = data
+      const sessionKey = REDIS_STORE.SESSION + sessionId;
 
-      const sessionKey = REDIS_STORE.SESSION + sessionId
+      console.log("session", sessionId, "user", userId);
 
-      console.log("session",sessionId,"user",userId)
+      await this._cacheRepository.delete(sessionKey);
 
-      await this._cacheRepository.delete(sessionKey)
-
-
-      await this._cacheRepository.remSet(REDIS_STORE.USER_SESSION+userId,sessionId)
-      
+      await this._cacheRepository.remSet(
+        REDIS_STORE.USER_SESSION + userId,
+        sessionId
+      );
     } catch (error) {
-      logError(error,{
-        service:"UserService.revokeSession"
-      })
+      logError(error, {
+        service: "UserService.revokeSession",
+      });
       throw error;
     }
   }

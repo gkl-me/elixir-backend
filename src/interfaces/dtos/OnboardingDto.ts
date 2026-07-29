@@ -16,7 +16,7 @@ export interface IResponeOnboardingDto {
   planPrice: number;
 
   workspaceName?: string;
-  workspaceSlug?: string
+  workspaceSlug?: string;
 
   company?: {
     name: string;

@@ -37,9 +37,9 @@ router.post("/refresh", (req, res, next) => {
 router.post("/logout", (req, res, next) => {
   void authController.handleLogout(req, res, next);
 });
-router.post("/logout-all",auth,(req,res,next) => {
-  void authController.handleLogoutAllDevices(req,res,next)
-})
+router.post("/logout-all", auth, (req, res, next) => {
+  void authController.handleLogoutAllDevices(req, res, next);
+});
 
 //verify email routes
 router.get("/verify/:token", (req, res, next) => {

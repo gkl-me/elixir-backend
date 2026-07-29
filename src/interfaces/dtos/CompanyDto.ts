@@ -12,8 +12,8 @@ export interface IGetAllCompanyReponseDto {
   size: number;
   email: string;
   phone: string;
-  website?: string
-  status: "active" | "suspended"
+  website?: string;
+  status: "active" | "suspended";
   createdAt?: Date;
 }
 
@@ -21,10 +21,9 @@ export interface IGetAllCompanyDto {
   search: string;
   page: number;
   limit: number;
-  status?: string
+  status?: string;
 }
 
-
 export interface IToggleCompanyStatus {
-  companyId: string
+  companyId: string;
 }

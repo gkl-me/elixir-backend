@@ -30,7 +30,10 @@ export interface IStripeService {
   getSubscriptionFromInvoice(
     invoice: Stripe.Invoice
   ): Promise<Stripe.Invoice.Parent.SubscriptionDetails | null>;
-  updateSubscription(subscriptionId: string, cancel: boolean): Promise<void>
-  retrivePaymentIntent(intentId: string): Promise<Stripe.PaymentIntent>
-  createCustomerPortalSession(customerId: string, returnUrl: string): Promise<string>
+  updateSubscription(subscriptionId: string, cancel: boolean): Promise<void>;
+  retrivePaymentIntent(intentId: string): Promise<Stripe.PaymentIntent>;
+  createCustomerPortalSession(
+    customerId: string,
+    returnUrl: string
+  ): Promise<string>;
 }

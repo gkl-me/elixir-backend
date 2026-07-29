@@ -13,7 +13,7 @@ import { COMPANY_MESSAGES } from "../../constants/messages";
 export class CompanyController implements ICompanyController {
   constructor(
     @inject(Token.CompanyService) private _companyService: ICompanyService
-  ) { }
+  ) {}
 
   async handleGetAllCompany(
     req: Request,
@@ -25,14 +25,14 @@ export class CompanyController implements ICompanyController {
         "search",
         "page",
         "limit",
-        "status"
+        "status",
       ]);
 
       const proccessParams = {
         search: params?.search ?? "",
         page: parseInt(params?.page || "1"),
         limit: parseInt(params?.limit || "10"),
-        status: params?.status || ""
+        status: params?.status || "",
       };
 
       const { companies, totalCount } =
@@ -52,24 +52,21 @@ export class CompanyController implements ICompanyController {
     }
   }
 
-  async handleToggleCompanyStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async handleToggleCompanyStatus(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-
-      const { companyId } = extractStringParams(req.params, ['companyId'])
+      const { companyId } = extractStringParams(req.params, ["companyId"]);
 
       await this._companyService.toggleCompanyStatus({
-        companyId
-      })
+        companyId,
+      });
 
-      successResponse(
-        res,
-        COMPANY_MESSAGES.TOGGLE_STATUS,
-        STATUS_CODES.OK,
-        {}
-      )
-
+      successResponse(res, COMPANY_MESSAGES.TOGGLE_STATUS, STATUS_CODES.OK, {});
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 }

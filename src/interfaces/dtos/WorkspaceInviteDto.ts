@@ -2,9 +2,9 @@ import { WorkspaceInviteStatus } from "../../models/WorkspaceInvite";
 
 export interface IListInvitesDto {
   workspaceId: string;
-  search?: string,
-  limit: number,
-  page: number
+  search?: string;
+  limit: number;
+  page: number;
 }
 
 export interface IListInvitesDetails {
@@ -26,7 +26,6 @@ export interface IListInvitesDetails {
 export interface IListInvitesResDto {
   invites: IListInvitesDetails[] | [];
   totalCount: number;
-
 }
 
 export interface ISendInviteDto {

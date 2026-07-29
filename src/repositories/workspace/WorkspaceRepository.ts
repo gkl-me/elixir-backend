@@ -1,138 +1,145 @@
 import { injectable } from "tsyringe";
 import { IWorkspace, Workspace } from "../../models/Workspace";
 import { BaseRepository } from "../base/BaseRepository";
-import { IGetAllWorkspace, IGetAllWorkspaceDetails, IGetAllWorkspaceRes, IWorkspaceRepository } from "./interface/IWorkspaceRepository";
+import {
+  IGetAllWorkspace,
+  IGetAllWorkspaceDetails,
+  IGetAllWorkspaceRes,
+  IWorkspaceRepository,
+} from "./interface/IWorkspaceRepository";
 import { Types } from "mongoose";
 
 @injectable()
 export class WorkspaceRepository
   extends BaseRepository<IWorkspace>
-  implements IWorkspaceRepository {
+  implements IWorkspaceRepository
+{
   constructor() {
     super(Workspace);
   }
 
-  async getWorkspaceDetails(data: IGetAllWorkspace): Promise<IGetAllWorkspaceRes> {
+  async getWorkspaceDetails(
+    data: IGetAllWorkspace
+  ): Promise<IGetAllWorkspaceRes> {
+    const { search, status, skip, limit } = data;
 
-    const { search, status, skip, limit } = data
-
-    const pipeline = []
+    const pipeline = [];
 
     if (status) {
       pipeline.push({
         $match: {
-          status: status
-        }
-      })
+          status: status,
+        },
+      });
     }
 
     pipeline.push(
-
       //lookup for owner email
 
       {
         $lookup: {
-          from: 'users',
+          from: "users",
           let: {
             ownerId: {
-              $toObjectId: "$ownerId"
-            }
+              $toObjectId: "$ownerId",
+            },
           },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ['$_id', '$$ownerId']
-                }
-              }
-            }, {
+                  $eq: ["$_id", "$$ownerId"],
+                },
+              },
+            },
+            {
               $project: {
                 _id: 0,
-                email: 1
-              }
-            }
+                email: 1,
+              },
+            },
           ],
-          as: "ownerEmail"
-        }
+          as: "ownerEmail",
+        },
       },
 
       //undwind the owner email
       {
         $unwind: {
-          path: '$ownerEmail',
-          preserveNullAndEmptyArrays: true
-        }
+          path: "$ownerEmail",
+          preserveNullAndEmptyArrays: true,
+        },
       },
 
-
-      //plan 
+      //plan
 
       {
         $lookup: {
-          from: 'plans',
+          from: "plans",
           let: {
-            planId: { $toObjectId: "$planId" }
+            planId: { $toObjectId: "$planId" },
           },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ['$_id', '$$planId']
-                }
-              }
+                  $eq: ["$_id", "$$planId"],
+                },
+              },
             },
             {
               $project: {
                 _id: 0,
-                type: 1
-              }
-            }
+                type: 1,
+              },
+            },
           ],
-          as: "planType"
-        }
+          as: "planType",
+        },
       },
 
       //undwind the plan type
       {
         $unwind: {
           path: "$planType",
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
 
       //member count
       {
         $lookup: {
-          from: 'workspacemembers',
+          from: "workspacemembers",
           let: {
-            workspaceId: { $toString: "$_id" }
+            workspaceId: { $toString: "$_id" },
           },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ["$workspaceId", '$$workspaceId']
-                }
-              }
-            }, {
-              $count: "count"
-            }
+                  $eq: ["$workspaceId", "$$workspaceId"],
+                },
+              },
+            },
+            {
+              $count: "count",
+            },
           ],
-          as: "totalCount"
-        }
+          as: "totalCount",
+        },
       },
 
       {
         $unwind: {
-          path: '$totalCount',
-          preserveNullAndEmptyArrays: true
-        }
+          path: "$totalCount",
+          preserveNullAndEmptyArrays: true,
+        },
       },
 
       {
         $addFields: {
           totalCount: { $ifNull: ["$totalCount.count", 0] },
-        }
+        },
       },
 
       //project the details
@@ -144,12 +151,10 @@ export class WorkspaceRepository
           totalUsers: "$totalCount",
           status: 1,
           planType: "$planType.type",
-          createdAt: 1
-        }
+          createdAt: 1,
+        },
       }
-
-    )
-
+    );
 
     if (search) {
       pipeline.push({
@@ -158,42 +163,42 @@ export class WorkspaceRepository
             {
               name: {
                 $regex: search,
-                $options: "i"
-              }
+                $options: "i",
+              },
             },
             {
               ownerEmail: {
                 $regex: search,
-                $options: "i"
-              }
-            }
-          ]
-        }
-      })
+                $options: "i",
+              },
+            },
+          ],
+        },
+      });
     }
 
     pipeline.push({
       $facet: {
         data: [
           {
-            $skip: skip
+            $skip: skip,
           },
           {
-            $limit: limit
-          }
+            $limit: limit,
+          },
         ],
         totalCount: [
           {
-            $count: "count"
-          }
-        ]
-      }
-    })
+            $count: "count",
+          },
+        ],
+      },
+    });
 
-    const [result] = await this._model.aggregate(pipeline)
+    const [result] = await this._model.aggregate(pipeline);
     return {
       workspaces: result.data,
       totalCount: result.totalCount[0]?.count || 0,
-    }
+    };
   }
 }

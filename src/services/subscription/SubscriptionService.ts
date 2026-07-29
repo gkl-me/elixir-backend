@@ -2,7 +2,14 @@ import { inject, injectable } from "tsyringe";
 import { Token } from "../../di/token";
 import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
 import { ISubscriptionService } from "./interface/ISubscriptionService";
-import { ICancelSubscriptionDto, ICreateSubscriptionDto, ICreateSubscriptionResDto, IListAllSubResDto, IListAllSubscriptionDto, IReactivateSubscriptionDto } from "../../interfaces/dtos/SubscriptionDto";
+import {
+  ICancelSubscriptionDto,
+  ICreateSubscriptionDto,
+  ICreateSubscriptionResDto,
+  IListAllSubResDto,
+  IListAllSubscriptionDto,
+  IReactivateSubscriptionDto,
+} from "../../interfaces/dtos/SubscriptionDto";
 import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
 import { logError } from "../../middlewares/loggerHelper";
 import { CustomError } from "../../errors/CustomError";
@@ -19,9 +26,11 @@ export class SubscriptionService implements ISubscriptionService {
     @inject(Token.PlanRepository)
     private readonly _planRepository: IPlanRepository,
     @inject(Token.StripeService) private readonly _stripeService: IStripeService
-  ) { }
+  ) {}
 
-  async createSubscription(data: ICreateSubscriptionDto): Promise<ICreateSubscriptionResDto> {
+  async createSubscription(
+    data: ICreateSubscriptionDto
+  ): Promise<ICreateSubscriptionResDto> {
     try {
       const {
         userId,
@@ -31,7 +40,7 @@ export class SubscriptionService implements ISubscriptionService {
         stripeCustomerId,
         workspaceId,
         currentPeriodEnd,
-        currentPeriodStart
+        currentPeriodStart,
       } = data;
 
       const now = new Date();
@@ -55,8 +64,8 @@ export class SubscriptionService implements ISubscriptionService {
       });
 
       return {
-        subscriptionId: String(sub._id)
-      }
+        subscriptionId: String(sub._id),
+      };
     } catch (error) {
       throw error;
     }
@@ -64,124 +73,135 @@ export class SubscriptionService implements ISubscriptionService {
 
   async cancelSubscription(data: ICancelSubscriptionDto): Promise<void> {
     try {
+      const { subscriptionId, cancelMode } = data;
 
-      const { subscriptionId, cancelMode } = data
-
-      const sub = await this._subscriptionRepository.findById(subscriptionId)
+      const sub = await this._subscriptionRepository.findById(subscriptionId);
 
       if (!sub) {
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      const isFree = sub.planType === 'Free' || sub.price === 0
+      const isFree = sub.planType === "Free" || sub.price === 0;
 
       if (isFree) {
-        if (cancelMode == 'immediate') {
-          sub.status = "canceled",
-            sub.cancelAtPeriodEnd = true
+        if (cancelMode == "immediate") {
+          ((sub.status = "canceled"), (sub.cancelAtPeriodEnd = true));
         } else {
-          sub.status = "active",
-            sub.cancelAtPeriodEnd = true
-
+          ((sub.status = "active"), (sub.cancelAtPeriodEnd = true));
         }
-        await sub.save()
-        return
+        await sub.save();
+        return;
       }
 
       if (sub.stripeSubscriptionId) {
-        if (cancelMode === 'immediate') {
-
+        if (cancelMode === "immediate") {
           //cancel the subscription
-          await this._stripeService.cancelSubscription(sub.stripeSubscriptionId)
-          sub.status = "canceled"
-          sub.cancelAtPeriodEnd = true
+          await this._stripeService.cancelSubscription(
+            sub.stripeSubscriptionId
+          );
+          sub.status = "canceled";
+          sub.cancelAtPeriodEnd = true;
         } else {
-
           await this._stripeService.updateSubscription(
             sub.stripeSubscriptionId,
             true
-          )
+          );
 
-          sub.cancelAtPeriodEnd = true
+          sub.cancelAtPeriodEnd = true;
         }
-        await sub.save()
-        return
+        await sub.save();
+        return;
       }
-
     } catch (error) {
       logError(error, {
-        service: "SubscriptionService.cancelSubscription"
-      })
-      throw Error
+        service: "SubscriptionService.cancelSubscription",
+      });
+      throw Error;
     }
   }
 
-  async reactivateSubscription(data: IReactivateSubscriptionDto): Promise<void> {
+  async reactivateSubscription(
+    data: IReactivateSubscriptionDto
+  ): Promise<void> {
     try {
+      const { subscriptionId } = data;
 
-      const { subscriptionId } = data
-
-      const sub = await this._subscriptionRepository.findById(subscriptionId)
+      const sub = await this._subscriptionRepository.findById(subscriptionId);
       if (!sub) {
-        throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST, STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
       }
 
-      const isFree = sub.planType === 'Free' || sub.price === 0
+      const isFree = sub.planType === "Free" || sub.price === 0;
       if (isFree) {
-        sub.status = "active"
-        sub.cancelAtPeriodEnd = false
-        await sub.save()
-        return
+        sub.status = "active";
+        sub.cancelAtPeriodEnd = false;
+        await sub.save();
+        return;
       }
 
-      if (sub.status === 'active' && sub.cancelAtPeriodEnd && sub.stripeSubscriptionId) {
+      if (
+        sub.status === "active" &&
+        sub.cancelAtPeriodEnd &&
+        sub.stripeSubscriptionId
+      ) {
         await this._stripeService.updateSubscription(
           sub.stripeSubscriptionId,
           false
-        )
+        );
 
-        sub.cancelAtPeriodEnd = false
-        await sub.save()
-        return
+        sub.cancelAtPeriodEnd = false;
+        await sub.save();
+        return;
       }
 
       if (sub.status === "canceled" && !isFree) {
-        throw new CustomError("Paid Subscription cannot be reactivated", STATUS_CODES.BAD_REQUEST)
+        throw new CustomError(
+          "Paid Subscription cannot be reactivated",
+          STATUS_CODES.BAD_REQUEST
+        );
       }
-
     } catch (error) {
       logError(error, {
-        service: "SubscriptionService.reactivateSubscription"
-      })
-      throw error
+        service: "SubscriptionService.reactivateSubscription",
+      });
+      throw error;
     }
   }
 
-  async listAllSubscription(data: IListAllSubscriptionDto): Promise<IListAllSubResDto> {
+  async listAllSubscription(
+    data: IListAllSubscriptionDto
+  ): Promise<IListAllSubResDto> {
     try {
+      const { search, page, limit, status, plan } = data;
 
-      const { search, page, limit, status, plan } = data
+      const skip = (page - 1) * limit;
 
-      const skip = (page - 1) * limit
-
-      const { subscriptions, totalCount } = await this._subscriptionRepository.getAllSubscriptions({
-        search,
-        skip,
-        limit,
-        status,
-        plan
-      })
+      const { subscriptions, totalCount } =
+        await this._subscriptionRepository.getAllSubscriptions({
+          search,
+          skip,
+          limit,
+          status,
+          plan,
+        });
 
       return {
-        subscriptions: subscriptions.map(sub => SubscriptionDtoMapper.toSubscrpitonList(sub)),
-        totalCount
-      }
-
+        subscriptions: subscriptions.map((sub) =>
+          SubscriptionDtoMapper.toSubscrpitonList(sub)
+        ),
+        totalCount,
+      };
     } catch (error) {
       logError(error, {
-        service: "subscriptionService.listAllSubscription"
-      })
-      throw error
+        service: "subscriptionService.listAllSubscription",
+      });
+      throw error;
     }
   }
 }

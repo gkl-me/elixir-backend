@@ -34,7 +34,7 @@ export class OnboardingService implements IOnboardingService {
     private readonly _subscriptionService: ISubscriptionService,
     @inject(Token.PaymentService)
     private readonly _paymentService: IPaymentService
-  ) { }
+  ) {}
 
   async getUserOnboarding(
     data: IGetOnboardingDto

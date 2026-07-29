@@ -54,5 +54,5 @@ export const Token = {
   WorkspaceInviteController: "IWorkspaceInviteController",
   WorkspaceMemberController: "IWorkspaceMemberController",
   WorkspaceTeamController: "IWorkspaceTeamController",
-  TransactionController: "ITransactionController"
+  TransactionController: "ITransactionController",
 };

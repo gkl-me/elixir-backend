@@ -13,7 +13,7 @@ export class onboardingDtoMapper {
       paymentStatus: onboarding.paymentStatus,
       company: onboarding.company,
       workspaceName: onboarding.workspaceName,
-      workspaceSlug: onboarding?.workspaceSlug
+      workspaceSlug: onboarding?.workspaceSlug,
     };
   }
 }
