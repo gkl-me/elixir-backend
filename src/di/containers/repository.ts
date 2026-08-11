@@ -12,6 +12,7 @@ import { WorkspaceMemberRepository } from "../../repositories/workspace/Workspac
 import { WorkspaceInviteRepository } from "../../repositories/workspace/WorkspaceInviteRepository";
 import { WorkspaceTeamRepository } from "../../repositories/workspace/WorkspaceTeamRepository";
 import { TransactionRepository } from "../../repositories/transaction/TransactionRepository";
+import { ProjectRepository } from "../../repositories/project/ProjectRepository";
 
 //repository
 container.register(Token.PlanRepository, {
@@ -52,4 +53,7 @@ container.register(Token.WorkspaceTeamRepository, {
 });
 container.register(Token.TransactionRepository, {
   useClass: TransactionRepository,
+});
+container.register(Token.ProjectRepository, {
+  useClass: ProjectRepository,
 });

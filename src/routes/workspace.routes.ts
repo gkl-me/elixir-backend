@@ -12,6 +12,7 @@ import { IWorkspaceMemberController } from "../controllers/workspace/interface/I
 import { IWorkspaceTeamController } from "../controllers/workspace/interface/IWorkspaceTeamController";
 import { authorize } from "../middlewares/authorize";
 import { APP_ROLES } from "../constants/roles";
+import { IProjectController } from "../controllers/project/interface/IProjectController";
 
 const router = Router();
 
@@ -30,6 +31,8 @@ const workspaceMemberController = container.resolve<IWorkspaceMemberController>(
 const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
   Token.WorkspaceTeamController
 );
+
+const projectController = container.resolve<IProjectController>(Token.ProjectController)
 
 router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
   void workspaceController.handleListAllWorkspace(req, res, next);
@@ -175,5 +178,16 @@ router.delete(
 router.get("/:workspaceId/teams/:teamId", auth, (req, res, next) => {
   void workspaceTeamController.handleGetTeam(req, res, next);
 });
+
+
+//projects workspace
+
+router.post("/:workspaceId/projects", auth, (req, res, next) => {
+  void projectController.handleCreateProject(req, res, next)
+})
+router.get("/:workspaceId/projects", auth, (req, res, next) => {
+  void projectController.handleListProjects(req, res, next)
+})
+
 
 export default router;
