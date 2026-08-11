@@ -8,6 +8,7 @@ import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { extractStringQueryParams } from "../../helper/queryParamUtils";
 import { CONSTANT_MESSAGES } from "../../constants/messages";
+import { date } from "zod";
 
 @injectable()
 export class PaymentController implements IPaymentController {
@@ -16,7 +17,7 @@ export class PaymentController implements IPaymentController {
     private readonly _paymentService: IPaymentService,
     @inject(Token.OnboardingService)
     private readonly _onboardingService: IOnboardingService
-  ) {}
+  ) { }
 
   async handleVerifyPayment(
     req: Request,
@@ -93,6 +94,30 @@ export class PaymentController implements IPaymentController {
       successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, result);
     } catch (error) {
       next(error);
+    }
+  }
+
+  async handleStartUpgradeCheckout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+
+      const userId = req.user.userId;
+      const { workspaceId, planId, company } = req.body;
+      const workspaceSlug = req.workspace?.workspaceSlug || "";
+
+      console.log("Plan Id for upgrading", workspaceSlug);
+
+      const result = await this._paymentService.startUpgradeCheckout({
+        workspaceId,
+        workspaceSlug,
+        planId,
+        company,
+        userId,
+      });
+
+      successResponse(res, "Checkout Session created successfully", STATUS_CODES.OK, result)
+
+    } catch (error) {
+      next(error)
     }
   }
 }

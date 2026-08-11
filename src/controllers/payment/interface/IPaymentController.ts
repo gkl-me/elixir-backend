@@ -21,4 +21,9 @@ export interface IPaymentController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
+  handleStartUpgradeCheckout(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>
 }

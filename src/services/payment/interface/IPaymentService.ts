@@ -7,6 +7,8 @@ import {
   IGetBillingResDto,
   IRetryPaymentDto,
   IRetryPaymentResponseDto,
+  IUpgradeCheckoutDto,
+  IUpgradeCheckoutResDto,
   IVerifyPaymentDto,
 } from "../../../interfaces/dtos/PaymentDto";
 
@@ -18,4 +20,5 @@ export interface IPaymentService {
   createCustomerPortal(
     data: ICreateCustomerPortalDto
   ): Promise<ICreateCustomerPortalResDto>;
+  startUpgradeCheckout(data: IUpgradeCheckoutDto): Promise<IUpgradeCheckoutResDto>
 }

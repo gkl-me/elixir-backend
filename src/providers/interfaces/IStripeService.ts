@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { IRegisterCompanyDto } from "../../interfaces/dtos/CompanyDto";
 
 export interface IStripeService {
   createProduct: (planName: string) => Promise<string>;
@@ -17,6 +18,19 @@ export interface IStripeService {
     userId: string,
     planId: string
   ): Promise<{ sessionId: string; payment_url: string }>;
+  createUpgradeCheckoutSession(
+    customerId: string,
+    priceId: string,
+    userId: string,
+    planId: string,
+    workspaceId: string,
+    workspaceSlug: string,
+    oldSubscriptionId?: string,
+    company?: IRegisterCompanyDto
+  ): Promise<{
+    sessionId: string;
+    payment_url: string;
+  }>;
   retriveSession(
     sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session>>;

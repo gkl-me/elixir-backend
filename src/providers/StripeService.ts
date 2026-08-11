@@ -7,6 +7,7 @@ import logger from "../middlewares/logger";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../constants/messages";
 import { ENV } from "../constants/env";
 import { logError } from "../middlewares/loggerHelper";
+import { IRegisterCompanyDto } from "../interfaces/dtos/CompanyDto";
 
 @injectable()
 export class StripeService implements IStripeService {
@@ -178,6 +179,63 @@ export class StripeService implements IStripeService {
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
         STATUS_CODES.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  async createUpgradeCheckoutSession(
+    customerId: string,
+    priceId: string,
+    userId: string,
+    planId: string,
+    workspaceId: string,
+    workspaceSlug: string,
+    oldSubscriptionId?: string,
+    company?: IRegisterCompanyDto
+  ): Promise<{ sessionId: string; payment_url: string }> {
+    try {
+      console.log("[StripeService] createUpgradeCheckoutSession context:", {
+        customerId,
+        priceId,
+        userId,
+        planId,
+        workspaceId,
+        workspaceSlug,
+        oldSubscriptionId,
+      });
+
+      const session = await this._stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ["card"],
+        mode: "subscription",
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        success_url: `${ENV.CLIENT_URL}/workspace/${workspaceSlug}/settings?tab=billing&status=success`,
+        cancel_url: `${ENV.CLIENT_URL}/workspace/${workspaceSlug}/settings?tab=billing&status=cancelled`,
+        subscription_data: {
+          metadata: {
+            userId,
+            workspaceId,
+            planId,
+            isUpgrade: "true",
+            oldSubscriptionId: oldSubscriptionId || "",
+            company: company ? JSON.stringify(company) : "",
+          },
+        },
+      });
+
+      return {
+        sessionId: session.id,
+        payment_url: session.url || "",
+      };
+    } catch (error) {
+      logError(error, {
+        service: "StripeService.createUpgradeCheckoutSession",
+      });
+      throw error;
     }
   }
 

@@ -39,7 +39,7 @@ export interface IGetBillingResDto {
     status: string;
     currentPeriodEnd?: Date;
   };
-  upgradePlans: IPlan[] | undefined;
+  upgradePlans: PlanResponseDto[] | []
 }
 
 export interface ICreateCustomerPortalDto {
@@ -50,3 +50,27 @@ export interface ICreateCustomerPortalDto {
 export interface ICreateCustomerPortalResDto {
   customerPortalUrl: string;
 }
+
+
+
+export interface IUpgradeCheckoutDto {
+  userId: string,
+  workspaceId: string,
+  workspaceSlug: string
+  planId: string,
+  company?: {
+    name: string;
+    type: string;
+    email: string;
+    phone: string;
+    size: number;
+  };
+}
+
+
+export interface IUpgradeCheckoutResDto {
+  sessionId: string,
+  payment_url: string
+}
+
+

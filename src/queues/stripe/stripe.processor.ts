@@ -14,6 +14,7 @@ import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanReposit
 import { IWorkspaceService } from "../../services/workspace/interface/IWorkspaceService";
 import { logError, logInfo } from "../../middlewares/loggerHelper";
 import { ITransactionService } from "../../services/transaction/interface/ITransactionService";
+import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
 
 export async function handleStripeEventProcessor(job: Job): Promise<void> {
   const { event } = job.data as { event: Stripe.Event };
@@ -102,13 +103,22 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     const _transactionService = container.resolve<ITransactionService>(
       Token.TransactionService
     );
+    const _workspaceRepository = container.resolve<IWorkspaceRepository>(
+      Token.WorkspaceRepository
+    )
 
     const invoice = event.data.object as Stripe.Invoice;
 
     const sub = await _stripeService.getSubscriptionFromInvoice(invoice);
 
+
+    //metadata from stripe
     const userId = sub?.metadata?.userId;
     const planId = sub?.metadata?.planId || "";
+    const workspaceId = sub?.metadata?.workspaceId || ""
+    const isUpgrade = sub?.metadata?.isUpgrade === "true";
+    const oldSubscriptionId = sub?.metadata?.oldSubscriptionId;
+    const companyDataRaw = sub?.metadata?.company;
 
     const stripeSubId = sub?.subscription as string;
 
@@ -148,6 +158,110 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       chargeId,
     });
 
+    if (isUpgrade && workspaceId) {
+      logInfo(`[Stripe Processor] Executing Workspace Upgrade for Workspace: ${workspaceId}`)
+
+      //cancel old subscription 
+      if (oldSubscriptionId && oldSubscriptionId !== stripeSubId) {
+        try {
+          await _stripeService.cancelSubscription(oldSubscriptionId);
+
+        } catch (error) {
+          logError(error, {
+            service: "stripe procceror error to cancel old subscription"
+          })
+        }
+      }
+
+      //create company if enterprice plan
+      let companyId: string | undefined
+      if (companyDataRaw) {
+        try {
+
+          const company = JSON.parse(companyDataRaw)
+          if (company.name) {
+            const com = await _companyRepository.create(company)
+          }
+          companyId = company._id
+
+        } catch (error) {
+          logError(error, {
+            service: "stripe upgrade subscription failed to create company"
+          })
+        }
+      }
+
+      // 3. Retrieve Target Plan
+      const newPlan = await _planRepository.findById(planId);
+
+      if (!newPlan) {
+        throw new CustomError("Invalid plan id ", STATUS_CODES.BAD_REQUEST)
+      }
+
+      // 4. Update Workspace Subscription in DB
+      let dbSub = await _subscriptionRepository.findOne({ workspaceId });
+      const currentPeriodStart = new Date(invoice.period_start * 1000);
+      const currentPeriodEnd = new Date(invoice.period_end * 1000);
+
+      if (dbSub) {
+        dbSub.planId = planId;
+        dbSub.planType = newPlan?.type || dbSub.planType;
+        dbSub.price = newPlan?.price ?? dbSub.price;
+        dbSub.stripePriceId = newPlan?.stripePriceId || dbSub.stripePriceId;
+        dbSub.stripeSubscriptionId = stripeSubId;
+        dbSub.status = "active";
+        dbSub.cancelAtPeriodEnd = false;
+        dbSub.currentPeriodStart = currentPeriodStart;
+        dbSub.currentPeriodEnd = currentPeriodEnd;
+        await dbSub.save();
+      } else {
+        dbSub = await _subscriptionRepository.create({
+          userId: userId!,
+          workspaceId,
+          planId,
+          planType: newPlan?.type,
+          price: newPlan?.price,
+          stripePriceId: newPlan?.stripePriceId,
+          stripeSubscriptionId: stripeSubId,
+          stripeCustomerId: invoice.customer as string,
+          status: "active",
+          cancelAtPeriodEnd: false,
+          currentPeriodStart,
+          currentPeriodEnd,
+        });
+      }
+
+      const workspace = await _workspaceRepository.findById(workspaceId)
+      if (workspace) {
+        workspace.companyId = companyId
+        workspace.planId = planId
+        await workspace.save()
+      }
+
+      await _transactionService.createTransaction({
+        transactionRef: pi?.id || paymentIntentId || invoice.id || "",
+        invoiceNumber: invoice.number || `INV-UPG-${Date.now()}`,
+        userId: userId || dbSub.userId,
+        workspaceId,
+        subscriptionId: String(dbSub._id || dbSub.id),
+        customerEmail: invoice.customer_email || "",
+        amount: invoice.amount_paid,
+        currency: invoice.currency.toUpperCase(),
+        status: "success",
+        paymentMethod: brand,
+        last4,
+        planType: newPlan?.type,
+        stripeInvoiceId: invoice.id || "",
+        stripeChargeId: chargeId,
+        invoicePdfUrl: invoice.invoice_pdf || "",
+      });
+
+      console.log(`[Stripe Processor] Upgrade completed successfully for workspace: ${workspaceId}`);
+      return;
+
+    }
+
+    //recurring payment
     const existingSub = await _subscriptionRepository.findOne({
       stripeSubscriptionId: stripeSubId,
     });
@@ -190,6 +304,8 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       return;
     }
 
+
+    //intial onboarding payment
     const onboarding = await _onboardingRepository.findOne({ userId });
     const plan = await _planRepository.findById(planId);
 

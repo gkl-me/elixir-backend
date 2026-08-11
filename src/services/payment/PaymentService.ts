@@ -17,11 +17,15 @@ import {
   IGetBillingResDto,
   IRetryPaymentDto,
   IRetryPaymentResponseDto,
+  IUpgradeCheckoutDto,
+  IUpgradeCheckoutResDto,
   IVerifyPaymentDto,
 } from "../../interfaces/dtos/PaymentDto";
 import { logError } from "../../middlewares/loggerHelper";
 import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
 import { ENV } from "../../constants/env";
+import { features } from "process";
+import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
 
 @injectable()
 export class PaymentService implements IPaymentService {
@@ -33,8 +37,10 @@ export class PaymentService implements IPaymentService {
     @inject(Token.PlanRepository)
     private readonly _planRepository: IPlanRepository,
     @inject(Token.SubscriptionRepository)
-    private readonly _subscriptionRepository: ISubscriptionRepository
-  ) {}
+    private readonly _subscriptionRepository: ISubscriptionRepository,
+    @inject(Token.WorkspaceRepository)
+    private readonly _workspaceRepository: IWorkspaceRepository,
+  ) { }
 
   async startCheckout(data: ICheckoutDto): Promise<ICheckoutResponseDto> {
     try {
@@ -99,6 +105,83 @@ export class PaymentService implements IPaymentService {
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
         STATUS_CODES.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  async startUpgradeCheckout(data: IUpgradeCheckoutDto): Promise<IUpgradeCheckoutResDto> {
+    try {
+
+
+      const { userId, workspaceId, planId, company, workspaceSlug } = data;
+
+      console.log("data", data)
+
+      const user = await this._userRepository.findById(userId);
+      if (!user) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      //new  plan id to upgrade 
+      const newPlan = await this._planRepository.findById(planId);
+      if (!newPlan || !newPlan.stripePriceId) {
+        throw new CustomError(
+          "Target plan not found or missing price ID",
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      //check if stripe customerId exist
+      if (!user.stripeCustomerId) {
+        const customerId = await this._stripeService.createCustomer(
+          user.email,
+          user.name,
+          userId
+        );
+        if (!customerId) {
+          throw new CustomError(
+            CONSTANT_MESSAGES.BAD_REQUEST,
+            STATUS_CODES.BAD_REQUEST
+          );
+        }
+        user.stripeCustomerId = customerId;
+        await user.save();
+      }
+
+      const currentSub = await this._subscriptionRepository.findOne({
+        workspaceId,
+        status: "active",
+      });
+
+      const oldSubscriptionId = currentSub?.stripeSubscriptionId || "";
+
+      const workspace = await this._workspaceRepository.findById(workspaceId)
+
+      if (!workspace) {
+        throw new CustomError("Workspace not found", STATUS_CODES.BAD_REQUEST)
+      }
+
+      // create upgrade session
+      const session = await this._stripeService.createUpgradeCheckoutSession(
+        user.stripeCustomerId,
+        newPlan.stripePriceId,
+        userId,
+        planId,
+        workspaceId,
+        workspace.slug,
+        oldSubscriptionId,
+        company
+      );
+
+      return session
+
+    } catch (error) {
+      logError(error, {
+        service: "PaymentService.startUpgradeCheckout"
+      })
+      throw error
     }
   }
 
@@ -217,7 +300,15 @@ export class PaymentService implements IPaymentService {
           status: subscription.status,
           currentPeriodEnd: subscription.currentPeriodEnd,
         },
-        upgradePlans,
+        upgradePlans: upgradePlans?.map((plan) => ({
+          id: String(plan._id),
+          name: plan.name,
+          price: plan.price,
+          type: plan.type,
+          features: plan.features,
+          limits: plan.limits,
+          isActive: plan.isActive
+        })) ?? [],
       };
     } catch (error) {
       logError(error, {

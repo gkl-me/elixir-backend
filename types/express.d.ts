@@ -6,6 +6,10 @@ declare global {
         role: string;
       };
       requestId?: string;
+      workspace?: {
+        workspaceId: string;
+        workspaceSlug: string;
+      };
       workspaceMember?: {
         workspaceMemberId: string;
         workspaceRoleId: string;
@@ -15,4 +19,5 @@ declare global {
   }
 }
 
-export {};
+export { };
+
