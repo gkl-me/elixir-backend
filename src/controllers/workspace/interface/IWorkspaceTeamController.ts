@@ -26,4 +26,9 @@ export interface IWorkspaceTeamController {
     res: Response,
     next: NextFunction
   ) => Promise<void>;
+  handleGetUniqueTeamMembers: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
 }

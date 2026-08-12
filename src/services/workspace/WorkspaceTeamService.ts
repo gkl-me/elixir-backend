@@ -9,9 +9,11 @@ import {
   ICreateTeamDto,
   IGetTeamDto,
   IGetTeamResDto,
+  IGetUniqueTeamMembers,
   IListTeamsDto,
   IListTeamsResDto,
   IRemoveMemberDto,
+  TeamMembersDto,
 } from "../../interfaces/dtos/WorkspaceTeamDto";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { CustomError } from "../../errors/CustomError";
@@ -21,7 +23,7 @@ export class WorkspaceTeamService implements IWorkspaceTeamService {
   constructor(
     @inject(Token.WorkspaceTeamRepository)
     private readonly _workspaceTeamRepository: IWorkspaceTeamRepository
-  ) {}
+  ) { }
 
   async listTeams(data: IListTeamsDto): Promise<IListTeamsResDto> {
     try {
@@ -125,6 +127,27 @@ export class WorkspaceTeamService implements IWorkspaceTeamService {
         service: "WorkspaceTeamService.getTeam",
       });
       throw error;
+    }
+  }
+
+  async getUniqueTeamMembers(data: IGetUniqueTeamMembers): Promise<TeamMembersDto[]> {
+    try {
+
+      const { search, teamIds, workspaceId } = data
+
+      const members = await this._workspaceTeamRepository.getUniqueMembersByTeamIds(
+        workspaceId,
+        teamIds,
+        search
+      )
+
+      return members
+
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceService.getUniqueTeamMembers"
+      })
+      throw error
     }
   }
 }

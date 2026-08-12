@@ -54,3 +54,19 @@ export interface IListTeamsResDto {
   teams: IListTeamsDetails[];
   totalCount: number;
 }
+
+
+export interface IGetUniqueTeamMembers {
+  workspaceId: string,
+  teamIds: string[],
+  search?: string
+}
+
+
+export interface TeamMembersDto {
+  id: string,
+  name: string,
+  email: string,
+  avatarUrl?: string,
+  role: string
+}

@@ -6,6 +6,8 @@ import {
   IRemoveMemberDto,
   IGetTeamDto,
   IGetTeamResDto,
+  IGetUniqueTeamMembers,
+  TeamMembersDto,
 } from "../../../interfaces/dtos/WorkspaceTeamDto";
 
 export interface IWorkspaceTeamService {
@@ -14,4 +16,5 @@ export interface IWorkspaceTeamService {
   createTeam(data: ICreateTeamDto): Promise<void>;
   addMembers(data: IAddMembersDto): Promise<void>;
   removeMember(data: IRemoveMemberDto): Promise<void>;
+  getUniqueTeamMembers(data: IGetUniqueTeamMembers): Promise<TeamMembersDto[]>
 }

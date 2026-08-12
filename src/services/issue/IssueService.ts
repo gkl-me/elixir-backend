@@ -33,13 +33,16 @@ export class IssueService implements IIssueService {
 
             const key = project.key
 
-            let count = await this._cacheRepositroy.get(project.key)
-            if (!count) {
-                count = 1
+            const countVal = await this._cacheRepositroy.get(key)
+            let count: number
+            if (!countVal) {
+                const existingCount = await this._issueRepository.count({ projectId })
+                count = existingCount + 1
             } else {
-                count++
-                await this._cacheRepositroy.set(key, count)
+                count = Number(countVal) + 1
             }
+
+            await this._cacheRepositroy.set(key, count)
 
             await this._issueRepository.create({
                 title,

@@ -21,6 +21,14 @@ export interface IWorkspaceTeamWithMemberDetail {
   }[];
 }
 
+export interface IMembersResDto {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+  role: string;
+}
+
 export interface IWorkspaceTeamRepository extends IBaseRepository<IWorkspaceTeam> {
   listTeams(
     workspaceId: string,
@@ -32,4 +40,9 @@ export interface IWorkspaceTeamRepository extends IBaseRepository<IWorkspaceTeam
     workspaceId: string,
     teamId: string
   ): Promise<IWorkspaceTeamWithMemberDetail | null>;
+  getUniqueMembersByTeamIds(
+    workspaceId: string,
+    teamIds: string[],
+    search?: string
+  ): Promise<IMembersResDto[]>;
 }

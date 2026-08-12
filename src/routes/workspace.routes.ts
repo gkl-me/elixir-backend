@@ -182,6 +182,10 @@ router.get("/:workspaceId/teams/:teamId", auth, (req, res, next) => {
   void workspaceTeamController.handleGetTeam(req, res, next);
 });
 
+router.post("/:workspaceId/teams/unique-members", auth, (req, res, next) => {
+  void workspaceTeamController.handleGetUniqueTeamMembers(req, res, next)
+})
+
 
 //projects workspace
 
