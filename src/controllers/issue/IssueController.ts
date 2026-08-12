@@ -6,6 +6,7 @@ import { Request, NextFunction, Response } from "express";
 import { extractStringParams } from "../../helper/stringParamUtils";
 import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
+import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
 
 
@@ -47,6 +48,30 @@ export class IssueController implements IIssueController {
 
             successResponse(res, "Issue successfully created", STATUS_CODES.CREATED, {})
 
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async handleListBacklogs(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+
+            const { workspaceId, projectId } = extractStringParams(req.params, ["workspaceId", "projectId"])
+            const params = extractStringQueryParams(req.query, ["search", "type", "status"])
+
+            const proccessed = {
+                search: params?.search || "",
+                type: params?.type || "",
+                status: params?.status || ""
+            }
+
+            const result = await this._issueService.listBacklog({
+                workspaceId,
+                projectId,
+                ...proccessed
+            })
+
+            return successResponse(res, "Issues fetched successfully", STATUS_CODES.OK, result)
         } catch (error) {
             next(error)
         }

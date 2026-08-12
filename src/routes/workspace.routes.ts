@@ -191,17 +191,18 @@ router.post("/:workspaceId/projects", auth, (req, res, next) => {
 router.get("/:workspaceId/projects", auth, (req, res, next) => {
   void projectController.handleListProjects(req, res, next)
 })
+router.get("/:workspaceId/projects/:projectId", auth, (req, res, next) => {
+  void projectController.handleGetProjectDetails(req, res, next)
+})
 
 
 
 //issues 
-
 router.post("/:workspaceId/backlog/create-issue", auth, (req, res, next) => {
   void issueController.handleCreateBacklogIssue(req, res, next)
 })
-
-router.get("/:workspaceId/projects/:projectId", auth, (req, res, next) => {
-  void projectController.handleGetProjectDetails(req, res, next)
+router.get("/:workspaceId/projects/:projectId/backlogs", auth, (req, res, next) => {
+  void issueController.handleListBacklogs(req, res, next)
 })
 
 export default router;
