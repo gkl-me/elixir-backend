@@ -5,7 +5,6 @@ import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWo
 import { IWorkspace } from "../../models/Workspace";
 import { builtInRoles } from "../../constants/builtInRoles";
 import { IWorkspaceRoleRepository } from "../../repositories/workspace/interface/IWorkspaceRoleRepository";
-import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
 import { logError } from "../../middlewares/loggerHelper";
 import logger from "../../middlewares/logger";
 import { CustomError } from "../../errors/CustomError";
@@ -56,7 +55,7 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _planRepository: IPlanRepository,
     @inject(Token.WorkspaceTeamRepository)
     private readonly _workspaceTeamRepository: IWorkspaceTeamRepository
-  ) {}
+  ) { }
 
   async createWorkspace(data: ICreateWorkspaceDto): Promise<IWorkspace> {
     try {

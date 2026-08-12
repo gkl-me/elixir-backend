@@ -8,7 +8,6 @@ import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { extractStringQueryParams } from "../../helper/queryParamUtils";
 import { CONSTANT_MESSAGES } from "../../constants/messages";
-import { date } from "zod";
 
 @injectable()
 export class PaymentController implements IPaymentController {
@@ -97,9 +96,12 @@ export class PaymentController implements IPaymentController {
     }
   }
 
-  async handleStartUpgradeCheckout(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async handleStartUpgradeCheckout(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-
       const userId = req.user.userId;
       const { workspaceId, planId, company } = req.body;
       const workspaceSlug = req.workspace?.workspaceSlug || "";
@@ -114,10 +116,14 @@ export class PaymentController implements IPaymentController {
         userId,
       });
 
-      successResponse(res, "Checkout Session created successfully", STATUS_CODES.OK, result)
-
+      successResponse(
+        res,
+        "Checkout Session created successfully",
+        STATUS_CODES.OK,
+        result
+      );
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 }

@@ -9,6 +9,7 @@ import {
   IGithubAuthDto,
   IGoogleAuthDto,
   ILoginDto,
+  ILogoutAllDeviceDto,
   ILogoutDto,
   IRefreshTokenDto,
   IRefreshTokenResponseDto,
@@ -752,7 +753,7 @@ export class AuthService implements IAuthService {
     }
   }
 
-  async logoutAllDevices(data: any) {
+  async logoutAllDevices(data: ILogoutAllDeviceDto): Promise<void> {
     try {
       const { userId } = data;
 

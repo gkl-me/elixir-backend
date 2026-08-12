@@ -26,7 +26,7 @@ export class SubscriptionService implements ISubscriptionService {
     @inject(Token.PlanRepository)
     private readonly _planRepository: IPlanRepository,
     @inject(Token.StripeService) private readonly _stripeService: IStripeService
-  ) {}
+  ) { }
 
   async createSubscription(
     data: ICreateSubscriptionDto
@@ -87,10 +87,12 @@ export class SubscriptionService implements ISubscriptionService {
       const isFree = sub.planType === "Free" || sub.price === 0;
 
       if (isFree) {
-        if (cancelMode == "immediate") {
-          ((sub.status = "canceled"), (sub.cancelAtPeriodEnd = true));
+        if (cancelMode === "immediate") {
+          sub.status = "canceled";
+          sub.cancelAtPeriodEnd = true;
         } else {
-          ((sub.status = "active"), (sub.cancelAtPeriodEnd = true));
+          sub.status = "active";
+          sub.cancelAtPeriodEnd = true;
         }
         await sub.save();
         return;

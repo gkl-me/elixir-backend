@@ -17,7 +17,7 @@ export class WorkspaceController implements IWorkspaceController {
   constructor(
     @inject(Token.WorkspaceService)
     private readonly _workspaceService: IWorkspaceService
-  ) { }
+  ) {}
 
   async handleWorkspaceContext(
     req: Request,
@@ -29,12 +29,10 @@ export class WorkspaceController implements IWorkspaceController {
       const slug = params.slug;
       const userId = req.user.userId;
 
-
       const workspaceContext = await this._workspaceService.workspaceContext({
         userId,
         slug,
       });
-
 
       if (workspaceContext) {
         req.workspace = {

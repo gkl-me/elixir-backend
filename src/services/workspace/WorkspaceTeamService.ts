@@ -23,7 +23,7 @@ export class WorkspaceTeamService implements IWorkspaceTeamService {
   constructor(
     @inject(Token.WorkspaceTeamRepository)
     private readonly _workspaceTeamRepository: IWorkspaceTeamRepository
-  ) { }
+  ) {}
 
   async listTeams(data: IListTeamsDto): Promise<IListTeamsResDto> {
     try {
@@ -130,24 +130,25 @@ export class WorkspaceTeamService implements IWorkspaceTeamService {
     }
   }
 
-  async getUniqueTeamMembers(data: IGetUniqueTeamMembers): Promise<TeamMembersDto[]> {
+  async getUniqueTeamMembers(
+    data: IGetUniqueTeamMembers
+  ): Promise<TeamMembersDto[]> {
     try {
+      const { search, teamIds, workspaceId } = data;
 
-      const { search, teamIds, workspaceId } = data
+      const members =
+        await this._workspaceTeamRepository.getUniqueMembersByTeamIds(
+          workspaceId,
+          teamIds,
+          search
+        );
 
-      const members = await this._workspaceTeamRepository.getUniqueMembersByTeamIds(
-        workspaceId,
-        teamIds,
-        search
-      )
-
-      return members
-
+      return members;
     } catch (error) {
       logError(error, {
-        service: "WorkspaceService.getUniqueTeamMembers"
-      })
-      throw error
+        service: "WorkspaceService.getUniqueTeamMembers",
+      });
+      throw error;
     }
   }
 }

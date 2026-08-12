@@ -1,4 +1,3 @@
-import { Subscription } from "../models/Subscription";
 
 export const Token = {
   PasswordHasher: "IPasswordHasher",

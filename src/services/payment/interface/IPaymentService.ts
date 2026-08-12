@@ -20,5 +20,7 @@ export interface IPaymentService {
   createCustomerPortal(
     data: ICreateCustomerPortalDto
   ): Promise<ICreateCustomerPortalResDto>;
-  startUpgradeCheckout(data: IUpgradeCheckoutDto): Promise<IUpgradeCheckoutResDto>
+  startUpgradeCheckout(
+    data: IUpgradeCheckoutDto
+  ): Promise<IUpgradeCheckoutResDto>;
 }

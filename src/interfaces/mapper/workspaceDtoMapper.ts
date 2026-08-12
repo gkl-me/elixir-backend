@@ -4,7 +4,6 @@ import { IWorkspaceRole } from "../../models/WorkspaceRole";
 import { IWorkspaceMemberWithUser } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 import {
   IGetAllWorkspaceDetails,
-  IGetAllWorkspaceRes,
 } from "../../repositories/workspace/interface/IWorkspaceRepository";
 import {
   IWorkspaceTeamWithMember,
@@ -16,11 +15,9 @@ import {
 } from "../dtos/WorkspaceDto";
 import {
   IListInvitesDetails,
-  IListInvitesResDto,
 } from "../dtos/WorkspaceInviteDto";
 import {
   IListMemberDetils,
-  IListMemberResDto,
 } from "../dtos/WorkspaceMemberDto";
 import {
   ICreateRoleResDto,
@@ -30,7 +27,6 @@ import {
 import {
   IGetTeamResDto,
   IListTeamsDetails,
-  IListTeamsResDto,
 } from "../dtos/WorkspaceTeamDto";
 
 export class workspaceRoleDtoMapper {

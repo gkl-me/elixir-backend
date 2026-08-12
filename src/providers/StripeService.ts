@@ -253,7 +253,7 @@ export class StripeService implements IStripeService {
     }
   }
 
-  async retrivePaymentIntent(intentId: string) {
+  async retrivePaymentIntent(intentId: string): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     try {
       return await this._stripe.paymentIntents.retrieve(intentId, {
         expand: ["payment_method", "latest_charge"],

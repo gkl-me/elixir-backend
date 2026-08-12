@@ -43,7 +43,10 @@ function getPaymentIntentIdFromInvoice(
   invoice: Stripe.Invoice
 ): string | undefined {
   // 1. Direct payment_intent property on invoice
-  const directPi = (invoice as any).payment_intent;
+  const directPi = (invoice as unknown as Record<string, unknown>).payment_intent as
+    | string
+    | { id: string }
+    | undefined;
   if (directPi) {
     return typeof directPi === "string" ? directPi : directPi.id;
   }
@@ -51,26 +54,27 @@ function getPaymentIntentIdFromInvoice(
   // 2. invoice.payments array (Stripe 18.x)
   const paymentsData = invoice.payments?.data;
   if (paymentsData && paymentsData.length > 0) {
-    const firstItem = paymentsData[0] as any;
-    if (firstItem.payment?.payment_intent) {
-      return typeof firstItem.payment.payment_intent === "string"
-        ? firstItem.payment.payment_intent
-        : firstItem.payment.payment_intent.id;
+    const firstItem = paymentsData[0] as unknown as Record<string, unknown>;
+    const firstItemPayment = firstItem.payment as Record<string, unknown> | undefined;
+    if (firstItemPayment?.payment_intent) {
+      const pi = firstItemPayment.payment_intent as string | { id: string };
+      return typeof pi === "string" ? pi : pi.id;
     }
     if (firstItem.payment_intent) {
-      return typeof firstItem.payment_intent === "string"
-        ? firstItem.payment_intent
-        : firstItem.payment_intent.id;
+      const pi = firstItem.payment_intent as string | { id: string };
+      return typeof pi === "string" ? pi : pi.id;
     }
-    if (firstItem.payment?.charge) {
-      return typeof firstItem.payment.charge === "string"
-        ? firstItem.payment.charge
-        : firstItem.payment.charge.id;
+    if (firstItemPayment?.charge) {
+      const ch = firstItemPayment.charge as string | { id: string };
+      return typeof ch === "string" ? ch : ch.id;
     }
   }
 
   // 3. Direct charge property on invoice
-  const directCharge = (invoice as any).charge;
+  const directCharge = (invoice as unknown as Record<string, unknown>).charge as
+    | string
+    | { id: string }
+    | undefined;
   if (directCharge) {
     return typeof directCharge === "string" ? directCharge : directCharge.id;
   }
@@ -105,17 +109,16 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     );
     const _workspaceRepository = container.resolve<IWorkspaceRepository>(
       Token.WorkspaceRepository
-    )
+    );
 
     const invoice = event.data.object as Stripe.Invoice;
 
     const sub = await _stripeService.getSubscriptionFromInvoice(invoice);
 
-
     //metadata from stripe
     const userId = sub?.metadata?.userId;
     const planId = sub?.metadata?.planId || "";
-    const workspaceId = sub?.metadata?.workspaceId || ""
+    const workspaceId = sub?.metadata?.workspaceId || "";
     const isUpgrade = sub?.metadata?.isUpgrade === "true";
     const oldSubscriptionId = sub?.metadata?.oldSubscriptionId;
     const companyDataRaw = sub?.metadata?.company;
@@ -159,35 +162,35 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     });
 
     if (isUpgrade && workspaceId) {
-      logInfo(`[Stripe Processor] Executing Workspace Upgrade for Workspace: ${workspaceId}`)
+      logInfo(
+        `[Stripe Processor] Executing Workspace Upgrade for Workspace: ${workspaceId}`
+      );
 
-      //cancel old subscription 
+      //cancel old subscription
       if (oldSubscriptionId && oldSubscriptionId !== stripeSubId) {
         try {
           await _stripeService.cancelSubscription(oldSubscriptionId);
-
         } catch (error) {
           logError(error, {
-            service: "stripe procceror error to cancel old subscription"
-          })
+            service: "stripe procceror error to cancel old subscription",
+          });
         }
       }
 
       //create company if enterprice plan
-      let companyId: string | undefined
+      let companyId: string | undefined;
+      let com;
       if (companyDataRaw) {
         try {
-
-          const company = JSON.parse(companyDataRaw)
+          const company = JSON.parse(companyDataRaw);
           if (company.name) {
-            const com = await _companyRepository.create(company)
+            com = await _companyRepository.create(company);
           }
-          companyId = company._id
-
+          companyId = com?._id?.toString();
         } catch (error) {
           logError(error, {
-            service: "stripe upgrade subscription failed to create company"
-          })
+            service: "stripe upgrade subscription failed to create company",
+          });
         }
       }
 
@@ -195,7 +198,7 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
       const newPlan = await _planRepository.findById(planId);
 
       if (!newPlan) {
-        throw new CustomError("Invalid plan id ", STATUS_CODES.BAD_REQUEST)
+        throw new CustomError("Invalid plan id ", STATUS_CODES.BAD_REQUEST);
       }
 
       // 4. Update Workspace Subscription in DB
@@ -231,11 +234,11 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
         });
       }
 
-      const workspace = await _workspaceRepository.findById(workspaceId)
+      const workspace = await _workspaceRepository.findById(workspaceId);
       if (workspace) {
-        workspace.companyId = companyId
-        workspace.planId = planId
-        await workspace.save()
+        workspace.companyId = companyId;
+        workspace.planId = planId;
+        await workspace.save();
       }
 
       await _transactionService.createTransaction({
@@ -256,9 +259,10 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
         invoicePdfUrl: invoice.invoice_pdf || "",
       });
 
-      console.log(`[Stripe Processor] Upgrade completed successfully for workspace: ${workspaceId}`);
+      console.log(
+        `[Stripe Processor] Upgrade completed successfully for workspace: ${workspaceId}`
+      );
       return;
-
     }
 
     //recurring payment
@@ -269,8 +273,8 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
     if (existingSub) {
       logInfo("Processuing recurring renewal payment");
 
-      ((existingSub.status = "active"),
-        (existingSub.cancelAtPeriodEnd = false));
+      existingSub.status = "active";
+      existingSub.cancelAtPeriodEnd = false;
       existingSub.currentPeriodStart = new Date(invoice.period_start * 1000);
       existingSub.currentPeriodEnd = new Date(invoice.period_end * 1000);
       await existingSub.save();
@@ -303,7 +307,6 @@ async function handlePaymentSuccess(event: Stripe.Event): Promise<void> {
 
       return;
     }
-
 
     //intial onboarding payment
     const onboarding = await _onboardingRepository.findOne({ userId });
@@ -433,7 +436,8 @@ async function handlePaymentFailed(event: Stripe.Event): Promise<void> {
     if (existingSub) {
       logInfo("Processuing recurring renewal payment");
 
-      ((existingSub.status = "past_due"), await existingSub.save());
+      existingSub.status = "past_due";
+      await existingSub.save();
 
       //need to add transaction
       await _transactionService.createTransaction({

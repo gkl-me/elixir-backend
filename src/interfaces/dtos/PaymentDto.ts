@@ -1,4 +1,3 @@
-import { IPlan } from "../../models/Plan";
 import { PlanResponseDto } from "./PlanDto";
 
 export interface ICheckoutDto {
@@ -39,7 +38,7 @@ export interface IGetBillingResDto {
     status: string;
     currentPeriodEnd?: Date;
   };
-  upgradePlans: PlanResponseDto[] | []
+  upgradePlans: PlanResponseDto[] | [];
 }
 
 export interface ICreateCustomerPortalDto {
@@ -51,13 +50,11 @@ export interface ICreateCustomerPortalResDto {
   customerPortalUrl: string;
 }
 
-
-
 export interface IUpgradeCheckoutDto {
-  userId: string,
-  workspaceId: string,
-  workspaceSlug: string
-  planId: string,
+  userId: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  planId: string;
   company?: {
     name: string;
     type: string;
@@ -67,10 +64,7 @@ export interface IUpgradeCheckoutDto {
   };
 }
 
-
 export interface IUpgradeCheckoutResDto {
-  sessionId: string,
-  payment_url: string
+  sessionId: string;
+  payment_url: string;
 }
-
-

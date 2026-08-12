@@ -16,5 +16,5 @@ export interface IWorkspaceTeamService {
   createTeam(data: ICreateTeamDto): Promise<void>;
   addMembers(data: IAddMembersDto): Promise<void>;
   removeMember(data: IRemoveMemberDto): Promise<void>;
-  getUniqueTeamMembers(data: IGetUniqueTeamMembers): Promise<TeamMembersDto[]>
+  getUniqueTeamMembers(data: IGetUniqueTeamMembers): Promise<TeamMembersDto[]>;
 }

@@ -3,17 +3,14 @@ import { IWorkspace, Workspace } from "../../models/Workspace";
 import { BaseRepository } from "../base/BaseRepository";
 import {
   IGetAllWorkspace,
-  IGetAllWorkspaceDetails,
   IGetAllWorkspaceRes,
   IWorkspaceRepository,
 } from "./interface/IWorkspaceRepository";
-import { Types } from "mongoose";
 
 @injectable()
 export class WorkspaceRepository
   extends BaseRepository<IWorkspace>
-  implements IWorkspaceRepository
-{
+  implements IWorkspaceRepository {
   constructor() {
     super(Workspace);
   }

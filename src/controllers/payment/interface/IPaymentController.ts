@@ -25,5 +25,5 @@ export interface IPaymentController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void>
+  ): Promise<void>;
 }

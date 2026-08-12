@@ -55,18 +55,16 @@ export interface IListTeamsResDto {
   totalCount: number;
 }
 
-
 export interface IGetUniqueTeamMembers {
-  workspaceId: string,
-  teamIds: string[],
-  search?: string
+  workspaceId: string;
+  teamIds: string[];
+  search?: string;
 }
 
-
 export interface TeamMembersDto {
-  id: string,
-  name: string,
-  email: string,
-  avatarUrl?: string,
-  role: string
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+  role: string;
 }

@@ -13,7 +13,7 @@ export class WorkspaceTeamController implements IWorkspaceTeamController {
   constructor(
     @inject(Token.WorkspaceTeamService)
     private readonly workspaceTeamService: IWorkspaceTeamService
-  ) { }
+  ) {}
 
   async handleListTeams(
     req: Request,
@@ -171,20 +171,18 @@ export class WorkspaceTeamController implements IWorkspaceTeamController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const { workspaceId } = extractStringParams(req.params, ["workspaceId"]);
 
-
-      const { workspaceId } = extractStringParams(req.params, ["workspaceId"])
-
-      const { teamIds, search } = req.body
+      const { teamIds, search } = req.body;
 
       const members = await this.workspaceTeamService.getUniqueTeamMembers({
         workspaceId,
         teamIds,
-        search
+        search,
       });
 
       successResponse(res, "Team fetched successfully", STATUS_CODES.OK, {
-        members
+        members,
       });
     } catch (error) {
       next(error);

@@ -15,7 +15,8 @@ import { CustomError } from "../../errors/CustomError";
 @injectable()
 export class WorkspaceTeamRepository
   extends BaseRepository<IWorkspaceTeam>
-  implements IWorkspaceTeamRepository {
+  implements IWorkspaceTeamRepository
+{
   constructor() {
     super(WorkspaceTeam);
   }
@@ -304,9 +305,8 @@ export class WorkspaceTeamRepository
       });
 
       const members = await this._model.aggregate(pipeline);
-      console.log("members", members)
+      console.log("members", members);
       return members;
-
     } catch (error) {
       logError(error, {
         service: "WorkspaceTeamRepository.getUniqueMembersByTeamIds",

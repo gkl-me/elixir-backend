@@ -1,6 +1,5 @@
 import { IGetAllSubDetails } from "../../repositories/subscription/interface/ISubscriptionRepository";
 import {
-  IListAllSubResDto,
   IListAllSubscriptionDetailsDto,
 } from "../dtos/SubscriptionDto";
 

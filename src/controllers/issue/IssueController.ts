@@ -8,72 +8,92 @@ import { successResponse } from "../../helper/responseHanlder";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { extractStringQueryParams } from "../../helper/queryParamUtils";
 
-
-
-
 @injectable()
 export class IssueController implements IIssueController {
-    constructor(
-        @inject(Token.IssueService) private readonly _issueService: IIssueService
-    ) { }
+  constructor(
+    @inject(Token.IssueService) private readonly _issueService: IIssueService
+  ) {}
 
-    async handleCreateBacklogIssue(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
+  async handleCreateBacklogIssue(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { workspaceId } = extractStringParams(req.params, ["workspaceId"]);
+      const reporter = req.user.userId;
 
-            const { workspaceId } = extractStringParams(req.params, ["workspaceId"])
-            const reporter = req.user.userId
+      const {
+        assignee,
+        description,
+        priority,
+        projectId,
+        status,
+        storyPoints,
+        title,
+        type,
+      } = req.body;
 
-            const {
-                assignee,
-                description,
-                priority,
-                projectId,
-                status,
-                storyPoints,
-                title,
-                type, } = req.body
+      await this._issueService.createBacklogIssue({
+        assignee,
+        description,
+        priority,
+        projectId,
+        reporter,
+        status,
+        storyPoints,
+        title,
+        type,
+        workspaceId,
+      });
 
-            await this._issueService.createBacklogIssue({
-                assignee,
-                description,
-                priority,
-                projectId,
-                reporter,
-                status,
-                storyPoints,
-                title,
-                type,
-                workspaceId,
-            })
-
-            successResponse(res, "Issue successfully created", STATUS_CODES.CREATED, {})
-
-        } catch (error) {
-            next(error)
-        }
+      successResponse(
+        res,
+        "Issue successfully created",
+        STATUS_CODES.CREATED,
+        {}
+      );
+    } catch (error) {
+      next(error);
     }
+  }
 
-    async handleListBacklogs(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
+  async handleListBacklogs(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { workspaceId, projectId } = extractStringParams(req.params, [
+        "workspaceId",
+        "projectId",
+      ]);
+      const params = extractStringQueryParams(req.query, [
+        "search",
+        "type",
+        "status",
+      ]);
 
-            const { workspaceId, projectId } = extractStringParams(req.params, ["workspaceId", "projectId"])
-            const params = extractStringQueryParams(req.query, ["search", "type", "status"])
+      const proccessed = {
+        search: params?.search || "",
+        type: params?.type || "",
+        status: params?.status || "",
+      };
 
-            const proccessed = {
-                search: params?.search || "",
-                type: params?.type || "",
-                status: params?.status || ""
-            }
+      const result = await this._issueService.listBacklog({
+        workspaceId,
+        projectId,
+        ...proccessed,
+      });
 
-            const result = await this._issueService.listBacklog({
-                workspaceId,
-                projectId,
-                ...proccessed
-            })
-
-            return successResponse(res, "Issues fetched successfully", STATUS_CODES.OK, result)
-        } catch (error) {
-            next(error)
-        }
+      return successResponse(
+        res,
+        "Issues fetched successfully",
+        STATUS_CODES.OK,
+        result
+      );
+    } catch (error) {
+      next(error);
     }
+  }
 }

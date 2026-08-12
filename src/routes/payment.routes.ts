@@ -26,7 +26,7 @@ router.post("/customer-portal", auth, (req, res, next) => {
 });
 
 router.post("/upgrade-checkout", auth, (req, res, next) => {
-  void paymentController.handleStartUpgradeCheckout(req, res, next)
-})
+  void paymentController.handleStartUpgradeCheckout(req, res, next);
+});
 
 export default router;

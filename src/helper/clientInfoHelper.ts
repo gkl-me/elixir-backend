@@ -1,6 +1,9 @@
 import { Request } from "express";
 
-export const getClientInfo = (req: Request) => {
+export const getClientInfo = (req: Request): {
+  userAgent: string;
+  ip: string;
+} => {
   const userAgent = (req.headers["user-agent"] as string) || "Unknown Device";
 
   const forwardedFor = req.headers["x-forwarded-for"];

@@ -33,9 +33,13 @@ const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
   Token.WorkspaceTeamController
 );
 
-const projectController = container.resolve<IProjectController>(Token.ProjectController)
+const projectController = container.resolve<IProjectController>(
+  Token.ProjectController
+);
 
-const issueController = container.resolve<IIssueController>(Token.IssueController)
+const issueController = container.resolve<IIssueController>(
+  Token.IssueController
+);
 
 router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
   void workspaceController.handleListAllWorkspace(req, res, next);
@@ -183,30 +187,31 @@ router.get("/:workspaceId/teams/:teamId", auth, (req, res, next) => {
 });
 
 router.post("/:workspaceId/teams/unique-members", auth, (req, res, next) => {
-  void workspaceTeamController.handleGetUniqueTeamMembers(req, res, next)
-})
-
+  void workspaceTeamController.handleGetUniqueTeamMembers(req, res, next);
+});
 
 //projects workspace
 
 router.post("/:workspaceId/projects", auth, (req, res, next) => {
-  void projectController.handleCreateProject(req, res, next)
-})
+  void projectController.handleCreateProject(req, res, next);
+});
 router.get("/:workspaceId/projects", auth, (req, res, next) => {
-  void projectController.handleListProjects(req, res, next)
-})
+  void projectController.handleListProjects(req, res, next);
+});
 router.get("/:workspaceId/projects/:projectId", auth, (req, res, next) => {
-  void projectController.handleGetProjectDetails(req, res, next)
-})
+  void projectController.handleGetProjectDetails(req, res, next);
+});
 
-
-
-//issues 
+//issues
 router.post("/:workspaceId/backlog/create-issue", auth, (req, res, next) => {
-  void issueController.handleCreateBacklogIssue(req, res, next)
-})
-router.get("/:workspaceId/projects/:projectId/backlogs", auth, (req, res, next) => {
-  void issueController.handleListBacklogs(req, res, next)
-})
+  void issueController.handleCreateBacklogIssue(req, res, next);
+});
+router.get(
+  "/:workspaceId/projects/:projectId/backlogs",
+  auth,
+  (req, res, next) => {
+    void issueController.handleListBacklogs(req, res, next);
+  }
+);
 
 export default router;

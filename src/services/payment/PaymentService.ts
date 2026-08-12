@@ -24,7 +24,6 @@ import {
 import { logError } from "../../middlewares/loggerHelper";
 import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
 import { ENV } from "../../constants/env";
-import { features } from "process";
 import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWorkspaceRepository";
 
 @injectable()
@@ -39,8 +38,8 @@ export class PaymentService implements IPaymentService {
     @inject(Token.SubscriptionRepository)
     private readonly _subscriptionRepository: ISubscriptionRepository,
     @inject(Token.WorkspaceRepository)
-    private readonly _workspaceRepository: IWorkspaceRepository,
-  ) { }
+    private readonly _workspaceRepository: IWorkspaceRepository
+  ) {}
 
   async startCheckout(data: ICheckoutDto): Promise<ICheckoutResponseDto> {
     try {
@@ -108,13 +107,13 @@ export class PaymentService implements IPaymentService {
     }
   }
 
-  async startUpgradeCheckout(data: IUpgradeCheckoutDto): Promise<IUpgradeCheckoutResDto> {
+  async startUpgradeCheckout(
+    data: IUpgradeCheckoutDto
+  ): Promise<IUpgradeCheckoutResDto> {
     try {
+      const { userId, workspaceId, planId, company } = data;
 
-
-      const { userId, workspaceId, planId, company, workspaceSlug } = data;
-
-      console.log("data", data)
+      console.log("data", data);
 
       const user = await this._userRepository.findById(userId);
       if (!user) {
@@ -124,7 +123,7 @@ export class PaymentService implements IPaymentService {
         );
       }
 
-      //new  plan id to upgrade 
+      //new  plan id to upgrade
       const newPlan = await this._planRepository.findById(planId);
       if (!newPlan || !newPlan.stripePriceId) {
         throw new CustomError(
@@ -157,10 +156,10 @@ export class PaymentService implements IPaymentService {
 
       const oldSubscriptionId = currentSub?.stripeSubscriptionId || "";
 
-      const workspace = await this._workspaceRepository.findById(workspaceId)
+      const workspace = await this._workspaceRepository.findById(workspaceId);
 
       if (!workspace) {
-        throw new CustomError("Workspace not found", STATUS_CODES.BAD_REQUEST)
+        throw new CustomError("Workspace not found", STATUS_CODES.BAD_REQUEST);
       }
 
       // create upgrade session
@@ -175,13 +174,12 @@ export class PaymentService implements IPaymentService {
         company
       );
 
-      return session
-
+      return session;
     } catch (error) {
       logError(error, {
-        service: "PaymentService.startUpgradeCheckout"
-      })
-      throw error
+        service: "PaymentService.startUpgradeCheckout",
+      });
+      throw error;
     }
   }
 
@@ -300,15 +298,16 @@ export class PaymentService implements IPaymentService {
           status: subscription.status,
           currentPeriodEnd: subscription.currentPeriodEnd,
         },
-        upgradePlans: upgradePlans?.map((plan) => ({
-          id: String(plan._id),
-          name: plan.name,
-          price: plan.price,
-          type: plan.type,
-          features: plan.features,
-          limits: plan.limits,
-          isActive: plan.isActive
-        })) ?? [],
+        upgradePlans:
+          upgradePlans?.map((plan) => ({
+            id: String(plan._id),
+            name: plan.name,
+            price: plan.price,
+            type: plan.type,
+            features: plan.features,
+            limits: plan.limits,
+            isActive: plan.isActive,
+          })) ?? [],
       };
     } catch (error) {
       logError(error, {
