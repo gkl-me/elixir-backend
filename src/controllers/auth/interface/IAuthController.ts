@@ -33,4 +33,9 @@ export interface IAuthController {
   ): Promise<void>;
   handleRefresh(req: Request, res: Response, next: NextFunction): Promise<void>;
   handleLogout(req: Request, res: Response, next: NextFunction): Promise<void>;
+  handleLogoutAllDevices(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
 }

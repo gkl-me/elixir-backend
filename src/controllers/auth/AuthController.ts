@@ -10,6 +10,7 @@ import { AUTH_MESSAGES, USER_MESSAGES } from "../../constants/messages";
 import { LoginSchema, RegisterSchema } from "../../validator/AuthSchema";
 import { CustomError } from "../../errors/CustomError";
 import { logInfo } from "../../middlewares/loggerHelper";
+import { getClientInfo } from "../../helper/clientInfoHelper";
 
 @injectable()
 export class AuthController implements IAuthController {
@@ -56,8 +57,6 @@ export class AuthController implements IAuthController {
   ): Promise<void> {
     try {
       const data = req.body;
-      const userAgent = req.headers["user-agent"];
-      const ip = req.ip;
 
       //validate user data using zod
       const validate = LoginSchema.safeParse(data);
@@ -68,9 +67,11 @@ export class AuthController implements IAuthController {
 
       const { email, password } = validate.data;
 
+      const clientInfo = getClientInfo(req);
+
       const authUser = await this._authService.login(
         { email, password },
-        { ip, userAgent }
+        clientInfo
       );
 
       // setCookie(res,'refreshToken',refreshToken)
@@ -93,12 +94,12 @@ export class AuthController implements IAuthController {
   ): Promise<void> {
     try {
       const { idToken } = req.body;
-      const userAgent = req.headers["user-agent"];
-      const ip = req.ip;
+
+      const clientInfo = getClientInfo(req);
 
       const authUser = await this._authService.googleAuth(
         { idToken },
-        { userAgent, ip }
+        clientInfo
       );
 
       successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {
@@ -116,13 +117,9 @@ export class AuthController implements IAuthController {
   ): Promise<void> {
     try {
       const data = req.body;
-      const userAgent = req.headers["user-agent"];
-      const ip = req.ip;
 
-      const authUser = await this._authService.githubAuth(data, {
-        userAgent,
-        ip,
-      });
+      const clientInfo = getClientInfo(req);
+      const authUser = await this._authService.githubAuth(data, clientInfo);
 
       successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {
         ...authUser,
@@ -166,7 +163,28 @@ export class AuthController implements IAuthController {
 
       clearCookie(res, "refreshToken");
 
-      successResponse(res, USER_MESSAGES.LOGIN_SUCCESS, STATUS_CODES.OK, {});
+      successResponse(res, USER_MESSAGES.LOGOUT_SUCCESS, STATUS_CODES.OK, {});
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async handleLogoutAllDevices(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = req.user.userId;
+
+      await this._authService.logoutAllDevices({
+        userId,
+      });
+
+      clearCookie(res, "refreshToken");
+      clearCookie(res, "accessToken");
+
+      successResponse(res, USER_MESSAGES.LOGOUT_SUCCESS, STATUS_CODES.OK, {});
     } catch (error) {
       next(error);
     }

@@ -1,8 +1,11 @@
 export interface IListMemberDto {
   workspaceId: string;
+  search?: string;
+  limit: number;
+  page: number;
 }
 
-export interface IListMemberResDto {
+export interface IListMemberDetils {
   memberId: string;
   userId: string;
   name: string;
@@ -11,6 +14,11 @@ export interface IListMemberResDto {
   roleId: string;
   roleKey: string;
   joinedAt: Date;
+}
+
+export interface IListMemberResDto {
+  members: IListMemberDetils[] | [];
+  totalCount: number;
 }
 
 export interface IUpdateMemberDto {

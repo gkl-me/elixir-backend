@@ -17,6 +17,10 @@ import { WorkspaceRoleController } from "../../controllers/workspace/WorkspaceRo
 import { WorkspaceInviteController } from "../../controllers/workspace/WorkspaceInviteController";
 import { WorkspaceMemberController } from "../../controllers/workspace/WorkspaceMemberController";
 import { WorkspaceTeamController } from "../../controllers/workspace/WorksapceTeamController";
+import { SubscriptionController } from "../../controllers/subscription/SubscriptionController";
+import { TransactionController } from "../../controllers/transaction/TransactionController";
+import { ProjectController } from "../../controllers/project/ProjectController";
+import { IssueController } from "../../controllers/issue/IssueController";
 // import { StripeWebhookController } from "../../controllers/webhook/StripeWebhook"
 
 // container.register(Token.PlanController,{
@@ -69,7 +73,15 @@ container.register(Token.WorkspaceMemberController, {
 container.register(Token.WorkspaceTeamController, {
   useClass: WorkspaceTeamController,
 });
-
-// container.register(Token.SubscriptionController,{
-//     useClass:SubscriptionController
-// })
+container.register(Token.SubscriptionController, {
+  useClass: SubscriptionController,
+});
+container.register(Token.TransactionController, {
+  useClass: TransactionController,
+});
+container.register(Token.ProjectController, {
+  useClass: ProjectController,
+});
+container.register(Token.IssueController, {
+  useClass: IssueController,
+});

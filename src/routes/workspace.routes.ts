@@ -10,6 +10,10 @@ import { WORKSPACE_PERMISSIONS } from "../constants/workspacePermissions";
 import { IWorkspaceInviteController } from "../controllers/workspace/interface/IWorkspaceInviteController";
 import { IWorkspaceMemberController } from "../controllers/workspace/interface/IWorkspaceMemberController";
 import { IWorkspaceTeamController } from "../controllers/workspace/interface/IWorkspaceTeamController";
+import { authorize } from "../middlewares/authorize";
+import { APP_ROLES } from "../constants/roles";
+import { IProjectController } from "../controllers/project/interface/IProjectController";
+import { IIssueController } from "../controllers/issue/interface/IIssueController";
 
 const router = Router();
 
@@ -27,6 +31,26 @@ const workspaceMemberController = container.resolve<IWorkspaceMemberController>(
 );
 const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
   Token.WorkspaceTeamController
+);
+
+const projectController = container.resolve<IProjectController>(
+  Token.ProjectController
+);
+
+const issueController = container.resolve<IIssueController>(
+  Token.IssueController
+);
+
+router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
+  void workspaceController.handleListAllWorkspace(req, res, next);
+});
+router.patch(
+  "/:workspaceId/status",
+  auth,
+  authorize(APP_ROLES.SUPER_ADMIN),
+  (req, res, next) => {
+    void workspaceController.handletoggleWorkspaceStatus(req, res, next);
+  }
 );
 
 router.get("/context/:slug", auth, (req, res, next) => {
@@ -67,6 +91,9 @@ router.delete(
     void workspaceRoleController.handleDeleteRole(req, res, next);
   }
 );
+router.get("/:workspaceId/limits", auth, (req, res, next) => {
+  void workspaceController.handleWorkspaceLimits(req, res, next);
+});
 
 // Invite validation & accept — MUST come before /:workspaceId/invites to avoid
 // Express capturing 'invites' as a workspaceId
@@ -158,5 +185,33 @@ router.delete(
 router.get("/:workspaceId/teams/:teamId", auth, (req, res, next) => {
   void workspaceTeamController.handleGetTeam(req, res, next);
 });
+
+router.post("/:workspaceId/teams/unique-members", auth, (req, res, next) => {
+  void workspaceTeamController.handleGetUniqueTeamMembers(req, res, next);
+});
+
+//projects workspace
+
+router.post("/:workspaceId/projects", auth, (req, res, next) => {
+  void projectController.handleCreateProject(req, res, next);
+});
+router.get("/:workspaceId/projects", auth, (req, res, next) => {
+  void projectController.handleListProjects(req, res, next);
+});
+router.get("/:workspaceId/projects/:projectId", auth, (req, res, next) => {
+  void projectController.handleGetProjectDetails(req, res, next);
+});
+
+//issues
+router.post("/:workspaceId/backlog/create-issue", auth, (req, res, next) => {
+  void issueController.handleCreateBacklogIssue(req, res, next);
+});
+router.get(
+  "/:workspaceId/projects/:projectId/backlogs",
+  auth,
+  (req, res, next) => {
+    void issueController.handleListBacklogs(req, res, next);
+  }
+);
 
 export default router;

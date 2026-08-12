@@ -9,9 +9,11 @@ import {
   ICreateTeamDto,
   IGetTeamDto,
   IGetTeamResDto,
+  IGetUniqueTeamMembers,
   IListTeamsDto,
   IListTeamsResDto,
   IRemoveMemberDto,
+  TeamMembersDto,
 } from "../../interfaces/dtos/WorkspaceTeamDto";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { CustomError } from "../../errors/CustomError";
@@ -23,13 +25,23 @@ export class WorkspaceTeamService implements IWorkspaceTeamService {
     private readonly _workspaceTeamRepository: IWorkspaceTeamRepository
   ) {}
 
-  async listTeams(data: IListTeamsDto): Promise<IListTeamsResDto[] | []> {
+  async listTeams(data: IListTeamsDto): Promise<IListTeamsResDto> {
     try {
-      const { workspaceId } = data;
+      const { workspaceId, limit, page, search } = data;
 
-      const teams = await this._workspaceTeamRepository.listTeams(workspaceId);
+      const skip = (page - 1) * limit;
 
-      return teams.length ? teams.map(workspaceTeamDtoMapper.toListTeams) : [];
+      const teams = await this._workspaceTeamRepository.listTeams(
+        workspaceId,
+        limit,
+        skip,
+        search
+      );
+
+      return {
+        teams: teams.map(workspaceTeamDtoMapper.toListTeams),
+        totalCount: teams.length,
+      };
     } catch (error) {
       logError(error, {
         service: "WorkspaceTeamService.listTeams",
@@ -113,6 +125,28 @@ export class WorkspaceTeamService implements IWorkspaceTeamService {
     } catch (error) {
       logError(error, {
         service: "WorkspaceTeamService.getTeam",
+      });
+      throw error;
+    }
+  }
+
+  async getUniqueTeamMembers(
+    data: IGetUniqueTeamMembers
+  ): Promise<TeamMembersDto[]> {
+    try {
+      const { search, teamIds, workspaceId } = data;
+
+      const members =
+        await this._workspaceTeamRepository.getUniqueMembersByTeamIds(
+          workspaceId,
+          teamIds,
+          search
+        );
+
+      return members;
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceService.getUniqueTeamMembers",
       });
       throw error;
     }

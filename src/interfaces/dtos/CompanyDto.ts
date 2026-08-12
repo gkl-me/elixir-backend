@@ -13,7 +13,7 @@ export interface IGetAllCompanyReponseDto {
   email: string;
   phone: string;
   website?: string;
-  isBlocked: boolean;
+  status: "active" | "suspended";
   createdAt?: Date;
 }
 
@@ -21,4 +21,9 @@ export interface IGetAllCompanyDto {
   search: string;
   page: number;
   limit: number;
+  status?: string;
+}
+
+export interface IToggleCompanyStatus {
+  companyId: string;
 }

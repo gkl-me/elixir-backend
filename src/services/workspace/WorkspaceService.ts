@@ -5,7 +5,6 @@ import { IWorkspaceRepository } from "../../repositories/workspace/interface/IWo
 import { IWorkspace } from "../../models/Workspace";
 import { builtInRoles } from "../../constants/builtInRoles";
 import { IWorkspaceRoleRepository } from "../../repositories/workspace/interface/IWorkspaceRoleRepository";
-import { ISubscriptionRepository } from "../../repositories/subscription/interface/ISubscriptionRepository";
 import { logError } from "../../middlewares/loggerHelper";
 import logger from "../../middlewares/logger";
 import { CustomError } from "../../errors/CustomError";
@@ -18,14 +17,26 @@ import { IWorkspaceMemberRepository } from "../../repositories/workspace/interfa
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
 import { generateSlug } from "../../helper/generateSlug";
 import {
+  ICreateWorkspaceDto,
+  IListAllWorkspaceDto,
+  IListAllWorkspaceResDto,
+  IToggleWorkspaceStatusDto,
   IWorkpsaceContextDto,
+  IWorksapceLimitsResDto,
+  IWorkspaceBootstrapDto,
   IWorkspaceContextResDto,
+  IWorkspaceLimitsDto,
+  IWorkspaceResDto,
 } from "../../interfaces/dtos/WorkspaceDto";
 import {
   WORKSPACE_PERMISSIONS,
   PERMISSION_DEPENDENCIES,
   BUILTIN_ROLES,
 } from "../../constants/workspacePermissions";
+import { IPlanRepository } from "../../repositories/plan/interfaces/IPlanRepository";
+import { IWorkspaceTeamRepository } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
+import { workspaceDtoMapper } from "../../interfaces/mapper/workspaceDtoMapper";
+import { ISubscriptionService } from "../subscription/interface/ISubscriptionService";
 
 @injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -34,26 +45,22 @@ export class WorkspaceService implements IWorkspaceService {
     private readonly _workspaceRepository: IWorkspaceRepository,
     @inject(Token.WorkspaceRoleRepository)
     private readonly _workspaceRoleRepository: IWorkspaceRoleRepository,
-    @inject(Token.SubscriptionRepository)
-    private readonly _subscriptionRepository: ISubscriptionRepository,
+    @inject(Token.SubscriptionService)
+    private readonly _subscriptionService: ISubscriptionService,
     @inject(Token.WorkspaceMemberRepository)
     private readonly _workspaceMemberRepository: IWorkspaceMemberRepository,
     @inject(Token.UserRepository)
-    private readonly _userRepository: IUserRepository
-  ) {}
+    private readonly _userRepository: IUserRepository,
+    @inject(Token.PlanRepository)
+    private readonly _planRepository: IPlanRepository,
+    @inject(Token.WorkspaceTeamRepository)
+    private readonly _workspaceTeamRepository: IWorkspaceTeamRepository
+  ) { }
 
-  async createWorkspace({
-    name,
-    ownerId,
-    companyId,
-    subscriptionId,
-  }: {
-    name: string;
-    ownerId: string;
-    companyId?: string;
-    subscriptionId?: string;
-  }): Promise<IWorkspace> {
+  async createWorkspace(data: ICreateWorkspaceDto): Promise<IWorkspace> {
     try {
+      const { name, ownerId, companyId, subscriptionId, planId } = data;
+
       const workspace = await this._workspaceRepository.create({
         name,
         ownerId,
@@ -61,6 +68,7 @@ export class WorkspaceService implements IWorkspaceService {
         subscriptionId,
         slug: generateSlug(name),
         type: companyId ? "company" : "personal",
+        planId,
       });
 
       return workspace;
@@ -69,19 +77,15 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  async bootStrapWorkspace(data: {
-    ownerId: string;
-    workspaceName: string;
-    planId: string;
-    companyId?: string;
-    stripePriceId?: string;
-    stripeSubscriptionId?: string;
-  }): Promise<IWorkspace> {
+  async bootStrapWorkspace(
+    data: IWorkspaceBootstrapDto
+  ): Promise<IWorkspaceResDto> {
     try {
       const workspace = await this.createWorkspace({
         name: data.workspaceName,
         ownerId: data.ownerId,
         companyId: data.companyId,
+        planId: data.planId,
       });
 
       const roles = builtInRoles(String(workspace._id), data.ownerId);
@@ -89,15 +93,27 @@ export class WorkspaceService implements IWorkspaceService {
       const workspaceRoles =
         await this._workspaceRoleRepository.createMany(roles);
 
-      const subscription = await this._subscriptionRepository.create({
-        workspaceId: String(workspace._id),
-        userId: data.ownerId,
-        planId: data.planId,
-        stripePriceId: data.stripePriceId,
-        stripeSubscriptionId: data.stripeSubscriptionId,
-        status: "active",
-        currentPeriodStart: new Date(),
-      });
+      // const subscription = await this._subscriptionRepository.create({
+      //   workspaceId: String(workspace._id),
+      //   userId: data.ownerId,
+      //   planId: data.planId,
+      //   stripePriceId: data.stripePriceId,
+      //   stripeSubscriptionId: data.stripeSubscriptionId,
+      //   status: "active",
+      //   currentPeriodStart: new Date(),
+      // });
+
+      const { subscriptionId } =
+        await this._subscriptionService.createSubscription({
+          workspaceId: String(workspace._id),
+          userId: data.ownerId,
+          planId: data.planId,
+          stripePriceId: data.stripePriceId,
+          stripeSubscriptionId: data.stripeSubscriptionId,
+          stripeCustomerId: data.stripeCustomerId,
+          currentPeriodEnd: data.currentPeriodEnd,
+          currentPeriodStart: data.currentPeriodStart,
+        });
 
       const roleId = workspaceRoles.find((role) => role.name === "Owner")?._id;
 
@@ -110,10 +126,10 @@ export class WorkspaceService implements IWorkspaceService {
         joinedAt: new Date(),
       });
 
-      workspace.subscriptionId = String(subscription._id);
+      workspace.subscriptionId = String(subscriptionId);
       await workspace.save();
 
-      return workspace;
+      return workspaceDtoMapper.toWorkspace(workspace);
     } catch (error) {
       throw error;
     }
@@ -204,6 +220,115 @@ export class WorkspaceService implements IWorkspaceService {
     } catch (error) {
       logError(error, {
         service: "WorkspaceService.workspaceContext",
+      });
+      throw error;
+    }
+  }
+
+  async workspaceLimits(
+    data: IWorkspaceLimitsDto
+  ): Promise<IWorksapceLimitsResDto> {
+    try {
+      const { workspaceId } = data;
+
+      const workspace = await this._workspaceRepository.findById(workspaceId);
+
+      if (!workspace || !workspace.planId) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      const workspacePlan = await this._planRepository.findById(
+        workspace?.planId
+      );
+
+      if (!workspacePlan || !workspacePlan?.limits) {
+        throw new CustomError(
+          CONSTANT_MESSAGES.BAD_REQUEST,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      const limits = workspacePlan.limits;
+
+      //usage
+
+      const [teams, members, customRoles] = await Promise.all([
+        this._workspaceTeamRepository.count({ workspaceId }),
+        this._workspaceMemberRepository.count({ workspaceId }),
+        this._workspaceRoleRepository.count({ workspaceId }),
+      ]);
+
+      console.log("teams", teams);
+
+      return {
+        limits,
+        used: {
+          teams,
+          members,
+          customRoles,
+          storageBytes: 0,
+          projects: 0,
+        },
+      };
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceService.workspaceLimits",
+      });
+      throw error;
+    }
+  }
+
+  async listAllWorkspace(
+    data: IListAllWorkspaceDto
+  ): Promise<IListAllWorkspaceResDto> {
+    try {
+      const { search, page, limit, status } = data;
+
+      const skip = (page - 1) * limit;
+
+      const { workspaces, totalCount } =
+        await this._workspaceRepository.getWorkspaceDetails({
+          search,
+          status,
+          skip,
+          limit,
+        });
+
+      return {
+        workspaces: workspaces.map((workspace) =>
+          workspaceDtoMapper.toWorkspaceList(workspace)
+        ),
+        totalCount,
+      };
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceService.listAllWorkspace",
+      });
+      throw error;
+    }
+  }
+
+  async toggleWorkspaceStatus(data: IToggleWorkspaceStatusDto): Promise<void> {
+    try {
+      const { workspaceId } = data;
+
+      const workspace = await this._workspaceRepository.findById(workspaceId);
+
+      if (!workspace) {
+        throw new CustomError(
+          WORKSPACE_MESSAGES.NOT_FOUND,
+          STATUS_CODES.BAD_REQUEST
+        );
+      }
+
+      workspace.status = workspace.status === "active" ? "suspended" : "active";
+      await workspace.save();
+    } catch (error) {
+      logError(error, {
+        service: "WorkspaceService.toggleWorkspaceStatus",
       });
       throw error;
     }

@@ -5,6 +5,7 @@ import {
   IGithubAuthDto,
   IGoogleAuthDto,
   ILoginDto,
+  ILogoutAllDeviceDto,
   ILogoutDto,
   IRefreshTokenDto,
   IRefreshTokenResponseDto,
@@ -25,4 +26,5 @@ export interface IAuthService {
   ): Promise<IAuthResponseDto>;
   refreshToken(data: IRefreshTokenDto): Promise<IRefreshTokenResponseDto>;
   logout(data: ILogoutDto): Promise<void>;
+  logoutAllDevices(data: ILogoutAllDeviceDto): Promise<void>;
 }

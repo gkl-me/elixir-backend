@@ -22,6 +22,7 @@ export class PlanController implements IPlanController {
 
       //validate the data and parse the data before using it!!
 
+      console.log("plan", data);
       const updatedPlan = await this._planService.createPlan(data);
 
       successResponse(res, PLAN_MESSAGES.UPDATE_SUCCESS, STATUS_CODES.OK, {

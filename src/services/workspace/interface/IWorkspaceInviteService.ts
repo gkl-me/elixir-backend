@@ -11,7 +11,7 @@ import {
 } from "../../../interfaces/dtos/WorkspaceInviteDto";
 
 export interface IWorkspaceInviteService {
-  listInvites(data: IListInvitesDto): Promise<IListInvitesResDto[] | []>;
+  listInvites(data: IListInvitesDto): Promise<IListInvitesResDto>;
   sendInvite(data: ISendInviteDto): Promise<void>;
   resendInvite(data: IResendInviteDto): Promise<void>;
   revokeInvite(data: IRevokeInviteDto): Promise<void>;

@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { IRegisterCompanyDto } from "../../interfaces/dtos/CompanyDto";
 
 export interface IStripeService {
   createProduct: (planName: string) => Promise<string>;
@@ -17,6 +18,19 @@ export interface IStripeService {
     userId: string,
     planId: string
   ): Promise<{ sessionId: string; payment_url: string }>;
+  createUpgradeCheckoutSession(
+    customerId: string,
+    priceId: string,
+    userId: string,
+    planId: string,
+    workspaceId: string,
+    workspaceSlug: string,
+    oldSubscriptionId?: string,
+    company?: IRegisterCompanyDto
+  ): Promise<{
+    sessionId: string;
+    payment_url: string;
+  }>;
   retriveSession(
     sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session>>;
@@ -30,4 +44,10 @@ export interface IStripeService {
   getSubscriptionFromInvoice(
     invoice: Stripe.Invoice
   ): Promise<Stripe.Invoice.Parent.SubscriptionDetails | null>;
+  updateSubscription(subscriptionId: string, cancel: boolean): Promise<void>;
+  retrivePaymentIntent(intentId: string): Promise<Stripe.PaymentIntent>;
+  createCustomerPortalSession(
+    customerId: string,
+    returnUrl: string
+  ): Promise<string>;
 }

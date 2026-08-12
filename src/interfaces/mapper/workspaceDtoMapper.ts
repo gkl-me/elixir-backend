@@ -1,18 +1,33 @@
+import { IWorkspace } from "../../models/Workspace";
 import { IWorkspaceInvite } from "../../models/WorkspaceInvite";
 import { IWorkspaceRole } from "../../models/WorkspaceRole";
 import { IWorkspaceMemberWithUser } from "../../repositories/workspace/interface/IWorkspaceMemberRepository";
 import {
+  IGetAllWorkspaceDetails,
+} from "../../repositories/workspace/interface/IWorkspaceRepository";
+import {
   IWorkspaceTeamWithMember,
   IWorkspaceTeamWithMemberDetail,
 } from "../../repositories/workspace/interface/IWorkspaceTeamRepository";
-import { IListInvitesResDto } from "../dtos/WorkspaceInviteDto";
-import { IListMemberResDto } from "../dtos/WorkspaceMemberDto";
+import {
+  IListAllWorkspaceResponseDto,
+  IWorkspaceResDto,
+} from "../dtos/WorkspaceDto";
+import {
+  IListInvitesDetails,
+} from "../dtos/WorkspaceInviteDto";
+import {
+  IListMemberDetils,
+} from "../dtos/WorkspaceMemberDto";
 import {
   ICreateRoleResDto,
   IGetRolesResDto,
   IUpdateRoleResDto,
 } from "../dtos/WorkspaceRoleDto";
-import { IGetTeamResDto, IListTeamsResDto } from "../dtos/WorkspaceTeamDto";
+import {
+  IGetTeamResDto,
+  IListTeamsDetails,
+} from "../dtos/WorkspaceTeamDto";
 
 export class workspaceRoleDtoMapper {
   static toGetRoles(role: IWorkspaceRole): IGetRolesResDto {
@@ -63,7 +78,7 @@ export class workspaceRoleDtoMapper {
 }
 
 export class workspaceInviteDtoMapper {
-  static toListInvites(invite: IWorkspaceInvite): IListInvitesResDto {
+  static toListInvites(invite: IWorkspaceInvite): IListInvitesDetails {
     return {
       id: String(invite?._id),
       workspaceId: invite?.workspaceId,
@@ -82,7 +97,7 @@ export class workspaceInviteDtoMapper {
 }
 
 export class workspaceMemberDtoMapper {
-  static toListMembers(member: IWorkspaceMemberWithUser): IListMemberResDto {
+  static toListMembers(member: IWorkspaceMemberWithUser): IListMemberDetils {
     return {
       memberId: member?._id,
       name: member?.user?.name,
@@ -97,7 +112,7 @@ export class workspaceMemberDtoMapper {
 }
 
 export class workspaceTeamDtoMapper {
-  static toListTeams(team: IWorkspaceTeamWithMember): IListTeamsResDto {
+  static toListTeams(team: IWorkspaceTeamWithMember): IListTeamsDetails {
     return {
       id: String(team?._id),
       name: team?.name,
@@ -118,6 +133,38 @@ export class workspaceTeamDtoMapper {
         avatarUrl: member?.avatarUrl,
         role: member?.role,
       })),
+    };
+  }
+}
+
+export class workspaceDtoMapper {
+  static toWorkspace(workspace: IWorkspace): IWorkspaceResDto {
+    return {
+      id: String(workspace._id),
+      name: workspace.name,
+      slug: workspace.slug,
+      ownerId: workspace.ownerId,
+      companyId: workspace.companyId,
+      subscriptionId: workspace.subscriptionId,
+      planId: workspace.planId,
+      type: workspace.type,
+      status: workspace.status,
+      createdAt: workspace.createdAt,
+      updatedAt: workspace.updatedAt,
+    };
+  }
+
+  static toWorkspaceList(
+    workspace: IGetAllWorkspaceDetails
+  ): IListAllWorkspaceResponseDto {
+    return {
+      id: String(workspace._id),
+      name: workspace.name,
+      ownerEmail: workspace.ownerEmail,
+      totalUsers: workspace.totalUsers,
+      status: workspace.status,
+      planType: workspace.planType,
+      createdAt: workspace.createdAt,
     };
   }
 }

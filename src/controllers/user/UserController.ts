@@ -117,6 +117,27 @@ export class UserController implements IUserController {
     }
   }
 
+  async handleRevokeSession(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const params = extractStringQueryParams(req.params, ["id"]);
+      const sessionId = params?.id || "";
+      const userId = req.user.userId;
+
+      await this._userService.revokeSession({
+        sessionId,
+        userId,
+      });
+
+      successResponse(res, USER_MESSAGES.REVOKE_SESSION, STATUS_CODES.OK, {});
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async handleUpdateProfile(
     req: Request,
     res: Response,

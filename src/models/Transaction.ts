@@ -1,24 +1,50 @@
 import { model, Schema, Document } from "mongoose";
+import { PlanType } from "./Plan";
 
 export interface ITransaction extends Document {
+  transactionRef: string;
+  invoiceNumber: string;
+
+  workspaceName: string;
+  customerEmail: string;
+
   userId: string;
   workspaceId: string;
   subscriptionId: string;
 
-  stripeInvoiceId: string;
+  stripeInvoiceId?: string;
+  stripeChargeId?: string;
+  invoicePdfUrl?: string;
+
+  planType: PlanType;
 
   amount: number;
+  currency: string;
 
-  status: "paid" | "failed" | "pending";
+  status: "success" | "failed" | "pending";
   paymentMethod?: string;
+  last4: string;
 
-  paidAt?: Date;
   createAt?: Date;
   updatedAt?: Date;
 }
 
 const TransactionSchema = new Schema(
   {
+    transactionRef: {
+      type: String,
+      required: true,
+    },
+    invoiceNumber: {
+      type: String,
+      required: true,
+    },
+    workspaceName: {
+      type: String,
+    },
+    customerEmail: {
+      type: String,
+    },
     userId: {
       type: String,
       required: true,
@@ -26,6 +52,9 @@ const TransactionSchema = new Schema(
     workspaceId: {
       type: String,
       required: true,
+    },
+    subscriptionId: {
+      type: String,
     },
     stripeInvoiceId: {
       type: String,
@@ -35,13 +64,28 @@ const TransactionSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["paid", "failed", "pending"],
+      enum: ["success", "failed", "pending"],
       default: "pending",
     },
-    paidAt: {
-      type: Date,
-    },
     paymentMethod: {
+      type: String,
+      default: "Card",
+    },
+    last4: {
+      type: String,
+      default: "000",
+    },
+    stripeChargeId: {
+      type: String,
+    },
+    invoicePdfUrl: {
+      type: String,
+    },
+    planType: {
+      type: String,
+      enum: ["Free", "Pro", "Enterprice"],
+    },
+    currency: {
       type: String,
     },
   },

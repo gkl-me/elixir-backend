@@ -23,18 +23,28 @@ export class WorkspaceMemberService implements IWorkspaceMemberService {
     private readonly _workspaceRoleRepository: IWorkspaceRoleRepository
   ) {}
 
-  async listMember(data: IListMemberDto): Promise<IListMemberResDto[] | []> {
+  async listMember(data: IListMemberDto): Promise<IListMemberResDto> {
     try {
-      const { workspaceId } = data;
+      const { workspaceId, limit, page, search } = data;
 
-      const members =
-        await this._workspaceMemberRepository.listMembers(workspaceId);
+      const skip = (page - 1) * limit;
+
+      const { members, totalCount } =
+        await this._workspaceMemberRepository.listMembers(
+          workspaceId,
+          limit,
+          skip,
+          search
+        );
 
       console.log("ser", members);
 
-      return members.length
-        ? members.map((mem) => workspaceMemberDtoMapper.toListMembers(mem))
-        : [];
+      return {
+        members: members.map((mem) =>
+          workspaceMemberDtoMapper.toListMembers(mem)
+        ),
+        totalCount,
+      };
     } catch (error) {
       logError(error, {
         service: "WorkspaceMemberService.listMember",

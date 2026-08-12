@@ -67,6 +67,10 @@ export interface ILogoutDto {
   refreshToken: string;
 }
 
+export interface ILogoutAllDeviceDto {
+  userId: string;
+}
+
 export interface IResendVerficationDto {
   email: string;
 }

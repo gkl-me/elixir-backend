@@ -34,6 +34,7 @@ export interface IListActiveSessionsDto {
 }
 
 export interface IListActiveSessionsResponseDto {
+  sessionId: string;
   userId: string;
   refreshTokenHash: string;
   tokenVersion: number;
@@ -53,4 +54,9 @@ export interface IUpdateUserProfileDto {
 
 export interface IGetMeDto {
   userId: string;
+}
+
+export interface IRevokeSessionDto {
+  userId: string;
+  sessionId: string;
 }

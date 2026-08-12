@@ -11,4 +11,19 @@ export interface IPaymentController {
     res: Response,
     next: NextFunction
   ): Promise<void>;
+  handleBillingInfo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
+  handleCreateCustomerPortal(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
+  handleStartUpgradeCheckout(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
 }

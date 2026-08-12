@@ -16,12 +16,14 @@ export class CompanyRepository
 
   async searchCompanies(
     search?: string,
+    status?: string,
     options?: { skip?: number; limit?: number }
   ): Promise<ICompany[]> {
     try {
-      let query = this._model.find(
-        search ? { name: { $regex: search, $options: "i" } } : {}
-      );
+      let query = this._model.find({
+        ...(search ? { name: { $regex: search, $options: "i" } } : {}),
+        ...(status ? { status: status } : {}),
+      });
 
       if (options?.limit !== undefined) {
         query = query.limit(options?.limit);

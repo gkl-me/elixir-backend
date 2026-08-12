@@ -11,6 +11,7 @@ import {
   IGetMeDto,
   IListActiveSessionsDto,
   IListActiveSessionsResponseDto,
+  IRevokeSessionDto,
   IUpdatePasswordDto,
   IUpdateUserProfileDto,
   IUserListDto,
@@ -169,11 +170,13 @@ export class UserService implements IUserService {
           activeSessions.push({
             ...session,
             isCurrentSession: false,
+            sessionId: id,
           });
         } else if (session && id === decodedToken.sessionId) {
           activeSessions.push({
             ...session,
             isCurrentSession: true,
+            sessionId: id,
           });
         }
       }
@@ -182,6 +185,28 @@ export class UserService implements IUserService {
     } catch (error) {
       logError(error, {
         service: "UserService.listActiveSessions",
+      });
+      throw error;
+    }
+  }
+
+  async revokeSession(data: IRevokeSessionDto): Promise<void> {
+    try {
+      const { userId, sessionId } = data;
+
+      const sessionKey = REDIS_STORE.SESSION + sessionId;
+
+      console.log("session", sessionId, "user", userId);
+
+      await this._cacheRepository.delete(sessionKey);
+
+      await this._cacheRepository.remSet(
+        REDIS_STORE.USER_SESSION + userId,
+        sessionId
+      );
+    } catch (error) {
+      logError(error, {
+        service: "UserService.revokeSession",
       });
       throw error;
     }

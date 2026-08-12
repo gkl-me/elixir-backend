@@ -1,51 +1,91 @@
-// import { inject, injectable } from "tsyringe";
-// import { ISubscriptionController } from "./interface/ISubscriptionController";
-// import { Token } from "../../di/token";
-// import { ISubscriptionService } from "../../services/subscription/interface/ISubscriptionService";
-// import { Request, Response, NextFunction } from "express";
-// import { successResponse } from "../../helper/responseHanlder";
-// import { STATUS_CODES } from "../../constants/statusCodes";
-// import { CustomError } from "../../errors/CustomError";
-// import { CONSTANT_MESSAGES } from "../../constants/messages";
+import { inject, injectable } from "tsyringe";
+import { ISubscriptionController } from "./interface/ISubscriptionController";
+import { Token } from "../../di/token";
+import { ISubscriptionService } from "../../services/subscription/interface/ISubscriptionService";
+import { Request, Response, NextFunction } from "express";
+import { extractStringQueryParams } from "../../helper/queryParamUtils";
+import { CONSTANT_MESSAGES } from "../../constants/messages";
+import { STATUS_CODES } from "../../constants/statusCodes";
+import { successResponse } from "../../helper/responseHanlder";
+import { extractStringParams } from "../../helper/stringParamUtils";
 
-// @injectable()
-// export class SubscriptionController implements ISubscriptionController{
-//     constructor(
-//         @inject(Token.SubscriptionService) private _subscriptionService:ISubscriptionService
-//     ){}
+@injectable()
+export class SubscriptionController implements ISubscriptionController {
+  constructor(
+    @inject(Token.SubscriptionService)
+    private _subscriptionService: ISubscriptionService
+  ) {}
 
-//     async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-//         try {
+  async handleListAllSubcription(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const params = extractStringQueryParams(req.query, [
+        "search",
+        "status",
+        "page",
+        "limit",
+        "plan",
+      ]);
 
-//             const data = req.body
+      const processed = {
+        search: params?.search || "",
+        status: params?.status || "",
+        page: parseInt(params?.page || "1"),
+        limit: parseInt(params?.limit || "10"),
+        plan: params?.plan || "",
+      };
 
-//             const subscription = await this._subscriptionService.createSubscription({
-//                 planId,
-//                 userId
-//             })
+      const data =
+        await this._subscriptionService.listAllSubscription(processed);
 
-//             successResponse(res,"Subscription created",STATUS_CODES.CREATED,subscription)
+      successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, data);
+    } catch (error) {
+      next(error);
+    }
+  }
 
-//         } catch (error) {
-//             next(error)
-//         }
-//     }
+  async handleCancelSubscription(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { subscriptionId } = extractStringParams(req.params, [
+        "subscriptionId",
+      ]);
+      const { cancelMode } = req.body;
 
-//     async find(req: Request, res: Response, next: NextFunction): Promise<void> {
-//         try {
+      await this._subscriptionService.cancelSubscription({
+        subscriptionId,
+        cancelMode,
+      });
 
-//             const {id} = req.params
+      successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, {});
+    } catch (error) {
+      next(error);
+    }
+  }
 
-//             if(!id){
-//                 throw new CustomError(CONSTANT_MESSAGES.BAD_REQUEST,STATUS_CODES.BAD_REQUEST)
-//             }
+  async handleReactivateSubscription(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { subscriptionId } = extractStringParams(req.params, [
+        "subscriptionId",
+      ]);
 
-//             const subscription = await this._subscriptionService.findUserSubscription({userId:id})
+      await this._subscriptionService.reactivateSubscription({
+        subscriptionId,
+      });
 
-//             successResponse(res,"User subscription fetched",STATUS_CODES.OK,subscription)
-
-//         } catch (error) {
-//             next(error)
-//         }
-//     }
-// }
+      successResponse(res, CONSTANT_MESSAGES.SUCCESS, STATUS_CODES.OK, {});
+    } catch (error) {
+      next(error);
+    }
+  }
+}

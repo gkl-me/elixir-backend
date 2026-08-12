@@ -34,6 +34,10 @@ router.get("/active-sessions", auth, (req, res, next) => {
   void userController.handleListActiveSessions(req, res, next);
 });
 
+router.patch("/revoke-session/:id", auth, (req, res, next) => {
+  void userController.handleRevokeSession(req, res, next);
+});
+
 router.put("/update-profile", auth, (req, res, next) => {
   void userController.handleUpdateProfile(req, res, next);
 });

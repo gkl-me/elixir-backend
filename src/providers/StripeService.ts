@@ -6,6 +6,8 @@ import { IStripeService } from "./interfaces/IStripeService";
 import logger from "../middlewares/logger";
 import { CONSTANT_MESSAGES, PLAN_MESSAGES } from "../constants/messages";
 import { ENV } from "../constants/env";
+import { logError } from "../middlewares/loggerHelper";
+import { IRegisterCompanyDto } from "../interfaces/dtos/CompanyDto";
 
 @injectable()
 export class StripeService implements IStripeService {
@@ -180,6 +182,63 @@ export class StripeService implements IStripeService {
     }
   }
 
+  async createUpgradeCheckoutSession(
+    customerId: string,
+    priceId: string,
+    userId: string,
+    planId: string,
+    workspaceId: string,
+    workspaceSlug: string,
+    oldSubscriptionId?: string,
+    company?: IRegisterCompanyDto
+  ): Promise<{ sessionId: string; payment_url: string }> {
+    try {
+      console.log("[StripeService] createUpgradeCheckoutSession context:", {
+        customerId,
+        priceId,
+        userId,
+        planId,
+        workspaceId,
+        workspaceSlug,
+        oldSubscriptionId,
+      });
+
+      const session = await this._stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ["card"],
+        mode: "subscription",
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        success_url: `${ENV.CLIENT_URL}/workspace/${workspaceSlug}/settings?tab=billing&status=success`,
+        cancel_url: `${ENV.CLIENT_URL}/workspace/${workspaceSlug}/settings?tab=billing&status=cancelled`,
+        subscription_data: {
+          metadata: {
+            userId,
+            workspaceId,
+            planId,
+            isUpgrade: "true",
+            oldSubscriptionId: oldSubscriptionId || "",
+            company: company ? JSON.stringify(company) : "",
+          },
+        },
+      });
+
+      return {
+        sessionId: session.id,
+        payment_url: session.url || "",
+      };
+    } catch (error) {
+      logError(error, {
+        service: "StripeService.createUpgradeCheckoutSession",
+      });
+      throw error;
+    }
+  }
+
   async retriveSession(
     sessionId: string
   ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
@@ -191,6 +250,19 @@ export class StripeService implements IStripeService {
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
         STATUS_CODES.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  async retrivePaymentIntent(intentId: string): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+    try {
+      return await this._stripe.paymentIntents.retrieve(intentId, {
+        expand: ["payment_method", "latest_charge"],
+      });
+    } catch (error) {
+      logError(error, {
+        service: "StripeSerivce.retrivePaymentIntent",
+      });
+      throw error;
     }
   }
 
@@ -251,6 +323,22 @@ export class StripeService implements IStripeService {
     }
   }
 
+  async updateSubscription(
+    subscriptionId: string,
+    cancel: boolean
+  ): Promise<void> {
+    try {
+      await this._stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: cancel,
+      });
+    } catch (error) {
+      logError(error, {
+        service: "StripeService.updateSubscription",
+      });
+      throw error;
+    }
+  }
+
   async getOpenInvoice(customerId: string): Promise<Stripe.Invoice | null> {
     try {
       const invoices = await this._stripe.invoices.list({
@@ -307,6 +395,25 @@ export class StripeService implements IStripeService {
         CONSTANT_MESSAGES.INTERNAL_SERVER_ERROR,
         STATUS_CODES.INTERNAL_SERVER_ERROR
       );
+    }
+  }
+
+  async createCustomerPortalSession(
+    customerId: string,
+    returnUrl: string
+  ): Promise<string> {
+    try {
+      const session = await this._stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: returnUrl,
+      });
+
+      return session.url;
+    } catch (error) {
+      logError(error, {
+        service: "StripeService.createCustomerPortalSession",
+      });
+      throw error;
     }
   }
 }

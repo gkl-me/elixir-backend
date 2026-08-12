@@ -41,17 +41,29 @@ export class WorkspaceInviteService implements IWorkspaceInviteService {
     private readonly _userRepository: IUserRepository
   ) {}
 
-  async listInvites(data: IListInvitesDto): Promise<IListInvitesResDto[] | []> {
+  async listInvites(data: IListInvitesDto): Promise<IListInvitesResDto> {
     try {
-      const { workspaceId } = data;
+      const { workspaceId, search, limit, page } = data;
 
-      const invites = await this._workspaceInviteRepository.findAll({
-        workspaceId,
-      });
+      const skip = (page - 1) * limit;
 
-      return invites?.length
-        ? invites.map((i) => workspaceInviteDtoMapper.toListInvites(i))
-        : [];
+      const invites = await this._workspaceInviteRepository.findAll(
+        {
+          workspaceId,
+          ...(search && { email: { $regex: search, $options: "i" } }),
+        },
+        {
+          skip,
+          limit,
+        }
+      );
+
+      return {
+        invites:
+          invites?.map((inv) => workspaceInviteDtoMapper.toListInvites(inv)) ??
+          [],
+        totalCount: invites?.length ?? 0,
+      };
     } catch (error) {
       logError(error, {
         service: "WorkspaceInviteService.listInvites",

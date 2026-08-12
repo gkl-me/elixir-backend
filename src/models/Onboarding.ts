@@ -1,6 +1,5 @@
 import { Document, model, Schema } from "mongoose";
-
-type PlanType = "Free" | "Pro" | "Enterprice";
+import { PlanType } from "./Plan";
 
 export interface IOnboarding extends Document {
   userId: string;
