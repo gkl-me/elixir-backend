@@ -13,6 +13,7 @@ import { WorkspaceInviteRepository } from "../../repositories/workspace/Workspac
 import { WorkspaceTeamRepository } from "../../repositories/workspace/WorkspaceTeamRepository";
 import { TransactionRepository } from "../../repositories/transaction/TransactionRepository";
 import { ProjectRepository } from "../../repositories/project/ProjectRepository";
+import { IssueRepository } from "../../repositories/issue/IssueRepository";
 
 //repository
 container.register(Token.PlanRepository, {
@@ -56,4 +57,7 @@ container.register(Token.TransactionRepository, {
 });
 container.register(Token.ProjectRepository, {
   useClass: ProjectRepository,
+});
+container.register(Token.IssueRepository, {
+  useClass: IssueRepository,
 });

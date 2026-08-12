@@ -68,4 +68,21 @@ export class ProjectController implements IProjectController {
             next(error)
         }
     }
+
+    async handleGetProjectDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+
+            const { workspaceId, projectId } = extractStringParams(req.params, ["workspaceId", "projectId"])
+
+            const result = await this._projectService.getProjectsDetails({
+                workspaceId,
+                projectId
+            })
+
+            successResponse(res, "Project details fetched successfully", STATUS_CODES.OK, result)
+
+        } catch (error) {
+            next(error)
+        }
+    }
 }

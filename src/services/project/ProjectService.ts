@@ -2,7 +2,7 @@ import { inject, injectable } from "tsyringe";
 import { IProjectService } from "./interface/IProjectService";
 import { Token } from "../../di/token";
 import { IProjectRepository } from "../../repositories/project/interface/IProjectRepository";
-import { ICreateProjectDto, IListProjectsDto, IListProjectsResDto } from "../../interfaces/dtos/ProjectDto";
+import { ICreateProjectDto, IGetProjectDetailsDto, IListProjectsDto, IListProjectsResDto, IProjectDto } from "../../interfaces/dtos/ProjectDto";
 import { logError } from "../../middlewares/loggerHelper";
 import { generateProjectKey } from "../../helper/generateProjectKey";
 import { ProjectDtoMapper } from "../../interfaces/mapper/projectDtoMapper";
@@ -52,7 +52,7 @@ export class ProjectService implements IProjectService {
             const skip = (page - 1) * limit
 
 
-            const { projects, activeProjects, totalCount } = await this._projectRepository.getProjects({
+            const { projects, activeProjects, totalCount, doneTasks, totalTasks } = await this._projectRepository.getProjects({
                 search,
                 filter,
                 status,
@@ -65,7 +65,9 @@ export class ProjectService implements IProjectService {
             return {
                 totalCount,
                 activeProjects,
-                projects: projects.map(ProjectDtoMapper.toProjectList)
+                projects: projects.map(ProjectDtoMapper.toProjectList),
+                doneTasks,
+                totalTasks
             }
 
 
@@ -74,6 +76,26 @@ export class ProjectService implements IProjectService {
                 service: "ProjectService.listProjects"
             })
             throw error;
+        }
+    }
+
+    async getProjectsDetails(data: IGetProjectDetailsDto): Promise<IProjectDto> {
+        try {
+
+            const { workspaceId, projectId } = data
+
+            const project = await this._projectRepository.getProjectById({
+                workspaceId,
+                projectId
+            })
+
+            return ProjectDtoMapper.toProjectList(project)
+
+        } catch (error) {
+            logError(error, {
+                service: "ProjectService.getProjectsDetails"
+            })
+            throw error
         }
     }
 

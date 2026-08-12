@@ -13,6 +13,7 @@ import { IWorkspaceTeamController } from "../controllers/workspace/interface/IWo
 import { authorize } from "../middlewares/authorize";
 import { APP_ROLES } from "../constants/roles";
 import { IProjectController } from "../controllers/project/interface/IProjectController";
+import { IIssueController } from "../controllers/issue/interface/IIssueController";
 
 const router = Router();
 
@@ -33,6 +34,8 @@ const workspaceTeamController = container.resolve<IWorkspaceTeamController>(
 );
 
 const projectController = container.resolve<IProjectController>(Token.ProjectController)
+
+const issueController = container.resolve<IIssueController>(Token.IssueController)
 
 router.get("/", auth, authorize(APP_ROLES.SUPER_ADMIN), (req, res, next) => {
   void workspaceController.handleListAllWorkspace(req, res, next);
@@ -189,5 +192,16 @@ router.get("/:workspaceId/projects", auth, (req, res, next) => {
   void projectController.handleListProjects(req, res, next)
 })
 
+
+
+//issues 
+
+router.post("/:workspaceId/backlog/create-issue", auth, (req, res, next) => {
+  void issueController.handleCreateBacklogIssue(req, res, next)
+})
+
+router.get("/:workspaceId/projects/:projectId", auth, (req, res, next) => {
+  void projectController.handleGetProjectDetails(req, res, next)
+})
 
 export default router;

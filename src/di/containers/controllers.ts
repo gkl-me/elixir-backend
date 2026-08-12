@@ -20,6 +20,7 @@ import { WorkspaceTeamController } from "../../controllers/workspace/WorksapceTe
 import { SubscriptionController } from "../../controllers/subscription/SubscriptionController";
 import { TransactionController } from "../../controllers/transaction/TransactionController";
 import { ProjectController } from "../../controllers/project/ProjectController";
+import { IssueController } from "../../controllers/issue/IssueController";
 // import { StripeWebhookController } from "../../controllers/webhook/StripeWebhook"
 
 // container.register(Token.PlanController,{
@@ -80,4 +81,7 @@ container.register(Token.TransactionController, {
 });
 container.register(Token.ProjectController, {
   useClass: ProjectController,
+});
+container.register(Token.IssueController, {
+  useClass: IssueController,
 });

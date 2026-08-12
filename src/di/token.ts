@@ -20,6 +20,7 @@ export const Token = {
   WorkspaceTeamRepository: "IWorkspaceTeamRepository",
   TransactionRepository: "ITransactionRepository",
   ProjectRepository: "IProjectRepository",
+  IssueRepository: "IIssueRepository",
 
   PlanService: "IPlanService",
   AuthService: "IAuthService",
@@ -39,6 +40,7 @@ export const Token = {
   WorkspaceTeamService: "IWorkspaceTeamService",
   TransactionService: "ITransactionService",
   ProjectService: "IProjectService",
+  IssueService: "IIssueService",
 
   VerifyController: "IVerifyController",
   PasswordController: "IPasswordController",
@@ -57,5 +59,6 @@ export const Token = {
   WorkspaceMemberController: "IWorkspaceMemberController",
   WorkspaceTeamController: "IWorkspaceTeamController",
   TransactionController: "ITransactionController",
-  ProjectController: "IProjectController"
+  ProjectController: "IProjectController",
+  IssueController: "IIssueController",
 };
