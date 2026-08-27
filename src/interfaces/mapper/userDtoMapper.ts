@@ -11,6 +11,7 @@ export class userDtoMapper {
       avatarUrl: user?.avatarUrl,
       bio: user?.bio,
       jobTitle: user?.jobTitle,
+      hasPassword: !!user?.password
     };
   }
 }

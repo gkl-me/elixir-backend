@@ -1,7 +1,10 @@
 import { inject, injectable } from "tsyringe";
 import { IUserRepository } from "../../repositories/user/interfaces/IUserRepository";
-import { CustomError } from "../../errors/CustomError";
-import { AUTH_MESSAGES, CONSTANT_MESSAGES } from "../../constants/messages";
+import {
+  AUTH_MESSAGES,
+  CONSTANT_MESSAGES,
+  USER_MESSAGES,
+} from "../../constants/messages";
 import { STATUS_CODES } from "../../constants/statusCodes";
 import { userDtoMapper } from "../../interfaces/mapper/userDtoMapper";
 import { Token } from "../../di/token";
@@ -24,6 +27,7 @@ import { IAuthSession } from "../../interfaces/types/session.types";
 import { REDIS_STORE } from "../../constants/redis/redisStore";
 import { logError } from "../../middlewares/loggerHelper";
 import { ITokenManager } from "../../providers/interfaces/ITokenManager";
+import { CustomError } from "../../errors/CustomError";
 
 @injectable()
 export class UserService implements IUserService {
@@ -33,7 +37,7 @@ export class UserService implements IUserService {
     @inject(Token.CacheRepository)
     private readonly _cacheRepository: ICacheRepository<IAuthSession>,
     @inject(Token.TokenManager) private _tokenManager: ITokenManager
-  ) {}
+  ) { }
 
   async getAllUsers(
     data: IUserQueryDto
@@ -129,13 +133,34 @@ export class UserService implements IUserService {
 
   async changePassword(data: IChangePasswordDto): Promise<void> {
     try {
-      const { newPassword, userId } = data;
+      const { newPassword, userId, currentPassword } = data;
 
       const user = await this._userRepository.findById(userId);
 
       if (!user) {
         throw new CustomError(AUTH_MESSAGES.NOT_FOUND, STATUS_CODES.NOT_FOUND);
       }
+
+      if (user?.password) {
+        if (!currentPassword) {
+          throw new CustomError(
+            USER_MESSAGES.INVALID_CURRENT_PASSWORD,
+            STATUS_CODES.UNAUTHORIZED
+          );
+        }
+
+        const isPasswordValid = await this._passwordHasher.comparePasswords(
+          currentPassword,
+          user.password
+        );
+        if (!isPasswordValid) {
+          throw new CustomError(
+            USER_MESSAGES.INVALID_CURRENT_PASSWORD,
+            STATUS_CODES.UNAUTHORIZED
+          );
+        }
+      }
+
 
       const hashPassword = await this._passwordHasher.hashPassword(newPassword);
       user.password = hashPassword;

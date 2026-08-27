@@ -216,6 +216,7 @@ export class WorkspaceService implements IWorkspaceService {
         >,
         builtinRoles: BUILTIN_ROLES as Record<string, string[]>,
         workspaces,
+        hasPassword: !!user?.password,
       };
     } catch (error) {
       logError(error, {

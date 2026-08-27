@@ -73,7 +73,7 @@ export class PlanService implements IPlanService {
       const allPlans = await this._planRepository.findAll(
         {},
         {
-          sort: { isActive: -1, createdAt: 1 },
+          sort: { price:1},
           skip,
           limit,
         }

@@ -45,6 +45,7 @@ export const AUTH_MESSAGES = {
 
 export const USER_MESSAGES = {
   PASSWORD_UPDATED: "Password updated successfully",
+  INVALID_CURRENT_PASSWORD: "The current password you entered is incorrect",
   PROFILE_UPDATED: "User profile updated successfully",
   LOGIN_SUCCESS: "User successfully logged in",
   LOGOUT_SUCCESS: "User logout success",

@@ -6,6 +6,7 @@ export interface IUserListDto {
   avatarUrl?: string;
   bio?: string;
   jobTitle?: string;
+  hasPassword?: boolean;
 }
 
 export interface IUserQueryDto {
@@ -24,7 +25,7 @@ export interface IUpdatePasswordDto {
 
 export interface IChangePasswordDto {
   userId: string;
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
 }
 

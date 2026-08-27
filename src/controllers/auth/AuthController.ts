@@ -14,7 +14,7 @@ import { getClientInfo } from "../../helper/clientInfoHelper";
 
 @injectable()
 export class AuthController implements IAuthController {
-  constructor(@inject(Token.AuthService) private _authService: IAuthService) {}
+  constructor(@inject(Token.AuthService) private _authService: IAuthService) { }
 
   async handleRegister(
     req: Request,
@@ -136,6 +136,8 @@ export class AuthController implements IAuthController {
   ): Promise<void> {
     try {
       const { refreshToken } = req.body;
+
+      console.log("refres", refreshToken)
 
       const { newAccessToken, newRefreshToken } =
         await this._authService.refreshToken({ refreshToken });

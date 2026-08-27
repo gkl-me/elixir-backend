@@ -58,6 +58,7 @@ export interface IWorkspaceContextResDto {
   permissionDependencies: Record<string, string[]>;
   builtinRoles: Record<string, string[]>;
   workspaces: IUserWorkspace[] | [];
+  hasPassword?: boolean;
 }
 
 export interface IWorkspaceLimitsDto {
